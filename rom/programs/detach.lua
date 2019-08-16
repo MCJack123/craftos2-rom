@@ -1,0 +1,1 @@
+if type(({...})[1]) ~= "string" then print("Usage: detach <side>") else periphemu.remove(({...})[1]) end
