@@ -85,3 +85,8 @@ function getID( name )
 	return nil
 end
 
+function insertDisk( name, path )
+    if isDrive( name ) then
+        peripheral.call( name, "insertDisk", path )
+    end
+end

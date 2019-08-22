@@ -11,7 +11,6 @@ elseif args[1] == "--help" then
 else
     local mounts = mounter.list()
     print("/ on computer/0")
-    print("/rom on assets/computercraft/lua/rom (read-only)")
     for k,v in pairs(mounts) do
         write("/" .. k .. " on " .. v)
         if mounter.isReadOnly(k) then print(" (read-only)") else print() end

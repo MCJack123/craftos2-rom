@@ -2,6 +2,7 @@
 local function printUsage()
     print( "Usage:" )
     print( "wget <url> <filename>" )
+    print( "wget run <url> [args...]" )
 end
  
 local tArgs = { ... }
@@ -40,22 +41,44 @@ local function get( sUrl )
     response.close()
     return sResponse
 end
- 
--- Determine file to download
-local sUrl = tArgs[1]
-local sFile = tArgs[2]
-local sPath = shell.resolve( sFile )
-if fs.exists( sPath ) then
-    print( "File already exists" )
-    return
-end
 
--- Do the get
-local res = get( sUrl )
-if res then
-    local file = fs.open( sPath, "wb" )
-    file.write( res )
-    file.close()
+if tArgs[2] == "run" then
+    local sUrl = tArgs[2]
+    local res = get( sUrl )
+    if not res then
+        printError( "Failed to download" )
+        return
+    end
+    local func, err = load( res, fs.getName( sUrl ), "t", _ENV )
+    if not func then
+        printError( err )
+        return
+    end
 
-    print( "Downloaded as "..sFile )
+    local ok, err = pcall( func, table.unpack( tArgs, 3 ) )
+    if not ok then
+        printError( err )
+    end
+else
+    -- Determine file to download
+    local sUrl = tArgs[1]
+    local sFile = tArgs[2]
+    local sPath = shell.resolve( sFile )
+    if fs.exists( sPath ) then
+        print( "File already exists" )
+        return
+    end
+
+    -- Do the get
+    local res = get( sUrl )
+    if res then
+        local file = fs.open( sPath, "wb" )
+        file.write( res )
+        file.close()
+
+        print( "Downloaded as "..sFile )
+    else
+        printError( "Failed to download" )
+        return
+    end
 end

@@ -25,6 +25,13 @@ local function get(paste)
     )
         
     if response then
+        -- If spam protection is activated, we get redirected to /paste with Content-Type: text/html
+        local headers = response.getResponseHeaders()
+        if not headers["Content-Type"] or not headers["Content-Type"]:find( "^text/plain" ) then
+            print( "Pastebin blocked the download due to spam protection. Please complete the captcha in a web browser: https://pastebin.com/" .. textutils.urlEncode( paste ) )
+            return
+        end
+
         print( "Success." )
         
         local sResponse = response.readAll()
@@ -93,6 +100,11 @@ elseif sCommand == "get" then
         print( "File already exists" )
         return
     end
+
+    -- If passed url, trim URL part
+    if string.find( sCode, "pastebin.com" ) then
+        sCode = string.match( sCode, "^h?t?t?p?s?:?/?/?pastebin.com/r?a?w?/?(.+)$" )
+    end
     
     -- GET the contents from pastebin
     local res = get(sCode)
@@ -105,6 +117,10 @@ elseif sCommand == "get" then
     end 
 elseif sCommand == "run" then
     local sCode = tArgs[2]
+
+    if string.find( sCode, "pastebin.com" ) then
+        sCode = string.match( sCode, "^h?t?t?p?s?:?/?/?pastebin.com/r?a?w?/?(.+)$" )
+    end
  
     local res = get(sCode)
     if res then

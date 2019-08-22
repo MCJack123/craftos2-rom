@@ -1,6 +1,6 @@
 
 local function printUsage()
-    print( "Usage: monitor <name> <program> <arguments>" )
+    print( "Usage: monitor <name> <program> [arguments...]" )
     return
 end
 

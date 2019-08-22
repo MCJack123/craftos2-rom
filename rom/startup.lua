@@ -184,10 +184,10 @@ local function completeExec( _, nIndex, sText )
         return completeMultipleChoice( sText, tCommands, true )
     end
 end
-local tPeripherals = {"monitor", "speaker", "printer"}
+local tPeripherals = {"monitor", "speaker", "printer ", "computer ", "modem", "drive", "drive "}
 local function completeAttach(_, nIndex, sText)
     if nIndex == 1 then
-        return completeMultipleChoice(sText, {"left", "right", "top", "bottom", "front", "back"}, true)
+        return completeMultipleChoice(sText, {"left ", "right ", "top ", "bottom ", "front ", "back "}, true)
     elseif nIndex == 2 then
         return completeMultipleChoice(sText, tPeripherals)
     end
