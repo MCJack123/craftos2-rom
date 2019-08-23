@@ -109,12 +109,15 @@ else
     menuOtherTextColor, menuOtherBgColor = colors.black, colors.gray
 end
 
+local scrollPosition = 0
+local menuLength = 0
 local function redrawMenu()
     if bShowMenu then
         -- Draw menu
         parentTerm.setCursorPos( 1, 1 )
         parentTerm.setBackgroundColor( menuOtherBgColor )
         parentTerm.clearLine()
+        local pos = -scrollPosition
         for n=1,#tProcesses do
             if n == nCurrentProcess then
                 parentTerm.setTextColor( menuMainTextColor )
@@ -123,7 +126,19 @@ local function redrawMenu()
                 parentTerm.setTextColor( menuOtherTextColor )
                 parentTerm.setBackgroundColor( menuOtherBgColor )
             end
-            parentTerm.write( " " .. tProcesses[n].sTitle .. " " )
+            local line = " " .. tProcesses[n].sTitle .. " "
+            if pos >= 0 then
+                parentTerm.write( line )
+            elseif pos + string.len( line ) >= 0 then
+                parentTerm.write( string.sub( line, -pos ) )
+            end
+            pos = pos + string.len( line )
+        end
+        menuLength = pos + scrollPosition
+
+        if menuLength > parentTerm.getSize() and scrollPosition + parentTerm.getSize() > menuLength then
+            scrollPosition = menuLength - parentTerm.getSize()
+            return redrawMenu()
         end
 
         -- Put the cursor back where it should be
@@ -263,6 +278,7 @@ while #tProcesses > 0 do
         if bShowMenu and y == 1 then
             -- Switch process
             local tabStart = 1
+            x = x + scrollPosition
             for n=1,#tProcesses do
                 local tabEnd = tabStart + string.len( tProcesses[n].sTitle ) + 1
                 if x >= tabStart and x <= tabEnd then
@@ -281,7 +297,25 @@ while #tProcesses > 0 do
             end
         end
 
-    elseif sEvent == "mouse_drag" or sEvent == "mouse_up" or sEvent == "mouse_scroll" then
+    elseif sEvent == "mouse_scroll" then
+        -- Mouse scroll event
+        local p1, x, y = tEventData[2], tEventData[3], tEventData[4]
+        if not (bShowMenu and y == 1) then
+            -- Passthrough to current process
+            resumeProcess( nCurrentProcess, sEvent, p1, x, (bShowMenu and y-1) or y )
+            if cullProcess( nCurrentProcess ) then
+                setMenuVisible( #tProcesses >= 2 )
+                redrawMenu()
+            end
+        else
+            -- Scroll menu
+            if menuLength > parentTerm.getSize() and ((p1 > 0 and scrollPosition + parentTerm.getSize() <= menuLength) or (p1 < 0 and scrollPosition > 0)) then
+                scrollPosition = scrollPosition + p1
+                redrawMenu()
+            end
+        end
+    
+    elseif sEvent == "mouse_drag" or sEvent == "mouse_up" then
         -- Other mouse event
         local p1, x, y = tEventData[2], tEventData[3], tEventData[4]
         if not (bShowMenu and y == 1) then
