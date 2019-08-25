@@ -803,6 +803,29 @@ if http then
             if url == _url then return ok, err end
         end
     end
+
+    local nativeWebsocket = http.websocket
+    http.websocketAsync = nativeWebsocket
+    http.websocket = function( _url, _binary )
+        if _url ~= nil and type( _url ) ~= "string" then
+            error( "bad argument #1 (expected string, got " .. type( _url ) .. ")", 2 )
+        end
+        if _binary ~= nil and type( _binary ) ~= "boolean" then
+            error( "bad argument #2 (expected boolean, got " .. type( _binary ) .. ")", 2)
+        end
+
+        local ok, err = nativeWebsocket( _url, _binary )
+        if not ok then return ok, err end
+
+        while true do
+            local event, url, param = os.pullEvent( )
+            if event == "websocket_success" and url == _url then
+                return param
+            elseif event == "websocket_failure" and url == _url then
+                return nil, param
+            end
+        end
+    end
 end
 
 -- Install the lua part of the FS api
