@@ -200,7 +200,7 @@ end
 local tConfig = config.list()
 local function completeConfig(_, nIndex, sText, tPreviousText)
     if nIndex == 1 then
-        return completeMultipleChoice(sText, {"list", "set", "get"})
+        return completeMultipleChoice(sText, {"list", "set", "get"}, true)
     elseif nIndex == 2 and tPreviousText ~= "list " then
         return completeMultipleChoice(sText, tConfig)
     end
