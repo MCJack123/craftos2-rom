@@ -209,11 +209,7 @@ function write( sText )
         error( "bad argument #1 (expected string or number, got " .. type( sText ) .. ")", 2 ) 
     end
 
-    --os.debug(tostring(term.current() == term.native()))
-
     local w,h = term.getSize()
-    --os.debug(tostring(term.current()["getCursorPos"]))
-    --traceback("test")
     local x,y = term.getCursorPos()
     
     local nLinesPrinted = 0
@@ -230,7 +226,6 @@ function write( sText )
     
     -- Print the line with proper word wrapping
     while string.len(sText) > 0 do
-        --os.debug("Write loop")
         local whitespace = string.match( sText, "^[ \t]+" )
         if whitespace then
             -- Print whitespace
@@ -605,30 +600,25 @@ function os.run( _tEnv, _sPath, ... )
     if type( _sPath ) ~= "string" then
         error( "bad argument #2 (expected string, got " .. type( _sPath ) .. ")", 2 ) 
     end
-    --os.debug("Executing " .. _sPath)
     local tArgs = table.pack( ... )
     local tEnv = _tEnv
     setmetatable( tEnv, { __index = _G } )
     local fnFile, err = loadfile( _sPath, tEnv )
     if fnFile then
         local ok, err = pcall( function()
-            --os.debug("Starting")
             fnFile( table.unpack( tArgs, 1, tArgs.n ) )
         end )
         if not ok then
             if err and err ~= "" then
                 printError( err )
             end
-            --os.debug("Run failed")
             return false
         end
-        --os.debug("Run succeeded")
         return true
     end
     if err and err ~= "" then
         printError( err )
     end
-    --os.debug("?")
     return false
 end
 
@@ -653,7 +643,6 @@ function os.loadAPI( _sPath )
     if fnAPI then
         local ok, err = pcall( fnAPI )
         if not ok then
-            --os.debug(err)
             printError( err )
             tAPIsLoading[sName] = nil
             return false
@@ -709,8 +698,8 @@ end
 if http then
     local nativeHTTPRequest = http.request
 
-    local function wrapRequest( _url, _post, _headers, _binary )
-        local ok, err = nativeHTTPRequest( _url, _post, _headers, _binary )
+    local function wrapRequest( _url, _post, _headers, _binary, _method )
+        local ok, err = nativeHTTPRequest( _url, _post, _headers, _binary, _method )
         if ok then
             while true do
                 local event, param1, param2, param3 = os.pullEvent()
@@ -737,23 +726,25 @@ if http then
         return wrapRequest( _url, nil, _headers, _binary)
     end
 
-    http.post = function( _url, _post, _headers, _binary)
-        if type( _url ) ~= "string" then
-            error( "bad argument #1 (expected string, got " .. type( _url ) .. ")", 2 ) 
+    for k,v in pairs({"POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"}) do
+        http[string.lower(v)] = function( _url, _post, _headers, _binary)
+            if type( _url ) ~= "string" then
+                error( "bad argument #1 (expected string, got " .. type( _url ) .. ")", 2 ) 
+            end
+            if _post ~= nil and type( _post ) ~= "string" then
+                error( "bad argument #2 (expected string, got " .. type( _post ) .. ")", 2 ) 
+            end
+            if _headers ~= nil and type( _headers ) ~= "table" then
+                error( "bad argument #3 (expected table, got " .. type( _headers ) .. ")", 2 ) 
+            end
+            if _binary ~= nil and type( _binary ) ~= "boolean" then
+                error( "bad argument #4 (expected boolean, got " .. type( _binary ) .. ")", 2 ) 
+            end
+            return wrapRequest( _url, _post or "", _headers, _binary, v )
         end
-        if type( _post ) ~= "string" then
-            error( "bad argument #2 (expected string, got " .. type( _post ) .. ")", 2 ) 
-        end
-        if _headers ~= nil and type( _headers ) ~= "table" then
-            error( "bad argument #3 (expected table, got " .. type( _headers ) .. ")", 2 ) 
-        end
-        if _binary ~= nil and type( _binary ) ~= "boolean" then
-            error( "bad argument #4 (expected boolean, got " .. type( _binary ) .. ")", 2 ) 
-        end
-        return wrapRequest( _url, _post or "", _headers, _binary)
     end
 
-    http.request = function( _url, _post, _headers, _binary )
+    http.request = function( _url, _post, _headers, _binary, _method )
         if type( _url ) ~= "string" then
             error( "bad argument #1 (expected string, got " .. type( _url ) .. ")", 2 ) 
         end
@@ -766,7 +757,7 @@ if http then
         if _binary ~= nil and type( _binary ) ~= "boolean" then
             error( "bad argument #4 (expected boolean, got " .. type( _binary ) .. ")", 2 ) 
         end
-        local ok, err = nativeHTTPRequest( _url, _post, _headers, _binary )
+        local ok, err = nativeHTTPRequest( _url, _post, _headers, _binary, _method )
         if not ok then
             os.queueEvent( "http_failure", _url, err )
         end
@@ -902,11 +893,9 @@ end
 -- Install the Lua part of the Term API
 -- Load APIs
 local bAPIError = false
---os.debug("Loading APIs")
 local tApis = fs.list( "/rom/apis" )
 for n,sFile in ipairs( tApis ) do
     if string.sub( sFile, 1, 1 ) ~= "." then
-        --os.debug("Loading " .. sFile .. " API")
         local sPath = fs.combine( "rom/apis", sFile )
         if not fs.isDir( sPath ) then
             if not os.loadAPI( sPath ) then
@@ -915,11 +904,6 @@ for n,sFile in ipairs( tApis ) do
         end
     end
 end
---os.debug("Loaded standard APIs")
-
--- Initialize terminal font
---term.loadFontFile()
---os.debug(tostring(term.getGraphicsMode()))
 
 if turtle and fs.isDir( "rom/apis/turtle" ) then
     -- Load turtle APIs
@@ -935,7 +919,6 @@ if turtle and fs.isDir( "rom/apis/turtle" ) then
         end
     end
 end
---term.write("Loaded turtle API")
 
 if pocket and fs.isDir( "rom/apis/pocket" ) then
     -- Load pocket APIs
@@ -951,7 +934,6 @@ if pocket and fs.isDir( "rom/apis/pocket" ) then
         end
     end
 end
---term.write("Loaded pocket API")
 
 if commands and fs.isDir( "rom/apis/command" ) then
     -- Load command APIs
@@ -981,7 +963,6 @@ if commands and fs.isDir( "rom/apis/command" ) then
         bAPIError = true
     end
 end
---term.write("Loaded command API")
 
 if bAPIError then
     print( "Press any key to continue" )
@@ -1035,7 +1016,6 @@ end
 
 if config.get("readFail") then print("Failed to load config, please delete .craftos/config.ser.") end
 
---term.write("Starting the shell")
 -- Run the shell
 local ok, err = pcall( function()
     parallel.waitForAny( 

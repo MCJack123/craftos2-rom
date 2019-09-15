@@ -70,8 +70,8 @@ local function inv(tab)
     return retval
 end
 
-term.clear()
 term.setGraphicsMode(true)
+term.clear()
 g = 1
 list1 = {12, 24, 23, 22, 21, 20}
 local colormap = {
@@ -172,11 +172,11 @@ for y = 0, (height - 2), 2 * g do
             end
         end
 
-        c = colormap[c]
-        l = colormap[l]
-        m = colormap[m]
+        c = colormap[c] or colors.red
+        l = colormap[l] or colors.red
+        m = colormap[m] or colors.red
 
-        if y > 110 and (c == colors.red or c == colors.blue) then c = colors.black end
+        if y > 125/170 * height and (c == colors.red or c == colors.blue) then c = colors.black end
 
         term.setPixel(width - x, height - y, c)
         term.setPixel(width - x, height - (y + 1), l)

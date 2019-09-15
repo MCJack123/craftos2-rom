@@ -72,7 +72,7 @@ function unpackRGB( rgb )
         error( "bad argument #1 (expected number, got " .. type( rgb ) .. ")", 2 )
     end
     return
-        bit32.band( bit32.rshift( r, 16 ), 0xFF ) / 255, 
-        bit32.band( bit32.rshift( r, 8 ), 0xFF ) / 255, 
-        bit32.band( r, 0xFF ) / 255
+        bit32.band( bit32.rshift( rgb, 16 ), 0xFF ) / 255, 
+        bit32.band( bit32.rshift( rgb, 8 ), 0xFF ) / 255, 
+        bit32.band( rgb, 0xFF ) / 255
 end
