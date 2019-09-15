@@ -698,7 +698,7 @@ end
 if http then
     local nativeHTTPRequest = http.request
 
-    local function wrapRequest( _url, _post, _headers, _binary, _method )
+    local function wrapRequest( _url, _post, _headers, _binary, _method, _redirect )
         local ok, err = nativeHTTPRequest( _url, _post, _headers, _binary, _method )
         if ok then
             while true do
@@ -713,7 +713,7 @@ if http then
         return nil, err
     end
     
-    http.get = function( _url, _headers, _binary)
+    http.get = function( _url, _headers, _binary, _redirect )
         if type( _url ) ~= "string" then
             error( "bad argument #1 (expected string, got " .. type( _url ) .. ")", 2 ) 
         end
@@ -723,11 +723,11 @@ if http then
         if _binary ~= nil and type( _binary ) ~= "boolean" then
             error( "bad argument #3 (expected boolean, got " .. type( _binary ) .. ")", 2 ) 
         end
-        return wrapRequest( _url, nil, _headers, _binary)
+        return wrapRequest( _url, nil, _headers, _binary, _redirect )
     end
 
     for k,v in pairs({"POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"}) do
-        http[string.lower(v)] = function( _url, _post, _headers, _binary)
+        http[string.lower(v)] = function( _url, _post, _headers, _binary, _redirect )
             if type( _url ) ~= "string" then
                 error( "bad argument #1 (expected string, got " .. type( _url ) .. ")", 2 ) 
             end
@@ -740,11 +740,11 @@ if http then
             if _binary ~= nil and type( _binary ) ~= "boolean" then
                 error( "bad argument #4 (expected boolean, got " .. type( _binary ) .. ")", 2 ) 
             end
-            return wrapRequest( _url, _post or "", _headers, _binary, v )
+            return wrapRequest( _url, _post or "", _headers, _binary, v, _redirect )
         end
     end
 
-    http.request = function( _url, _post, _headers, _binary, _method )
+    http.request = function( _url, _post, _headers, _binary, _method, _redirect )
         if type( _url ) ~= "string" then
             error( "bad argument #1 (expected string, got " .. type( _url ) .. ")", 2 ) 
         end
@@ -757,7 +757,7 @@ if http then
         if _binary ~= nil and type( _binary ) ~= "boolean" then
             error( "bad argument #4 (expected boolean, got " .. type( _binary ) .. ")", 2 ) 
         end
-        local ok, err = nativeHTTPRequest( _url, _post, _headers, _binary, _method )
+        local ok, err = nativeHTTPRequest( _url, _post, _headers, _binary, _method, _redirect )
         if not ok then
             os.queueEvent( "http_failure", _url, err )
         end
