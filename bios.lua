@@ -1014,8 +1014,6 @@ if fs.exists( ".settings" ) then
     settings.load( ".settings" )
 end
 
-if config.get("readFail") then print("Failed to load config, please delete .craftos/config.ser.") end
-
 -- Run the shell
 local ok, err = pcall( function()
     parallel.waitForAny( 
