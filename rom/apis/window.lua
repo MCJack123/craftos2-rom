@@ -304,6 +304,7 @@ function create( parent, nX, nY, nWidth, nHeight, bStartVisible )
 
     function window.setPaletteColour( colour, r, g, b )
         if type( colour ) ~= "number" then error( "bad argument #1 (expected number, got " .. type( colour ) .. ")", 2 ) end
+        if term.getGraphicsMode() then return term.native().setPaletteColor(colour, r, g, b) end
         
         if tHex[colour] == nil then
             error( "Invalid color (got " .. colour .. ")" , 2 )
@@ -333,6 +334,7 @@ function create( parent, nX, nY, nWidth, nHeight, bStartVisible )
 
     function window.getPaletteColour( colour )
         if type( colour ) ~= "number" then error( "bad argument #1 (expected number, got " .. type( colour ) .. ")", 2 ) end
+        if term.getGraphicsMode() then return term.native().getPaletteColor(colour) end
         if tHex[colour] == nil then
             error( "Invalid color (got " .. colour .. ")" , 2 )
         end
