@@ -778,7 +778,10 @@ if http then
                 http.removeListener( _port )
                 break
             elseif ev == "http_request" and p1 == _port then
-                _callback( p2, p3 )
+                if _callback( p2, p3 ) then 
+                    http.removeListener( _port )
+                    break 
+                end
             end
         end
     end
