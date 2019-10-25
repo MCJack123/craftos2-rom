@@ -33,7 +33,7 @@ if _VERSION == "Lua 5.1" then
                     return nil, err
                 end
             else
-                local result, err = nativeload( x, name )
+                local result, err = nativeload( x, "@" .. name )
                 if result then
                     if env then
                         env._ENV = env
