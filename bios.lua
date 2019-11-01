@@ -33,7 +33,7 @@ if _VERSION == "Lua 5.1" then
                     return nil, err
                 end
             else
-                local result, err = nativeload( x, "@" .. name )
+                local result, err = nativeload( x, name )
                 if result then
                     if env then
                         env._ENV = env
@@ -573,7 +573,7 @@ loadfile = function( _sFile, _tEnv )
     end
     local file = fs.open( _sFile, "r" )
     if file then
-        local func, err = load( file.readAll(), fs.getName( _sFile ), "t", _tEnv )
+        local func, err = load( file.readAll(), "@/" .. _sFile, "t", _tEnv )
         file.close()
         return func, err
     end
