@@ -19,7 +19,12 @@ native.redirect = function( target )
     if target == term then
         error( "term is not a recommended redirect target, try term.current() instead", 2 )
     end
-    --traceback("redirecting")
+	--traceback("redirecting")
+	if target.setGraphicsMode == nil then target.setGraphicsMode = native.setGraphicsMode end
+	if target.getGraphicsMode == nil then target.getGraphicsMode = native.getGraphicsMode end
+	if target.setPixel == nil then target.setPixel = native.setPixel end
+	if target.getPixel == nil then target.getPixel = native.getPixel end
+	if target.drawPixels == nil then target.drawPixels = native.drawPixels end
 	for k,v in pairs( native ) do
 		if type( k ) == "string" and type( v ) == "function" and k ~= "native" and k ~= "current" and k ~= "redirect" then
 			if type( target[k] ) ~= "function" then
