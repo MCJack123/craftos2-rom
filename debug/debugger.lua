@@ -11,7 +11,7 @@ while true do
         term.setTextColor(colors.lime)
         write("--> ")
         term.setTextColor(colors.white)
-        print(string.gsub(file.readLine(), "^ +", ""))
+        print(select(1, string.gsub(file.readLine(), "^[ \t]+", "")))
         file.close()
     end
     term.setTextColor(colors.yellow)
@@ -25,4 +25,5 @@ while true do
     elseif string.sub(action, 1, 2) == "b " then debugger.setBreakpoint(string.sub(action, 3, string.find(action, ":") - 1), tonumber(string.sub(action, string.find(action, ":") + 1)))
     elseif action == "quit" or action == "q" then break end
     lastaction = action
+    os.queueEvent("debugger_done")
 end

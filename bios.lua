@@ -573,7 +573,7 @@ loadfile = function( _sFile, _tEnv )
     end
     local file = fs.open( _sFile, "r" )
     if file then
-        local func, err = load( file.readAll(), "@/" .. _sFile, "t", _tEnv )
+        local func, err = load( file.readAll(), "@/" .. fs.combine(fs.getDir(_sFile), fs.getName(_sFile)), "t", _tEnv )
         file.close()
         return func, err
     end
