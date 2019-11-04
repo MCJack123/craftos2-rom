@@ -1,7 +1,10 @@
 local args = { ... }
 
 if args[2] ~= nil then
-    mounter.mount(args[1], args[2], args[3] ~= "readOnly")
+    local ro = nil
+    if args[3] == "readOnly" or args[3] == "true" then ro = true
+    elseif args[3] == "false" then ro = false end
+    mounter.mount(args[1], args[2], ro)
 elseif args[1] == "--help" then
     term.setTextColor(colors.red)
     print("Usage: mount <name> <path> [readOnly]")
