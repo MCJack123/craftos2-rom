@@ -511,7 +511,7 @@ else
             table.insert( tCommandHistory, sLine )
         end
         shell.run( sLine )
-        if term.getGraphicsMode() then term.setGraphicsMode(false) end
+        if term.getGraphicsMode and term.getGraphicsMode() then term.setGraphicsMode(false) end
     end
 
     if settings.get("shell.store_history") then

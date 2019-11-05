@@ -184,35 +184,38 @@ local function completeExec( _, nIndex, sText )
         return completeMultipleChoice( sText, tCommands, true )
     end
 end
-local tPeripherals = {"monitor", "speaker", "printer ", "computer", "modem", "drive", "drive "}
-local function completeAttach(_, nIndex, sText)
-    if nIndex == 1 then
-        return completeMultipleChoice(sText, {"left", "right", "top", "bottom", "front", "back"}, true)
-    elseif nIndex == 2 then
-        return completeMultipleChoice(sText, tPeripherals)
+local completeAttach, completeDetach, completeConfig, completeUnmount, completeBMPView
+if config and mounter and periphemu then -- vanilla?
+    local tPeripherals = {"monitor", "speaker", "printer ", "computer", "modem", "drive", "drive "}
+    local function completeAttach(_, nIndex, sText)
+        if nIndex == 1 then
+            return completeMultipleChoice(sText, {"left", "right", "top", "bottom", "front", "back"}, true)
+        elseif nIndex == 2 then
+            return completeMultipleChoice(sText, tPeripherals)
+        end
     end
-end
-local function completeDetach(_, nIndex, sText)
-    if nIndex == 1 then
-        return completePeripheralName(sText)
+    local function completeDetach(_, nIndex, sText)
+        if nIndex == 1 then
+            return completePeripheralName(sText)
+        end
     end
-end
-local tConfig = config.list()
-local function completeConfig(_, nIndex, sText, tPreviousText)
-    if nIndex == 1 then
-        return completeMultipleChoice(sText, {"list", "set", "get"}, true)
-    elseif nIndex == 2 and tPreviousText ~= "list " then
-        return completeMultipleChoice(sText, tConfig)
+    local tConfig = config.list()
+    local function completeConfig(_, nIndex, sText, tPreviousText)
+        if nIndex == 1 then
+            return completeMultipleChoice(sText, {"list", "set", "get"}, true)
+        elseif nIndex == 2 and tPreviousText ~= "list " then
+            return completeMultipleChoice(sText, tConfig)
+        end
     end
-end
-local function completeUnmount(shell, nIndex, sText)
-    if nIndex == 1 then
-        return fs.complete(sText, shell.dir(), false, true)
+    local function completeUnmount(shell, nIndex, sText)
+        if nIndex == 1 then
+            return fs.complete(sText, shell.dir(), false, true)
+        end
     end
-end
-local function completeBMPView(shell, nIndex, sText)
-    if nIndex == 1 then
-        return fs.complete(sText, shell.dir(), true, false)
+    local function completeBMPView(shell, nIndex, sText)
+        if nIndex == 1 then
+            return fs.complete(sText, shell.dir(), true, false)
+        end
     end
 end
 shell.setCompletionFunction( "rom/programs/alias.lua", completeAlias )
@@ -242,11 +245,13 @@ shell.setCompletionFunction( "rom/programs/fun/advanced/paint.lua", completeFile
 shell.setCompletionFunction( "rom/programs/http/pastebin.lua", completePastebin )
 shell.setCompletionFunction( "rom/programs/rednet/chat.lua", completeChat )
 shell.setCompletionFunction( "rom/programs/command/exec.lua", completeExec )
-shell.setCompletionFunction( "rom/programs/attach.lua", completeAttach )
-shell.setCompletionFunction( "rom/programs/detach.lua", completeDetach )
-shell.setCompletionFunction( "rom/programs/config.lua", completeConfig )
-shell.setCompletionFunction( "rom/programs/unmount.lua", completeUnmount )
-shell.setCompletionFunction( "rom/programs/fun/advanced/bmpview.lua", completeBMPView )
+if completeAttach then
+    shell.setCompletionFunction( "rom/programs/attach.lua", completeAttach )
+    shell.setCompletionFunction( "rom/programs/detach.lua", completeDetach )
+    shell.setCompletionFunction( "rom/programs/config.lua", completeConfig )
+    shell.setCompletionFunction( "rom/programs/unmount.lua", completeUnmount )
+    shell.setCompletionFunction( "rom/programs/fun/advanced/bmpview.lua", completeBMPView )
+end
 
 if turtle then
     local tGoOptions = { "left", "right", "forward", "back", "down", "up" }
