@@ -1,4 +1,4 @@
-if jit then return end
+if jit then for k,v in pairs(coroutine) do _ENV[k] = v end return end
 local nativeCoroutine = coroutine
 local coroutineList = {}
 
