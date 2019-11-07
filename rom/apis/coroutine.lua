@@ -1,3 +1,4 @@
+if jit then return end
 local nativeCoroutine = coroutine
 local coroutineList = {}
 
