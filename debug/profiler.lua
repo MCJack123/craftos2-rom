@@ -106,6 +106,7 @@ while true do
         w, h = term.getSize()
         header = window.create(term.current(), 1, 1, w, 2)
         viewport = window.create(term.current(), 1, 3, w, h - 2)
+        widths = {{"#", 5, "count"}, {"Source", math.ceil((w - 11) / 2), "source"}, {"Function", math.floor((w - 11) / 2), "func"}, {"Time", 6, "time"}}
         updateHeader()
     --elseif ev[1] == "char" and ev[2] == "q" then break
     end
