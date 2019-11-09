@@ -1,3 +1,116 @@
 multishell.setTitle(multishell.getCurrent(), "Profiler")
-print("Not Implemented")
-while true do os.pullEvent() end
+local ok, err = pcall(function()
+local w, h = term.getSize()
+local header = window.create(term.current(), 1, 1, w, 2)
+local viewport = window.create(term.current(), 1, 3, w, h - 2)
+local body
+local widths = {{"#", 5, "count"}, {"Source", math.ceil((w - 11) / 2), "source"}, {"Function", math.floor((w - 11) / 2), "func"}, {"Time", 6, "time"}}
+local profilingTime, tm
+local scrollPos, scrollSize = 1, 1
+
+local function formatTime(n) return string.format("%i:%02i:%02i", math.floor(n / 3600), math.floor(n / 60) % 60, n % 60) end
+
+local function updateHeader()
+    header.setBackgroundColor(colors.gray)
+    header.clear()
+    header.setCursorPos(2, 1)
+    header.blit(" " .. string.char(7) .. " ", profilingTime == nil and "eee" or "000", profilingTime == nil and "000" or "eee")
+    local timestr = "0:00:00"
+    if profilingTime ~= nil then timestr = formatTime((os.epoch() - profilingTime) / 1000) end
+    header.setBackgroundColor(colors.gray)
+    header.setTextColor(colors.white)
+    header.setCursorPos(w - #timestr, 1)
+    header.write(timestr)
+    local i = 1
+    for k,v in ipairs(widths) do
+        header.setCursorPos(i, 2)
+        header.write(v[1])
+        i = i + v[2]
+    end
+end
+
+local function profile() return {
+    ["@/file.lua"] = {
+        a = {
+            count = 5,
+            time = 10.2,
+        },
+        b = {
+            count = 4,
+            time = 9.8,
+        },
+    },
+    ["@/rom/programs/shell.lua"] = {
+        run = {
+            count = 2,
+            time = 1.4,
+        },
+    },
+    ["@/test.lua"] = {
+        hello = {
+            count = 1,
+            time = 0.3,
+        },
+        foo = {
+            count = 1,
+            time = 0.1,
+        },
+    },
+} end
+
+local function parseProfile()
+    local lines = {}
+    local profile = debugger.profile()
+    for k,v in pairs(profile) do for l,w in pairs(v) do table.insert(lines, {source = k, func = l, count = w.count, time = w.time}) end end
+    body = window.create(viewport, 1, 1, w, #lines)
+    scrollPos = 1
+    scrollSize = #lines
+    table.sort(lines, function(a, b) return a.count > b.count end)
+    for k,v in ipairs(lines) do
+        local i = 1
+        for l,w in ipairs(widths) do
+            body.setCursorPos(i, k)
+            if w[3] == "source" and #v.source > w[2]-1 then body.write(string.sub(fs.getName(v.source), 1, w[2]-1))
+            else body.write(string.sub(tostring(v[w[3]]), 1, w[2]-1)) end
+            i = i + w[2]
+        end
+    end
+end
+
+updateHeader()
+
+while true do
+    local ev = {os.pullEvent()}
+    if ev[1] == "mouse_click" and ev[2] == 1 and ev[4] == 1 and ev[3] > 1 and ev[3] < 5 then
+        if profilingTime then
+            profilingTime = nil
+            tm = nil
+            debugger.startProfiling(false)
+            parseProfile()
+        else
+            profilingTime = os.epoch()
+            tm = os.startTimer(1)
+            debugger.startProfiling(true)
+            if body then body.setVisible(false) end
+            viewport.clear()
+        end
+        updateHeader()
+    elseif ev[1] == "mouse_scroll" and ev[4] > 2 then
+        if ev[2] == -1 and scrollPos < 1 then scrollPos = scrollPos + 1
+        elseif ev[2] == 1 and scrollPos > h - 1 - scrollSize then scrollPos = scrollPos - 1 end
+        if body then body.reposition(1, scrollPos) end
+    elseif ev[1] == "timer" and ev[2] == tm then
+        updateHeader()
+        tm = os.startTimer(1)
+    elseif ev[1] == "term_resize" then
+        w, h = term.getSize()
+        header = window.create(term.current(), 1, 1, w, 2)
+        viewport = window.create(term.current(), 1, 3, w, h - 2)
+        updateHeader()
+    --elseif ev[1] == "char" and ev[2] == "q" then break
+    end
+end
+end)
+
+if not ok then printError(err) end
+while os.pullEvent() do end
