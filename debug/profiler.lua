@@ -101,6 +101,7 @@ while true do
         if body then body.reposition(1, scrollPos) end
     elseif ev[1] == "timer" and ev[2] == tm then
         updateHeader()
+        parseProfile()
         tm = os.startTimer(1)
     elseif ev[1] == "term_resize" then
         w, h = term.getSize()
