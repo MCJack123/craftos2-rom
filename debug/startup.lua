@@ -1,4 +1,5 @@
 shell.openTab("debug/showfile.lua")
 shell.openTab("debug/profiler.lua")
+shell.openTab("debug/console.lua")
 shell.run("debug/debugger.lua")
 shell.exit()
