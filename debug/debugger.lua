@@ -7,6 +7,8 @@ local function split(inputstr, sep)
     for str in string.gmatch(inputstr, "([^"..sep.."]+)") do table.insert(t, str) end
     return t
 end
+term.setTextColor(colors.yellow)
+print("CraftOS-PC Debugger")
 while true do
     debugger.waitForBreak()
     local info = debugger.getInfo()

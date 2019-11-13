@@ -861,7 +861,10 @@ function debugger.waitForBreak()
     local ev = os.pullEventRaw()
     while ev ~= "debugger_break" do 
         ev = os.pullEventRaw()
-        if ev == "terminate" then debugger.step() end 
+        if ev == "terminate" then 
+            debugger.step() 
+            debugger.unblock()
+        end 
     end
 end
 
