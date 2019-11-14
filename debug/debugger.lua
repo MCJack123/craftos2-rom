@@ -13,7 +13,7 @@ while true do
     debugger.waitForBreak()
     local info = debugger.getInfo()
     term.setTextColor(colors.blue)
-    print("Break at " .. (info.short_src or "?") .. ":" .. (info.currentline or "?") .. " (" .. (info.name or "?") .. ")")
+    print("Break at " .. (info.short_src or "?") .. ":" .. (info.currentline or "?") .. " (" .. (info.name or "?") .. "): " .. debugger.getReason())
     if info.source and info.currentline and fs.exists(string.sub(info.source, 2)) then
         local file = fs.open(string.sub(info.source, 2), "r")
         for i = 1, info.currentline - 1 do file.readLine() end
@@ -131,6 +131,7 @@ while true do
             else
                 printError( e )
             end
+        elseif action[1] == "backtrace" or action[1] == "bt" then print(debugger.run(debug.traceback))
         elseif action[1] == "quit" or action[1] == "q" then return -- delete this before release
         end
         lastaction = cmd
