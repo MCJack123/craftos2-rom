@@ -12,6 +12,7 @@ print("CraftOS-PC Debugger")
 while true do
     debugger.waitForBreak()
     local info = debugger.getInfo()
+    if fs.getName(info.source) == "bios.lua" then info.source = "@/debug/bios_reference.lua" end
     term.setTextColor(colors.blue)
     print("Break at " .. (info.short_src or "?") .. ":" .. (info.currentline or "?") .. " (" .. (info.name or "?") .. "): " .. debugger.getReason())
     if info.source and info.currentline and fs.exists(string.sub(info.source, 2)) then
