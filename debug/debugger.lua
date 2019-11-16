@@ -21,7 +21,8 @@ while true do
         term.setTextColor(colors.lime)
         write("--> ")
         term.setTextColor(colors.white)
-        print(select(1, string.gsub(file.readLine(), "^[ \t]+", "")))
+        local str = string.gsub(file.readLine(), "^[ \t]+", "")
+        print(str)
         file.close()
     end
     local loop = true
@@ -41,23 +42,24 @@ while true do
         elseif action[1] == "print" or action[1] == "p" then 
             table.remove(action, 1)
             local s = table.concat(action, " ")
-            local tEnv = setmetatable({_echo = function( ... ) return ... end, pairs = pairs, print = print, write = write, term = term, getmetatable = getmetatable}, {__index = debugger.getfenv()})
             local nForcePrint = 0
-            local func, e = load( s, "lua", "t", tEnv )
-            local func2, e2 = load( "return _echo("..s..");", "lua", "t", tEnv )
+            local sf, func, e = s, load( s, "lua", "t", {} )
+            local sf2, func2, e2 = "return _echo("..s..");", load( "return _echo("..s..");", "lua", "t", {} )
             if not func then
                 if func2 then
                     func = func2
+                    sf = sf2
                     e = nil
                     nForcePrint = 1
                 end
             else
                 if func2 then
                     func = func2
+                    sf = sf2
                 end
             end
             if func then
-                local tResults = table.pack( debugger.run( func ) )
+                local tResults = table.pack( debugger.run( sf ) )
                 if tResults[1] then
                     local n = 1
                     while n < tResults.n or (n <= nForcePrint) do
