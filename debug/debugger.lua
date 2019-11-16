@@ -134,7 +134,7 @@ while true do
             else
                 printError( e )
             end
-        elseif action[1] == "backtrace" or action[1] == "bt" then print(debugger.run(debug.traceback))
+        elseif action[1] == "backtrace" or action[1] == "bt" then print(select(2, debugger.run("return debug.traceback()")))
         elseif action[1] == "quit" or action[1] == "q" then return -- delete this before release
         end
         lastaction = cmd
