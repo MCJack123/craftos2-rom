@@ -37,7 +37,7 @@ while true do
         if action[1] == "step" or action[1] == "s" then debugger.step(); loop = false
         elseif action[1] == "finish" or action[1] == "fin" then debugger.stepOut(); loop = false
         elseif action[1] == "continue" or action[1] == "c" then debugger.continue(); loop = false
-        elseif action[1] == "b" then debugger.setBreakpoint(string.sub(action[2], 1, string.find(action[2], ":") - 1), tonumber(string.sub(action[2], string.find(action, ":") + 1)))
+        elseif action[1] == "b" then debugger.setBreakpoint(string.sub(action[2], 1, string.find(action[2], ":") - 1), tonumber(string.sub(action[2], string.find(action[2], ":") + 1)))
         elseif (action[1] == "breakpoint" or action[2] == "break") and action[2] == "set" then debugger.setBreakpoint(string.sub(action[3], 1, string.find(action[3], ":") - 1), tonumber(string.sub(action[3], string.find(action[3], ":") + 1)))
         elseif action[1] == "print" or action[1] == "p" then 
             table.remove(action, 1)
