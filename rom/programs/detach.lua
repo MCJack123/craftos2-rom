@@ -1,1 +1,1 @@
-if type(({...})[1]) ~= "string" then print("Usage: detach <side>") else periphemu.remove(({...})[1]) end
+if type(({...})[1]) ~= "string" then print("Usage: detach <side>") else if not periphemu.remove(({...})[1]) then printError("Could not detach peripheral") end end

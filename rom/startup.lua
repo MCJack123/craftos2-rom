@@ -186,7 +186,7 @@ local function completeExec( _, nIndex, sText )
 end
 local completeAttach, completeDetach, completeConfig, completeUnmount, completeBMPView
 if config and mounter and periphemu then -- vanilla?
-    local tPeripherals = {"monitor", "speaker", "printer ", "computer", "modem", "drive", "drive "}
+    local tPeripherals = {"monitor", "speaker", "printer ", "computer", "modem", "drive", "drive ", "debugger"}
     local function completeAttach(_, nIndex, sText)
         if nIndex == 1 then
             return completeMultipleChoice(sText, {"left", "right", "top", "bottom", "front", "back"}, true)
