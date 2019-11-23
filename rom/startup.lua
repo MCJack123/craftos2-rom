@@ -187,32 +187,32 @@ end
 local completeAttach, completeDetach, completeConfig, completeUnmount, completeBMPView
 if config and mounter and periphemu then -- vanilla?
     local tPeripherals = {"monitor", "speaker", "printer ", "computer", "modem", "drive", "drive ", "debugger"}
-    local function completeAttach(_, nIndex, sText)
+    completeAttach = function(_, nIndex, sText)
         if nIndex == 1 then
             return completeMultipleChoice(sText, {"left", "right", "top", "bottom", "front", "back"}, true)
         elseif nIndex == 2 then
             return completeMultipleChoice(sText, tPeripherals)
         end
     end
-    local function completeDetach(_, nIndex, sText)
+    completeDetach = function(_, nIndex, sText)
         if nIndex == 1 then
             return completePeripheralName(sText)
         end
     end
     local tConfig = config.list()
-    local function completeConfig(_, nIndex, sText, tPreviousText)
+    completeConfig = function(_, nIndex, sText, tPreviousText)
         if nIndex == 1 then
             return completeMultipleChoice(sText, {"list", "set", "get"}, true)
         elseif nIndex == 2 and tPreviousText ~= "list " then
             return completeMultipleChoice(sText, tConfig)
         end
     end
-    local function completeUnmount(shell, nIndex, sText)
+    completeUnmount = function(shell, nIndex, sText)
         if nIndex == 1 then
             return fs.complete(sText, shell.dir(), false, true)
         end
     end
-    local function completeBMPView(shell, nIndex, sText)
+    completeBMPView = function(shell, nIndex, sText)
         if nIndex == 1 then
             return fs.complete(sText, shell.dir(), true, false)
         end
