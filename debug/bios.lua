@@ -866,6 +866,7 @@ function debugger.waitForBreak()
             debugger.unblock()
         end 
     end
+    debugger.confirmBreak()
 end
 
 -- Load APIs

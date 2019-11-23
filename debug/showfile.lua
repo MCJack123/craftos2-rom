@@ -1,7 +1,7 @@
 multishell.setTitle(multishell.getCurrent(), "Call Stack")
 local s, e = pcall(function()
 local highlightColour, keywordColour, commentColour, textColour, bgColour, stringColour
-local stackWindow, viewerWindow
+local stackWindow, viewerWindow, lines, scrollPos, infoCache
 if term.isColour() then
     bgColour = colours.black
     textColour = colours.white
@@ -132,6 +132,24 @@ local function drawTraceback()
     end end
 end
 
+local function renderFile()
+    if lines == nil then return end
+    local info = infoCache
+    viewerWindow.setCursorPos(1, 2)
+    for i = scrollPos, scrollPos + h - 2 do 
+        if i == info.currentline then viewerWindow.setBackgroundColor(colors.blue) 
+        else viewerWindow.setBackgroundColor(colors.black) end
+        viewerWindow.clearLine()
+        if lines[i] ~= nil then writeHighlighted(lines[i]) end
+        if i ~= scrollPos + h then viewerWindow.setCursorPos(1, select(2, viewerWindow.getCursorPos()) + 1) end
+    end
+    local r = (#lines - h + 3) / (h - 1)
+    for i = 2, h do
+        viewerWindow.setCursorPos(w, i)
+        viewerWindow.blit(" ", "0", (scrollPos >= r * (i - 2) and scrollPos < r * (i - 1)) and "8" or "7")
+    end
+end
+
 local function showFile(info)
     if stackWindow then
         stackWindow.clear()
@@ -145,15 +163,12 @@ local function showFile(info)
     viewerWindow.setBackgroundColor(colors.white)
     viewerWindow.clearLine()
     viewerWindow.write(" " .. string.char(17) .. " File: " .. string.sub(info.source, 2))
-    viewerWindow.setCursorPos(1, 2)
-    viewerWindow.setTextColor(colors.white)
-    viewerWindow.setBackgroundColor(colors.black)
     if fs.getName(info.source) == "bios.lua" then info.source = "@/debug/bios_reference.lua" end
     if info.source and info.currentline then
         if fs.exists(string.sub(info.source, 2)) then
             local file = fs.open(string.sub(info.source, 2), "r")
             if file ~= nil then
-                local lines = {}
+                lines = {}
                 local l = file.readLine()
                 while l ~= nil do 
                     l = string.gsub(l, "\t", "    ")
@@ -161,26 +176,23 @@ local function showFile(info)
                     l = file.readLine()
                 end
                 file.close()
-                local start
-                if info.currentline < h / 2 then start = 1
-                elseif info.currentline > #lines - (h / 2) then start = #lines - h
-                else start = info.currentline - math.floor(h / 2) end
-                for i = start, start + h - 2 do 
-                    if i == info.currentline then viewerWindow.setBackgroundColor(colors.blue) 
-                    else viewerWindow.setBackgroundColor(colors.black) end
-                    viewerWindow.clearLine()
-                    if lines[i] ~= nil then writeHighlighted(lines[i]) end
-                    if i ~= start + h then viewerWindow.setCursorPos(1, select(2, viewerWindow.getCursorPos()) + 1) end
-                end
+                if info.currentline < h / 2 then scrollPos = 1
+                elseif info.currentline > #lines - (h / 2) then scollPos = #lines - h
+                else scrollPos = info.currentline - math.floor(h / 2) end
+                infoCache = info
+                renderFile()
             else 
+                lines = nil
                 viewerWindow.setTextColor(colors.red)
                 viewerWindow.write("Could not open source") 
             end
         else 
+            lines = nil
             viewerWindow.setTextColor(colors.red)
             viewerWindow.write("Could not find source") 
         end
     else 
+        lines = nil
         viewerWindow.write("No source available")
     end
 end
@@ -191,6 +203,7 @@ while true do
     if wait then os.pullEvent("debugger_break") end
     w, h = term.getSize()
     drawTraceback()
+    scrollPos = 1
     local screen = false
     wait = true
     while true do
@@ -205,18 +218,39 @@ while true do
                 if p2 >= 1 and p2 <= 3 and p3 == 1 then
                     selectedLine = nil
                     screen = false
+                    scrollPos = 1
                     drawTraceback()
                 end
             else
-                if selectedLine == p3 - 1 then
-                    local info = debugger.getInfo(p3 - 2)
+                if selectedLine == p3 - 2 + scrollPos then
+                    local info = debugger.getInfo(selectedLine - 1)
                     if info.short_src ~= "[C]" and info.short_src ~= "(tail call)" then
                         screen = true
                         showFile(info)
                     end
                 else
-                    selectedLine = p3 - 1
+                    selectedLine = p3 - 2 + scrollPos
                     drawTraceback()
+                    stackWindow.reposition(1, 2 - scrollPos)
+                end
+            end
+        elseif ev == "mouse_scroll" then
+            if screen then
+                if p1 == 1 and scrollPos < #lines - h + 2 then 
+                    scrollPos = scrollPos + 1
+                    renderFile(debugger.getInfo(selectedLine - 1))
+                elseif p1 == -1 and scrollPos > 1 then 
+                    scrollPos = scrollPos - 1 
+                    renderFile(debugger.getInfo(selectedLine - 1))
+                end
+            else
+                local _, vwh = stackWindow.getSize()
+                if p1 == 1 and scrollPos < vwh - h + 1 then 
+                    scrollPos = scrollPos + 1
+                    stackWindow.reposition(1, 2 - scrollPos)
+                elseif p1 == -1 and scrollPos > 1 then 
+                    scrollPos = scrollPos - 1 
+                    stackWindow.reposition(1, 2 - scrollPos)
                 end
             end
         elseif ev == "debugger_done" then break end
