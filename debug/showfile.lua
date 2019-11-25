@@ -163,7 +163,8 @@ local function showFile(info)
     viewerWindow.setBackgroundColor(colors.white)
     viewerWindow.clearLine()
     viewerWindow.write(" " .. string.char(17) .. " File: " .. string.sub(info.source, 2))
-    if fs.getName(info.source) == "bios.lua" then info.source = "@/debug/bios_reference.lua" end
+    viewerWindow.setCursorPos(1, 2)
+    if string.sub(info.source, -8) == "bios.lua" then info.source = "@/debug/bios_reference.lua" end
     if info.source and info.currentline then
         if fs.exists(string.sub(info.source, 2)) then
             local file = fs.open(string.sub(info.source, 2), "r")
@@ -208,11 +209,62 @@ while true do
     wait = true
     while true do
         local ev, p1, p2, p3 = os.pullEvent()
-        if ev == "key" and p1 == keys.enter then 
-            debugger.step()
-            debugger.waitForBreak()
-            wait = false
-            break
+        if ev == "key" then 
+            if p1 == keys.enter then
+                if screen then
+                    debugger.step()
+                    debugger.waitForBreak()
+                    wait = false
+                    break
+                elseif selectedLine ~= nil then
+                    local info = debugger.getInfo(selectedLine - 1)
+                    if info and info.short_src ~= "[C]" and info.short_src ~= "(tail call)" then
+                        screen = true
+                        showFile(info)
+                    end
+                end
+            elseif p1 == keys.up then
+                if screen then
+                    if scrollPos > 1 then 
+                        scrollPos = scrollPos - 1 
+                        renderFile(debugger.getInfo(selectedLine - 1))
+                    end
+                else
+                    if selectedLine == nil then selectedLine = 1 end
+                    if selectedLine > 1 then
+                        selectedLine = selectedLine - 1
+                        if scrollPos > selectedLine then scrollPos = selectedLine end
+                        drawTraceback()
+                        stackWindow.reposition(1, 2 - scrollPos)
+                    end
+                end
+            elseif p1 == keys.down then
+                if screen then
+                    if scrollPos < #lines - h + 2 then 
+                        scrollPos = scrollPos + 1
+                        renderFile(debugger.getInfo(selectedLine - 1))
+                    end
+                else
+                    if selectedLine == nil then selectedLine = 0 end
+                    if debugger.getInfo(selectedLine) then
+                        selectedLine = selectedLine + 1
+                        if scrollPos + h - 2 < selectedLine then scrollPos = scrollPos + 1 end
+                        drawTraceback()
+                        stackWindow.reposition(1, 2 - scrollPos)
+                    end
+                end
+            elseif p1 == keys.left and screen then
+                selectedLine = nil
+                screen = false
+                scrollPos = 1
+                drawTraceback()
+            elseif p1 == keys.right and not screen and selectedLine ~= nil then
+                local info = debugger.getInfo(selectedLine - 1)
+                if info and info.short_src ~= "[C]" and info.short_src ~= "(tail call)" then
+                    screen = true
+                    showFile(info)
+                end
+            end
         elseif ev == "mouse_click" and p1 == 1 then 
             if screen then
                 if p2 >= 1 and p2 <= 3 and p3 == 1 then
@@ -224,11 +276,11 @@ while true do
             else
                 if selectedLine == p3 - 2 + scrollPos then
                     local info = debugger.getInfo(selectedLine - 1)
-                    if info.short_src ~= "[C]" and info.short_src ~= "(tail call)" then
+                    if info and info.short_src ~= "[C]" and info.short_src ~= "(tail call)" then
                         screen = true
                         showFile(info)
                     end
-                else
+                elseif debugger.getInfo(p3 - 3 + scrollPos) then
                     selectedLine = p3 - 2 + scrollPos
                     drawTraceback()
                     stackWindow.reposition(1, 2 - scrollPos)
