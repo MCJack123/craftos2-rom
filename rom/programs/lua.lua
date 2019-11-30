@@ -22,7 +22,7 @@ setmetatable( tEnv, { __index = _ENV } )
 -- than from /rom/programs. This makes it a little more friendly to use and
 -- closer to what you'd expect.
 -- Borrowed from [CC: Tweaked](https://github.com/SquidDev/CC-Tweaked)
-do
+if shell then
     local dir = shell.dir()
     if dir:sub(1, 1) ~= "/" then dir = "/" .. dir end
     if dir:sub(-1) ~= "/" then dir = dir .. "/" end
