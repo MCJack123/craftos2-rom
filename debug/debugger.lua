@@ -44,13 +44,17 @@ while true do
         elseif action[1] == "catch" then
             if action[2] == "catch" or action[2] == "error" or action[2] == "throw" then debugger.catch("error")
             elseif action[2] == "load" then debugger.catch("load")
-            elseif action[2] == "exec" or action[2] == "run" then debugger.catch("run") end
+            elseif action[2] == "exec" or action[2] == "run" then debugger.catch("run")
+            elseif action[2] == "resume" then debugger.catch("resume")
+            elseif action[2] == "yield" then debugger.catch("yield") end
         elseif action[1] == "clear" then debugger.unsetBreakpoint(tonumber(action[2]))
         elseif action[1] == "delete" then
             if action[2] == "catch" then
                 if action[2] == "catch" or action[2] == "error" or action[2] == "throw" then debugger.uncatch("error")
                 elseif action[2] == "load" then debugger.uncatch("load")
-                elseif action[2] == "exec" or action[2] == "run" then debugger.uncatch("run") end
+                elseif action[2] == "exec" or action[2] == "run" then debugger.uncatch("run")
+                elseif action[2] == "resume" then debugger.uncatch("resume")
+                elseif action[2] == "yield" then debugger.uncatch("yield") end
             else debugger.unsetBreakpoint(tonumber(action[2])) end
         elseif action[1] == "edit" and debugger.getInfo().source and fs.exists(string.sub(debugger.getInfo().source, 2)) then shell.run("edit", debugger.getInfo().source)
         elseif action[1] == "advance" then
@@ -189,7 +193,9 @@ breakpoint set -- Set a breakpoint in the format <file>:<line>
 catch -- Set a breakpoint on special calls
 catch error -- Break on error
 catch load -- Break on loading APIs/require
+catch resume -- Break on resuming coroutine
 catch run -- Break on running a program
+catch yield -- Break on yielding coroutine
 clear -- Clear a breakpoint
 continue (c) -- Continue execution
 edit -- Edit the currently running program

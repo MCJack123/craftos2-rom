@@ -58,14 +58,37 @@ local function profile() return {
     },
 } end
 
+local sortFunctions = {
+    [0] = function(a, b) return a.count > b.count end,
+    function(a, b) return a.source > b.source end,
+    function(a, b) return a.func > b.func end,
+    function(a, b) return a.time > b.time end,
+    function(a, b) return a.count < b.count end,
+    function(a, b) return a.source < b.source end,
+    function(a, b) return a.func < b.func end,
+    function(a, b) return a.time < b.time end,
+}
+
+local sorter = 1
+
 local function parseProfile()
     local lines = {}
     local profile = debugger.profile()
-    for k,v in pairs(profile) do for l,w in pairs(v) do table.insert(lines, {source = k, func = l, count = w.count, time = w.time}) end end
+    local cw = 2
+    local tw = 4
+    for k,v in pairs(profile) do for l,w in pairs(v) do 
+        table.insert(lines, {source = k, func = l, count = w.count, time = w.time}) 
+        cw = math.max(math.floor(math.log10(w.count)) + 2, cw)
+        tw = math.max(math.floor(math.log10(w.time)) + 2, tw)
+    end end
+    widths[1][2] = cw
+    widths[2][2] = math.floor((w - (cw + tw)) / 2)
+    widths[3][2] = math.ceil((w - (cw + tw)) / 2)
+    widths[4][2] = tw
     body = window.create(viewport, 1, 1, w, #lines)
     scrollPos = 1
     scrollSize = #lines
-    table.sort(lines, function(a, b) return a.count > b.count end)
+    table.sort(lines, sortFunctions[sorter])
     for k,v in ipairs(lines) do
         local i = 1
         for l,w in ipairs(widths) do
@@ -81,20 +104,29 @@ updateHeader()
 
 while true do
     local ev = {os.pullEvent()}
-    if ev[1] == "mouse_click" and ev[2] == 1 and ev[4] == 1 and ev[3] > 1 and ev[3] < 5 then
-        if profilingTime then
-            profilingTime = nil
-            tm = nil
-            debugger.startProfiling(false)
+    if ev[1] == "mouse_click" and ev[2] == 1 then
+        if ev[4] == 1 and ev[3] > 1 and ev[3] < 5 then
+            if profilingTime then
+                os.cancelTimer(tm)
+                profilingTime = nil
+                tm = nil
+                debugger.startProfiling(false)
+                parseProfile()
+            else
+                profilingTime = os.epoch()
+                tm = os.startTimer(1)
+                debugger.startProfiling(true)
+                if body then body.setVisible(false) end
+                viewport.clear()
+            end
+            updateHeader()
+        elseif ev[4] == 2 then
+            if ev[3] <= widths[1][2] then sorter = 0 + (bit.band(sorter, 3) == 0 and bit.bxor(bit.band(sorter, 4), 4) or 0)
+            elseif ev[3] > widths[1][2] and ev[3] <= widths[1][2] + widths[2][2] then sorter = 1 + (bit.band(sorter, 3) == 1 and bit.bxor(bit.band(sorter, 4), 4) or 0)
+            elseif ev[3] > widths[1][2] + widths[2][2] and ev[3] <= widths[1][2] + widths[2][2] + widths[3][2] then sorter = 2 + (bit.band(sorter, 3) == 2 and bit.bxor(bit.band(sorter, 4), 4) or 0)
+            else sorter = 3 + (bit.band(sorter, 3) == 3 and bit.bxor(bit.band(sorter, 4), 4) or 0) end
             parseProfile()
-        else
-            profilingTime = os.epoch()
-            tm = os.startTimer(1)
-            debugger.startProfiling(true)
-            if body then body.setVisible(false) end
-            viewport.clear()
         end
-        updateHeader()
     elseif ev[1] == "mouse_scroll" and ev[4] > 2 then
         if ev[2] == -1 and scrollPos < 1 then scrollPos = scrollPos + 1
         elseif ev[2] == 1 and scrollPos > h - 1 - scrollSize then scrollPos = scrollPos - 1 end
