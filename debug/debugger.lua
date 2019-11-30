@@ -14,7 +14,7 @@ while true do
     debugger.waitForBreak()
     if advanceTemp then debugger.unsetBreakpoint(advanceTemp); advanceTemp = nil end
     local info = debugger.getInfo()
-    if string.sub(info.source, -8) == "bios.lua" then info.source = "@/debug/bios_reference.lua" end
+    if string.sub(info.source, -8) == "bios.lua" then info.source = "@/bios.lua" end
     term.setTextColor(colors.blue)
     print("Break at " .. (info.short_src or "?") .. ":" .. (info.currentline or "?") .. " (" .. (info.name or "?") .. "): " .. debugger.getReason())
     if info.source and info.currentline and fs.exists(string.sub(info.source, 2)) then

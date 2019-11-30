@@ -277,7 +277,7 @@ function read( _sReplaceChar, _tHistory, _fnComplete, _sDefault )
         sLine = ""
     end
     local nHistoryPos
-    local nPos = #sLine
+    local nPos, nScroll = #sLine, 0
     if _sReplaceChar then
         _sReplaceChar = string.sub( _sReplaceChar, 1, 1 )
     end
@@ -307,9 +307,11 @@ function read( _sReplaceChar, _tHistory, _fnComplete, _sDefault )
     local sx = term.getCursorPos()
 
     local function redraw( _bClear )
-        local nScroll = 0
-        if sx + nPos >= w then
+        local cursor_pos = nPos - nScroll
+        if sx + cursor_pos >= w then
             nScroll = (sx + nPos) - w
+        elseif cursor_pos < 0 then
+            nScroll = nPos
         end
 
         local cx,cy = term.getCursorPos()
@@ -367,7 +369,7 @@ function read( _sReplaceChar, _tHistory, _fnComplete, _sDefault )
         end
     end
     while true do
-        local sEvent, param = os.pullEvent()
+        local sEvent, param, cursorx, cursory = os.pullEvent()
         if sEvent == "char" then
             -- Typed key
             clear()
@@ -456,10 +458,10 @@ function read( _sReplaceChar, _tHistory, _fnComplete, _sDefault )
                     end
                     if nHistoryPos then
                         sLine = _tHistory[nHistoryPos]
-                        nPos = string.len( sLine ) 
+                        nPos, nScroll = string.len( sLine ), 0
                     else
                         sLine = ""
-                        nPos = 0
+                        nPos, nScroll = 0, 0
                     end
                     uncomplete()
                     redraw()
@@ -472,6 +474,7 @@ function read( _sReplaceChar, _tHistory, _fnComplete, _sDefault )
                     clear()
                     sLine = string.sub( sLine, 1, nPos - 1 ) .. string.sub( sLine, nPos + 1 )
                     nPos = nPos - 1
+                    if nScroll > 0 then nScroll = nScroll - 1 end
                     recomplete()
                     redraw()
                 end
@@ -507,6 +510,15 @@ function read( _sReplaceChar, _tHistory, _fnComplete, _sDefault )
                 -- Tab (accept autocomplete)
                 acceptCompletion()
 
+            end
+
+        -- Borrowed from [CC: Tweaked](https://github.com/SquidDev/CC-Tweaked)
+        elseif sEvent == "mouse_click" or sEvent == "mouse_drag" and param == 1 then
+            local _, cy = term.getCursorPos()
+            if cursorx >= sx and cursorx <= w and cursory == cy then
+                -- Ensure we don't scroll beyond the current line
+                nPos = math.min(math.max(nScroll + cursorx - sx, 0), #sLine)
+                redraw()
             end
 
         elseif sEvent == "term_resize" then

@@ -119,7 +119,8 @@ local function drawTraceback()
         stackWindow.clearLine()
         stackWindow.write(tostring(i))
         stackWindow.setCursorPos(numWidth, i + 1)
-        stackWindow.write(string.sub(v.short_src or "?", 1, sourceWidth - 1))
+        if #v.short_src > sourceWidth - 1 then stackWindow.write(string.sub(fs.getName(v.short_src), 1, sourceWidth - 1))
+        else stackWindow.write(string.sub(v.short_src or "?", 1, sourceWidth - 1)) end
         stackWindow.setCursorPos(numWidth + sourceWidth, i + 1)
         stackWindow.write(string.sub(v.name or "?", 1, nameWidth - 1))
         stackWindow.setCursorPos(numWidth + sourceWidth + nameWidth, i + 1)
@@ -164,7 +165,7 @@ local function showFile(info)
     viewerWindow.clearLine()
     viewerWindow.write(" " .. string.char(17) .. " File: " .. string.sub(info.source, 2))
     viewerWindow.setCursorPos(1, 2)
-    if string.sub(info.source, -8) == "bios.lua" then info.source = "@/debug/bios_reference.lua" end
+    if string.sub(info.source, -8) == "bios.lua" then info.source = "@/bios.lua" end
     if info.source and info.currentline then
         if fs.exists(string.sub(info.source, 2)) then
             local file = fs.open(string.sub(info.source, 2), "r")
