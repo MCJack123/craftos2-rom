@@ -990,6 +990,7 @@ end
 settings.set( "shell.allow_startup", true )
 settings.set( "shell.allow_disk_startup", (commands == nil) )
 settings.set( "shell.autocomplete", true )
+settings.set( "shell.report_plugin_errors", true )
 settings.set( "shell.store_history", true )
 settings.set( "edit.autocomplete", true ) 
 settings.set( "edit.default_extension", "lua" )

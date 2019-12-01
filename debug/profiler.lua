@@ -141,7 +141,29 @@ while true do
         viewport = window.create(term.current(), 1, 3, w, h - 2)
         widths = {{"#", 5, "count"}, {"Source", math.ceil((w - 11) / 2), "source"}, {"Function", math.floor((w - 11) / 2), "func"}, {"Time", 6, "time"}}
         updateHeader()
-    --elseif ev[1] == "char" and ev[2] == "q" then break
+    elseif ev[1] == "key" then
+        if ev[2] == keys.enter then
+            if profilingTime then
+                os.cancelTimer(tm)
+                profilingTime = nil
+                tm = nil
+                debugger.startProfiling(false)
+                parseProfile()
+            else
+                profilingTime = os.epoch()
+                tm = os.startTimer(1)
+                debugger.startProfiling(true)
+                if body then body.setVisible(false) end
+                viewport.clear()
+            end
+            updateHeader()
+        elseif ev[2] == keys.up and scrollPos < 1 then 
+            scrollPos = scrollPos + 1
+            if body then body.reposition(1, scrollPos) end
+        elseif ev[2] == keys.down and scrollPos > h - 1 - scrollSize then 
+            scrollPos = scrollPos - 1 
+            if body then body.reposition(1, scrollPos) end
+        end
     end
 end
 end)

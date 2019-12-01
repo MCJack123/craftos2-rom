@@ -252,6 +252,8 @@ selectProcess( launchProcess( {
 }, "/rom/programs/shell.lua", ... ) )
 redrawMenu()
 
+local ctrlHeld = false
+
 -- Run processes
 while #tProcesses > 0 do
     -- Get the event
@@ -265,11 +267,24 @@ while #tProcesses > 0 do
 
     elseif sEvent == "char" or sEvent == "key" or sEvent == "key_up" or sEvent == "paste" or sEvent == "terminate" then
         -- Keyboard event
-        -- Passthrough to current process
-        resumeProcess( nCurrentProcess, table.unpack( tEventData, 1, tEventData.n ) )
-        if cullProcess( nCurrentProcess ) then
-            setMenuVisible( #tProcesses >= 2 )
+        if sEvent == "key" and (tEventData[2] == keys.leftCtrl or tEventData[2] == keys.rightCtrl) then
+            ctrlHeld = true
+        elseif sEvent == "key_up" and (tEventData[2] == keys.leftCtrl or tEventData[2] == keys.rightCtrl) then
+            ctrlHeld = false
+        end
+        if sEvent == "key" and ctrlHeld and #tProcesses > 1 and tEventData[2] == keys.left then
+            selectProcess( nCurrentProcess - 1 < 1 and #tProcesses or nCurrentProcess - 1 )
             redrawMenu()
+        elseif sEvent == "key" and ctrlHeld and #tProcesses > 1 and tEventData[2] == keys.right then
+            selectProcess( nCurrentProcess + 1 > #tProcesses and 1 or nCurrentProcess + 1 )
+            redrawMenu()
+        else
+            -- Passthrough to current process
+            resumeProcess( nCurrentProcess, table.unpack( tEventData, 1, tEventData.n ) )
+            if cullProcess( nCurrentProcess ) then
+                setMenuVisible( #tProcesses >= 2 )
+                redrawMenu()
+            end
         end
 
     elseif sEvent == "mouse_click" then
