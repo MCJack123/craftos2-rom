@@ -9,7 +9,7 @@ local sPath = shell.resolve( tArgs[1] )
 local tFiles = fs.find( sPath )
 if #tFiles > 0 then
     for n,sFile in ipairs( tFiles ) do
-        local ok, err = pcall(fs.delete, file)
+        local ok, err = pcall(fs.delete, sFile)
         if not ok then
             printError(string.gsub(err, "^pcall: ", ""))
         end
