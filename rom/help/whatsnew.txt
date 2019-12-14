@@ -31,6 +31,7 @@ New Features in CraftOS-PC v2.2:
     * `register_getLibrary`: Recieves the address of the `library_t * getLibrary(std::string name)` function
     * `register_registerPeripheral`: Recieves the address of the `void registerPeripheral(std::string name, peripheral_init initializer)` function
     * `register_addMount`: Recieves the address of the `bool addMount(Computer * comp, const char * real_path, const char * comp_path, bool read_only)` function
+    * `register_termQueueProvider`: Recieves the address of the `void termQueueProvider(Computer *comp, const char *(*callback)(lua_State*, void*), void* data)` function
 * Added F12 hotkey to copy screenshot to clipboard (Windows & Mac only)
   * Calling `term.screenshot("clipboard")` will have the same effect
 * Added new config options
