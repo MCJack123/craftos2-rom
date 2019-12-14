@@ -1,3 +1,220 @@
+## v2.2 - December ?, 2019
+* Added F12 hotkey to copy screenshot to clipboard (Windows & Mac only)
+  * Calling `term.screenshot("clipboard")` will have the same effect
+* Fixed default IO handles (stdin/out/err)
+* Changed `_HOST` variable to more accurately represent ComputerCraft
+* Fixed `delete.lua`
+## v2.2p1 - December 1, 2019
+* Added new debugger peripheral
+  * Opens in separate window
+  * Four tabs available
+    * Debugger: GDB-style debugging terminal
+    * Call Stack: Visual backtrace viewer, shows files
+    * Profiler: Measures function call count & time
+    * Console: Allows printing debug messages outside of the main terminal
+  * Computer can be paused with `debugger.break()`, `debug.debug()`, or Ctrl-T in debugger
+  * See [the documentation](https://www.craftos-pc.cc/docs/debugger.html) for more information
+* Added breakpoints
+  * Can be set with `debugger.setBreakpoint(file, line)` or `debug.setbreakpoint(file, line)`
+  * Does not require debugger to be attached
+    * When no debugger is available, `lua.lua` is executed
+* Fixed #1 ("attempt to yield across metamethod/C-call boundary" when using pcall)
+  * Tracebacks/errors now function normally
+  * This was accomplished with a patch that allows yielding across pcall's in Lua 5.1.0
+    * Thanks to [EveryOS](https://github.com/JasonTheKitten) for sharing the patch and for sending me a fixed version for 5.1.5
+* Moved per-user save directory to more platform-appropriate locations
+  * Windows: `%appdata\CraftOS-PC`
+  * Mac: `~/Library/Application Support/CraftOS-PC`
+  * Linux: `$XDG_DATA_HOME/craftos-pc` (usually `~/.local/share/craftos-pc`)
+  * Data will be migrated when running CraftOS-PC v2.2 for the first time
+* Added brand-new plugin API
+  * Plugins should now provide a `plugin_info` function
+  * This function pushes a table with the API version and requested capabilities onto the Lua stack
+  * Capabilities are requested by adding a callback function for a function in CraftOS-PC
+  * These callbacks will recieve the requested function as Lua userdata as the first value on the stack
+  * Available capabilities in v2.2:
+    * `register_getLibrary`: Recieves the address of the `library_t * getLibrary(std::string name)` function
+    * `register_registerPeripheral`: Recieves the address of the `void registerPeripheral(std::string name, peripheral_init initializer)` function
+    * `register_addMount`: Recieves the address of the `bool addMount(Computer * comp, const char * real_path, const char * comp_path, bool read_only)` function
+* Added new config options
+  * `vanilla`: Set to `true` to disable all CraftOS-PC features
+  * `initialComputer`: The first computer that starts when opening CraftOS-PC
+* Added `periphemu.names()` which returns a list of all available peripherals (unsorted)
+* Added `term.drawPixels(x, y, lines)` which draws a table of lines at a position
+  * Each line can either be a string or a table of individual pixels
+* Fixed `debug.sethook`, `debug.gethook`
+* `debug.debug()` now functions the same as hitting a breakpoint
+* Added hooks for errors, coroutine resumptions and yields
+  * Running `catch error` in the debugger will pause execution when an error occurs
+  * Errors are logged to stdout if the `logErrors` config option is enabled
+* Fixed a bug when creating directories
+* Fixed timers with <= 0 length
+* Fixed printing extended characters in the console
+* Rewrote implementation of the modem peripheral
+  * Tables and strings are now properly copied
+  * Fixed `rednet` API
+* Replaced Lua plugin loader with custom loader
+* Made SDL_mixer an optional dependency
+* Fixed many more bugs
+
+## v2.1.3 - November 3, 2019
+* Added two new configuration variables
+  * `mount_mode` allows restricting mounting to read-only or disabled
+    * `none` (0) disables mounting altogether
+    * `ro strict` or `ro_strict` (1) forces mounts to be read-only
+    * `ro` (2) sets mounts to read-only by default (default option)
+    * `rw` (3) sets mounts to read-write by default (v2.1.2 behavior)
+  * `configReadOnly` disables `config.set()`
+* Bugfixes
+  * #57: config.get("readFail") returns not real nil
+  * #58: Crash on macOS on rebooting
+  * #60: `edit` causes segfault when a line goes off the screen if there are more than ~100 lines in a file
+  * Fixed crash when non-ASCII characters are present in computer label
+    * Computer labels are now stored in Base64 by default; if you want to change the label in the JSON file, simply set `computerLabel` to the ASCII label and remove the `base64` key.
+
+## v2.1.2 - October 23, 2019
+* Fixed some crashes on reboot/quit
+* Fixed list subcommand of config
+* Changed return value of `config.getType()` to type-string
+* Added PNG screenshot support for Windows builds
+* Fixed "not supported" icon on macOS versions below Catalina
+* Added launcher icon on Linux
+
+## v2.1.1 - October 16, 2019
+* Fixed http handle methods when using binary mode
+  * `wget` now works as expected
+* Fixed `os.clock()` implementation
+* Fixed a bug regarding embedded `\0` characters
+  * `term.write()` can now print strings with NUL characters
+  * String patterns do not work with NUL characters in the query string
+* Removed auto-updater on platforms other than Windows & Mac
+  * These systems can either update through a package manager or rebuild from the release source
+* Ubuntu PPA: Fixed CLI support
+* Mac: Moved license to `LICENSE.txt` in disk image
+  * Requiring the license to be agreed to breaks the auto-updater
+
+## v2.1 - October 13, 2019
+* Added 256 color mode
+  * This can be activated with `term.setGraphicsMode(2)`
+  * Use numbers 0-255 to choose color instead of `colo(u)rs` API
+  * Colors 0-15 are set to default colors, use `term.setPaletteColor([0-255], r, g, b)` to set color palette
+* Added auto-updater, allowing one-click installation of new updates (Windows/Mac only)
+* Added custom fonts
+  * Set `customFontPath` to the (real) path to the font (BMP format only)
+  * Set `customFontScale` to the font scale
+    * 1 = HD font (12x18), 2 = normal font (6x9), 3 = 2/3 size font (4x6)
+* Fixed graphics issues on Linux with NVIDIA graphics
+  * Renderer has been rewritten to fix this
+  * Should improve performance when using a reasonable number of windows
+    * May degrade performance when using >1000 windows at once on a slow system
+* Added CLI mode
+  * This can be activated with the `--cli` option
+  * Not available on Windows (use WSL if necessary)
+* Added more HTTP methods
+* Added fullscreen hotkey (F11)
+* Added `romReadOnly` config option
+* Added Ubuntu 19.10 & Arch packages
+* Added autoconf script to compile
+* Many bugfixes
+  * Fixed compositor disabling on KDE
+  * Fixed `monitor.setTextScale`
+  * Fixed `term.screenshot`
+  * Fixed `fs.getDrive`
+  * Fixed window resizing on Linux
+  * Fixed many compilation warnings
+  * Cleaned up code to be more C++-like
+
+## v2.0.1 - September 13, 2019
+* Added automatic update checking
+  * Pops up a window alerting the user about the new version
+  * Can be disabled with the `checkUpdates` config option
+  * Will be expanded into an auto-updater in v2.1
+* Added `term.setPaletteColor(color, hex)` syntax
+* Fixed plug-in loading on Mac
+* Fixed computer label always getting reset to `true`
+* Fixed `ignoreHotkeys` not being saved
+
+## v2.0 - September 8, 2019
+* Fixed high CPU usage, now uses ~5% CPU at idle
+* Moved plugin directory on Mac to `CraftOS-PC.app/Contents/PlugIns` 
+* Fixed HTTP requests
+
+## v2.0p1 - August 25, 2019
+* Added WebSocket support
+  * `http.websocket(url)` will open a client WebSocket connecting to `url`
+  * `http.websocket()` will open a server WebSocket that can be connected to
+* Added plugin/module system
+  * Add plugins in the `<installation directory>/plugins` folder
+  * See [`DOCUMENTATION.md`](https://github.com/MCJack123/craftos2/blob/master/DOCUMENTATION.md) for more details
+* Added `file.seek` method
+* Added `io` library with proper filename redirects
+* Added `drive` peripheral
+  * Use disk.insertDisk(*string* path) to mount a folder or audio file
+  * Use disk.insertDisk(*number* id) to mount a floppy disk from `~/.craftos/computer/disk/<id>`
+* Added a whole bunch of features from CC: Tweaked, making CraftOS-PC mostly compatible with CC:T
+* Added new ROM features
+* Moved font into executable (no longer requires `craftos.bmp`)
+* Redid HTTP client/server code, removing some dependencies (expect bugs)
+
+## v2.0b3 - August 20, 2019
+* Rewrote codebase to pure C++
+* Added multi-computer support
+  * Computers can be added with `periphemu.create(<id>, "computer")`
+  * Can be added from the shell with `attach <id> computer`
+  * Both forms attach the computer peripheral to the current computer
+* Added modem peripheral
+  * Still WIP, expect some bugs
+* Added GIF recording support
+  * Press F3 to toggle recording
+  * Shows red circle in corner while recording
+  * Limited to 15 seconds for performance reasons
+  * Saves to `~/.craftos/screenshots/<time>.gif`
+* Added coroutine override to partially solve some problems in #1 
+* Moved Windows install directory to 64-bit Program Files
+* `.craftos` directory is now created on boot
+* Reimplemented fs.find, fixing #4 (fs.find returns {} on Windows)
+* Added some CC: Tweaked features
+  * #16 (Add monitor.getTextScale())
+  * #24 (Add automatic HTTPS requests)
+  * #25 (Add term.nativePaletteColor())
+  * #29 (Make os.time() and os.date() case-insensitive)
+* Moved all dynamic libraries into Mac app (fixes dyld errors)
+* Added switch to auto-run script (--script <file path>)
+* Added switch to run headless from the console (--headless) (does not work on Windows build, recompile for the console subsystem to use)
+
+## v2.0b2 - August 13, 2019
+* `mounter` API
+* HTTP server listeners
+* Terminal & monitor resizing
+* Window icons
+* Holding Ctrl-T sends `terminate` event
+* Added built-in screenshots
+  * Take a screenshot with F2 or call `term.screenshot(path)`
+    * `path` is a global path outside of CraftOS and is optional
+  * Saved to `~/.craftos/screenshots` by default
+* Added some configuration variables
+  * `debug_enable (false)`: Set to true and reboot to enable debug API (or disable removal)
+  * `ignoreHotkeys (false)`: Set to true to disable hotkeys (F2)
+  * `isColor (true)`: Toggles whether the computer is an Advanced Computer or Standard Computer
+* Distributed builds now use the CraftOS-PC ROM instead of the ComputerCraft ROM
+* Moved `~/.craftos/config.json` to `~/.craftos/config/global.json`
+* Big changes under the hood
+  * Switched to software rendering from hardware rendering (see #5)
+  * Rearranged a bunch of the code in preparation for multiple computers
+  * Changed event queuing system to put parameter threads under a separate state rather than the main state
+    * This should a) reduce memory leakage or b) improve event stability
+
+## v2.0b1 - August 7, 2019
+* Near full compatibility with ComputerCraft 1.8
+* `config` API - adjust ComputerCraft configuration
+* `periphemu` API - attach peripherals to the computer
+  * monitor
+  * printer
+* Terminal graphics mode
+* debug API access
+
+# ComputerCraft History
+
 New Features in ComputerCraft 1.80:
 
 * Added .getResponseHeaders() to HTTP responses.
