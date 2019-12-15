@@ -1,12 +1,12 @@
 
 local function printUsage()
     print( "Usage:" )
-    print( "wget <url> <filename>" )
+    print( "wget <url> [filename]" )
     print( "wget run <url> [args...]" )
 end
  
 local tArgs = { ... }
-if #tArgs < 2 then
+if #tArgs < 1 or (tArgs[1] == "run" and #tArgs < 2) then
     printUsage()
     return
 end
@@ -62,7 +62,11 @@ if tArgs[2] == "run" then
 else
     -- Determine file to download
     local sUrl = tArgs[1]
-    local sFile = tArgs[2]
+    local sFile = tArgs[2] or fs.getName(sUrl)
+    if sFile == "" then
+        print( "File name could not be determined, please specify name manually" )
+        return
+    end
     local sPath = shell.resolve( sFile )
     if fs.exists( sPath ) then
         print( "File already exists" )

@@ -1,4 +1,4 @@
 -- Prints information about CraftOS
 term.setTextColor(colors.yellow)
-print(os.version() .. " on " .. string.gsub(os.about(), "\n.+$", ""))
+print(os.version() .. " on " .. _HOST)
 term.setTextColor(colors.white)
