@@ -31,6 +31,7 @@ function subtract( colors, ... )
     if type( colors ) ~= "number" then
         error( "bad argument #1 (expected number, got " .. type( colors ) .. ")", 2 )
     end
+    if ({ ... })[1] == nil then error( "bad argument #2 (expected number, got nil)", 2 ) end
     local r = colors
     for n,c in ipairs( { ... } ) do
         if type( c ) ~= "number" then
@@ -76,3 +77,5 @@ function unpackRGB( rgb )
         bit32.band( bit32.rshift( rgb, 8 ), 0xFF ) / 255, 
         bit32.band( rgb, 0xFF ) / 255
 end
+
+function rgb8(rgb, g, b) if g == nil then return unpackRGB(rgb) else return packRGB(rgb, g, b) end end

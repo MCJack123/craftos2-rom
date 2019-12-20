@@ -12,12 +12,6 @@ else
         sPath = sPath..":/rom/programs/fun/advanced"
     end
 end
-if pocket then
-    sPath = sPath..":/rom/programs/pocket"
-end
-if commands then
-    sPath = sPath..":/rom/programs/command"
-end
 if http then
     sPath = sPath..":/rom/programs/http"
 end
@@ -164,6 +158,10 @@ local function completePastebin( shell, nIndex, sText, tPreviousText )
         end
     end
 end
+local function completeWget( shell, nIndex, sText, tPreviousText ) 
+    if nIndex == 1 then return completeMultipleChoice( sText, {"run "} ) 
+    else return nil end
+end
 local tChatOptions = { "host ", "join " }
 local function completeChat( _, nIndex, sText )
     if nIndex == 1 then
@@ -173,15 +171,6 @@ end
 local function completeSet( _, nIndex, sText )
     if nIndex == 1 then
         return completeMultipleChoice( sText, settings.getNames(), true )
-    end
-end
-local tCommands 
-if commands then
-    tCommands = commands.list()
-end
-local function completeExec( _, nIndex, sText )
-    if nIndex == 1 and commands then
-        return completeMultipleChoice( sText, tCommands, true )
     end
 end
 local completeAttach, completeDetach, completeConfig, completeUnmount, completeBMPView
@@ -230,7 +219,7 @@ shell.setCompletionFunction( "rom/programs/help.lua", completeHelp )
 shell.setCompletionFunction( "rom/programs/id.lua", completePeripheral )
 shell.setCompletionFunction( "rom/programs/label.lua", completeLabel )
 shell.setCompletionFunction( "rom/programs/list.lua", completeDir )
-shell.setCompletionFunction( "rom/programs/mkdir.lua", completeFile )
+shell.setCompletionFunction( "rom/programs/mkdir.lua", completeEither )
 shell.setCompletionFunction( "rom/programs/monitor.lua", completeMonitor )
 shell.setCompletionFunction( "rom/programs/move.lua", completeEitherEither )
 shell.setCompletionFunction( "rom/programs/redstone.lua", completeRedstone )
@@ -243,8 +232,8 @@ shell.setCompletionFunction( "rom/programs/advanced/fg.lua", completeProgram )
 shell.setCompletionFunction( "rom/programs/fun/dj.lua", completeDJ )
 shell.setCompletionFunction( "rom/programs/fun/advanced/paint.lua", completeFile )
 shell.setCompletionFunction( "rom/programs/http/pastebin.lua", completePastebin )
+shell.setCompletionFunction( "rom/programs/http/wget.lua", completeWget )
 shell.setCompletionFunction( "rom/programs/rednet/chat.lua", completeChat )
-shell.setCompletionFunction( "rom/programs/command/exec.lua", completeExec )
 if completeAttach then
     shell.setCompletionFunction( "rom/programs/attach.lua", completeAttach )
     shell.setCompletionFunction( "rom/programs/detach.lua", completeDetach )

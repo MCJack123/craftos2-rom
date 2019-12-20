@@ -113,7 +113,7 @@ local function tabulateCommon( bPaged, ... )
     local tAll = { ... }
     for k,v in ipairs( tAll ) do
         if type( v ) ~= "number" and type( v ) ~= "table" then
-            error( "bad argument #"..k.." (expected number/table, got " .. type( v ) .. ")", 3 ) 
+            error( "bad argument #"..k.." (expected number or table, got " .. type( v ) .. ")", 3 ) 
         end
     end
     
@@ -245,6 +245,7 @@ local function serializeImpl( t, tTracking, sIndent )
 end
 
 empty_json_array = {}
+setmetatable(empty_json_array, {__newindex = function() error("attempt to mutate textutils.empty_json_array", 2) end})
 
 local function serializeJSONImpl( t, tTracking, bNBTStyle )
     local sType = type(t)
@@ -333,7 +334,7 @@ end
 
 function serializeJSON( t, bNBTStyle )
     if type( t ) ~= "table" and type( t ) ~= "string" and type( t ) ~= "number" and type( t ) ~= "boolean" then
-        error( "bad argument #1 (expected table/string/number/boolean, got " .. type( t ) .. ")", 2 )
+        error( "bad argument #1 (expected table, string, number or boolean, got " .. type( t ) .. ")", 2 )
     end
     if bNBTStyle ~= nil and type( bNBTStyle ) ~= "boolean" then
         error( "bad argument #2 (expected boolean, got " .. type( bNBTStyle ) .. ")", 2 )

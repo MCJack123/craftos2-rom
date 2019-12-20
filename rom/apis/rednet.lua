@@ -18,7 +18,7 @@ function open( sModem )
 end
 
 function close( sModem )
-    if sModem then
+    if sModem ~= nil then
         -- Close a specific modem
         if type( sModem ) ~= "string" then
             error( "bad argument #1 (expected string, got " .. type( sModem ) .. ")", 2 )
@@ -39,7 +39,7 @@ function close( sModem )
 end
 
 function isOpen( sModem )
-    if sModem then
+    if sModem ~= nil then
         -- Check if a specific modem is open
         if type( sModem ) ~= "string" then
             error( "bad argument #1 (expected string, got " .. type( sModem ) .. ")", 2 )

@@ -23,7 +23,7 @@ end
 
 function parseImage( sRawData )
     if type( sRawData ) ~= "string" then
-        error( "bad argument #1 (expected string, got " .. type( sRawData ) .. ")" )
+        error( "bad argument #1 (expected string, got " .. type( sRawData ) .. ")", 2 )
     end
     local tImage = {}
     for sLine in ( sRawData .. "\n" ):gmatch( "(.-)\n" ) do -- read each line like original file handling did

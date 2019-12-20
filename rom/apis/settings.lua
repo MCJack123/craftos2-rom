@@ -6,7 +6,7 @@ function set( sName, value )
     
     local sValueTy = type(value)
     if sValueTy ~= "number" and sValueTy ~= "string" and sValueTy ~= "boolean" and sValueTy ~= "table" then 
-        error( "bad argument #2 (expected value, got " .. sValueTy .. ")", 2 ) 
+        error( "bad argument #2 (expected number, string, boolean or table, got " .. sValueTy .. ")", 2 ) 
     end
     if sValueTy == "table" then
         -- Ensure value is serializeable

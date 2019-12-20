@@ -12,10 +12,11 @@ local tAliases = (parentShell and parentShell.aliases()) or {}
 local tCompletionInfo = (parentShell and parentShell.getCompletionInfo()) or {}
 local tProgramStack = {}
 local shell = {}
-local function createShellEnv( sDir )
+local function createShellEnv( sDir, sPath, ... )
     local tEnv = {}
     tEnv[ "shell" ] = shell
     tEnv[ "multishell" ] = multishell
+    tEnv[ "arg" ] = { [ 0 ] = "/" .. sPath, ... }
 
     local package = {}
     package.loaded = {
@@ -131,7 +132,7 @@ local function run( _sCommand, ... )
             multishell.setTitle( multishell.getCurrent(), sTitle )
         end
         local sDir = fs.getDir( sPath )
-        local result = os.run( createShellEnv( sDir ), sPath, ... )
+        local result = os.run( createShellEnv( sDir, sPath, ... ), sPath, ... )
         tProgramStack[#tProgramStack] = nil
         if multishell then
             if #tProgramStack > 0 then

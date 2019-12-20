@@ -406,7 +406,7 @@ function create( parent, nX, nY, nWidth, nHeight, bStartVisible )
 
     function window.getLine(line)
         if type(line) ~= "number" then error("bad argument #1 (expected number, got " .. type(line) .. ")", 2) end
-        if line < 1 or line > nHeight then error("Line out of range", 2) end
+        if line < 1 or line > nHeight then error("Line is out of range.", 2) end
         return tLines[line].text, tLines[line].textColor, tLines[line].backgroundColor
     end
 
@@ -446,8 +446,8 @@ function create( parent, nX, nY, nWidth, nHeight, bStartVisible )
     function window.reposition( nNewX, nNewY, nNewWidth, nNewHeight, tNewParent )
         if type( nNewX ) ~= "number" then error( "bad argument #1 (expected number, got " .. type( nNewX ) .. ")", 2 ) end
         if type( nNewY ) ~= "number" then error( "bad argument #2 (expected number, got " .. type( nNewY ) .. ")", 2 ) end
-        if nNewWidth ~= nil and type( nNewWidth ) ~= "number" then error( "bad argument #3 (expected number, got " .. type( nNewWidth ) .. ")", 2 ) end
-        if nNewHeight ~= nil and type( nNewHeight ) ~= "number" then error( "bad argument #4 (expected number, got " .. type( nNewHeight ) .. ")", 2 ) end
+        if (nNewWidth ~= nil or nNewHeight ~= nil) and type( nNewWidth ) ~= "number" then error( "bad argument #3 (expected number, got " .. type( nNewWidth ) .. ")", 2 ) end
+        if (nNewWidth ~= nil or nNewHeight ~= nil) and type( nNewHeight ) ~= "number" then error( "bad argument #4 (expected number, got " .. type( nNewHeight ) .. ")", 2 ) end
         if tNewParent ~= nil and type( tNewParent ) ~= "table" then error( "bad argument #5 (expected table, got " .. type( tNewParent ) .. ")", 2 ) end
 
         nX = nNewX

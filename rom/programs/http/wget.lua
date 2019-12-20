@@ -42,7 +42,7 @@ local function get( sUrl )
     return sResponse
 end
 
-if tArgs[2] == "run" then
+if tArgs[1] == "run" then
     local sUrl = tArgs[2]
     local res = get( sUrl )
     if not res then

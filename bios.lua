@@ -6,7 +6,7 @@ if _VERSION == "Lua 5.1" then
     local nativesetfenv = setfenv
     function load( x, name, mode, env )
         if type( x ) ~= "string" and type( x ) ~= "function" then
-            error( "bad argument #1 (expected string or function, got " .. type( x ) .. ")", 2 ) 
+            error( "bad argument #1 (expected function or string, got " .. type( x ) .. ")", 2 ) 
         end
         if name ~= nil and type( name ) ~= "string" then
             error( "bad argument #2 (expected string, got " .. type( name ) .. ")", 2 ) 
@@ -14,7 +14,7 @@ if _VERSION == "Lua 5.1" then
         if mode ~= nil and type( mode ) ~= "string" then
             error( "bad argument #3 (expected string, got " .. type( mode ) .. ")", 2 ) 
         end
-        if env ~= nil and type( env) ~= "table" then
+        if env ~= nil and type( env ) ~= "table" then
             error( "bad argument #4 (expected table, got " .. type( env ) .. ")", 2 ) 
         end
         if mode ~= nil and mode ~= "t" and debug == nil then
@@ -576,12 +576,19 @@ function read( _sReplaceChar, _tHistory, _fnComplete, _sDefault )
     return sLine
 end
 
-loadfile = function( _sFile, _tEnv )
+loadfile = function( _sFile, _sMode, _tEnv )
     if type( _sFile ) ~= "string" then
         error( "bad argument #1 (expected string, got " .. type( _sFile ) .. ")", 2 ) 
     end
+    if type( _sMode ) == "table" and _tEnv == nil then
+        _tEnv = _sMode
+        _sMode = nil
+    end
+    if _sMode ~= nil and type( _sMode ) ~= "string" then
+        error( "bad argument #2 (expected string, got " .. type( _sMode ) .. ")", 2 ) 
+    end
     if _tEnv ~= nil and type( _tEnv ) ~= "table" then
-        error( "bad argument #2 (expected table, got " .. type( _tEnv ) .. ")", 2 ) 
+        error( "bad argument #3 (expected table, got " .. type( _tEnv ) .. ")", 2 ) 
     end
     local file = fs.open( _sFile, "r" )
     if file then

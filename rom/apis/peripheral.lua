@@ -71,7 +71,7 @@ function call( _sSide, _sMethod, ... )
     if type( _sSide ) ~= "string" then
         error( "bad argument #1 (expected string, got " .. type( _sSide ) .. ")", 2 )
     end
-    if type( _sSide ) ~= "string" then
+    if type( _sMethod ) ~= "string" then
         error( "bad argument #2 (expected string, got " .. type( _sMethod ) .. ")", 2 )
     end
 	if native.isPresent( _sSide ) then
