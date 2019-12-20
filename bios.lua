@@ -1004,6 +1004,7 @@ settings.set( "edit.default_extension", "lua" )
 settings.set( "paint.default_extension", "nfp" )
 settings.set( "lua.autocomplete", true )
 settings.set( "list.show_hidden", false )
+settings.set( "bios.use_cash", false )
 if term.isColour() then
     settings.set( "bios.use_multishell", true )
 end
@@ -1044,6 +1045,8 @@ local ok, err = pcall( function()
             local sShell
             if term.isColour() and settings.get( "bios.use_multishell" ) then
                 sShell = "rom/programs/advanced/multishell.lua"
+            elseif settings.get( "bios.use_cash" ) then
+                sShell = "rom/programs/cash.lua"
             else
                 sShell = "rom/programs/shell.lua"
             end
