@@ -76,16 +76,15 @@ local function cullProcess( nProcess )
     local tProcess = tProcesses[ nProcess ]
     if coroutine.status( tProcess.co ) == "dead" then
         if nCurrentProcess == nProcess then
-            selectProcess( nil )
-        end
-        table.remove( tProcesses, nProcess )
-        if nCurrentProcess == nil then
             if nProcess > 1 then
                 selectProcess( nProcess - 1 )
-            elseif #tProcesses > 0 then
+            elseif #tProcesses > 1 then
                 selectProcess( 1 )
             end
         end
+        local e = #tProcesses
+        for i = nProcess, e - 1 do tProcesses[i] = tProcesses[i+1] end
+        tProcesses[e] = nil
         return true
     end
     return false
@@ -281,10 +280,10 @@ while #tProcesses > 0 do
         else
             -- Passthrough to current process
             resumeProcess( nCurrentProcess, table.unpack( tEventData, 1, tEventData.n ) )
-            if cullProcess( nCurrentProcess ) then
-                setMenuVisible( #tProcesses >= 2 )
-                redrawMenu()
-            end
+        end
+        if cullProcess( nCurrentProcess ) then
+            setMenuVisible( #tProcesses >= 2 )
+            redrawMenu()
         end
 
     elseif sEvent == "mouse_click" then

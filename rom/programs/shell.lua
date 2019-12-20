@@ -450,9 +450,9 @@ if multishell then
         if sCommand then
             local sPath = shell.resolveProgram( sCommand )
             if sPath == "rom/programs/shell.lua" then
-                return multishell.launch( createShellEnv( "rom/programs" ), sPath, table.unpack( tWords, 2 ) )
+                return multishell.launch( createShellEnv( "rom/programs", sPath, table.unpack( tWords, 2 ) ), sPath, table.unpack( tWords, 2 ) )
             elseif sPath ~= nil then
-                return multishell.launch( createShellEnv( "rom/programs" ), "rom/programs/shell.lua", sCommand, table.unpack( tWords, 2 ) )
+                return multishell.launch( createShellEnv( "rom/programs", "rom/programs/shell.lua", table.unpack( tWords, 2 ) ), "rom/programs/shell.lua", sCommand, table.unpack( tWords, 2 ) )
             else
                 printError( "No such program" )
             end
