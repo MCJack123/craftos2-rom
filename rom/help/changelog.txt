@@ -1,4 +1,17 @@
-## v2.2 - December ?, 2019
+## v2.2.1 - December 21, 2019
+* Added cash 0.3 as an optional shell (set bios.use_cash in the settings)
+* Added help files for CraftOS-PC features
+* Improved speed of terminal writing
+* Reduced processing time used by terminal hook
+* Verified compatibility with CC: Tweaked using official tests
+* Fixed a security flaw that allowed modification of read-only mounts
+* Resolved an issue that prevented monitors from drawing
+* Fixed a bug where secure WebSockets failed to connect with "WebSocket Exception"
+* Fixed a possible deadlock when stepping the debugger
+* Removed turtle, pocket, command programs; removed bmpview
+* Added --small flag to screenfetch
+
+## v2.2 - December 15, 2019
 * Added F12 hotkey to copy screenshot to clipboard (Windows & Mac only)
   * Calling `term.screenshot("clipboard")` will have the same effect
 * Fixed default IO handles (stdin/out/err)

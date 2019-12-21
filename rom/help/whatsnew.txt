@@ -1,61 +1,15 @@
-New Features in CraftOS-PC v2.2:
+New Features in CraftOS-PC v2.2.1:
 
-* Added new debugger peripheral
-  * Opens in separate window
-  * Four tabs available
-    * Debugger: GDB-style debugging terminal
-    * Call Stack: Visual backtrace viewer, shows files
-    * Profiler: Measures function call count & time
-    * Console: Allows printing debug messages outside of the main terminal
-  * Computer can be paused with `debugger.break()`, `debug.debug()`, or Ctrl-T in debugger
-  * See [the documentation](https://www.craftos-pc.cc/docs/debugger.html) for more information
-* Added breakpoints
-  * Can be set with `debugger.setBreakpoint(file, line)` or `debug.setbreakpoint(file, line)`
-  * Does not require debugger to be attached
-    * When no debugger is available, `lua.lua` is executed
-* Fixed #1 ("attempt to yield across metamethod/C-call boundary" when using pcall)
-  * Tracebacks/errors now function normally
-  * This was accomplished with a patch that allows yielding across pcall's in Lua 5.1.0
-    * Thanks to [EveryOS](https://github.com/JasonTheKitten) for sharing the patch and for sending me a fixed version for 5.1.5
-* Moved per-user save directory to more platform-appropriate locations
-  * Windows: `%appdata\CraftOS-PC`
-  * Mac: `~/Library/Application Support/CraftOS-PC`
-  * Linux: `$XDG_DATA_HOME/craftos-pc` (usually `~/.local/share/craftos-pc`)
-  * Data will be migrated when running CraftOS-PC v2.2 for the first time
-* Added brand-new plugin API
-  * Plugins should now provide a `plugin_info` function
-  * This function pushes a table with the API version and requested capabilities onto the Lua stack
-  * Capabilities are requested by adding a callback function for a function in CraftOS-PC
-  * These callbacks will recieve the requested function as Lua userdata as the first value on the stack
-  * Available capabilities in v2.2:
-    * `register_getLibrary`: Recieves the address of the `library_t * getLibrary(std::string name)` function
-    * `register_registerPeripheral`: Recieves the address of the `void registerPeripheral(std::string name, peripheral_init initializer)` function
-    * `register_addMount`: Recieves the address of the `bool addMount(Computer * comp, const char * real_path, const char * comp_path, bool read_only)` function
-    * `register_termQueueProvider`: Recieves the address of the `void termQueueProvider(Computer *comp, const char *(*callback)(lua_State*, void*), void* data)` function
-* Added F12 hotkey to copy screenshot to clipboard (Windows & Mac only)
-  * Calling `term.screenshot("clipboard")` will have the same effect
-* Added new config options
-  * `vanilla`: Set to `true` to disable all CraftOS-PC features
-  * `initialComputer`: The first computer that starts when opening CraftOS-PC
-* Added `periphemu.names()` which returns a list of all available peripherals (unsorted)
-* Added `term.drawPixels(x, y, lines)` which draws a table of lines at a position
-  * Each line can either be a string or a table of individual pixels
-* Fixed `debug.sethook`, `debug.gethook`
-* `debug.debug()` now functions the same as hitting a breakpoint
-* Added hooks for errors, coroutine resumptions and yields
-  * Running `catch error` in the debugger will pause execution when an error occurs
-  * Errors are logged to stdout if the `logErrors` config option is enabled
-* Fixed default IO handles (stdin/out/err)
-* Changed `_HOST` variable to more accurately represent ComputerCraft
-* Fixed `delete.lua`
-* Fixed a bug when creating directories
-* Fixed timers with <= 0 length
-* Fixed printing extended characters in the console
-* Rewrote implementation of the modem peripheral
-  * Tables and strings are now properly copied
-  * Fixed `rednet` API
-* Replaced Lua plugin loader with custom loader
-* Made SDL_mixer an optional dependency
-* Fixed many more bugs
+* Added cash 0.3 as an optional shell (set bios.use_cash in the settings)
+* Added help files for CraftOS-PC features
+* Improved speed of terminal writing
+* Reduced processing time used by terminal hook
+* Verified compatibility with CC: Tweaked using official tests
+* Fixed a security flaw that allowed modification of read-only mounts
+* Resolved an issue that prevented monitors from drawing
+* Fixed a bug where secure WebSockets failed to connect with "WebSocket Exception"
+* Fixed a possible deadlock when stepping the debugger
+* Removed turtle, pocket, command programs; removed bmpview
+* Added --small flag to screenfetch
 
 Type "help changelog" to see the full version history.

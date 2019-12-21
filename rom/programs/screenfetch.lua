@@ -1,6 +1,53 @@
 if os.pullEvent ~= nil then
 
-    local ccart = [[------------------------
+    local ccart, ccart_fg, ccart_bg, ccart_adv_fg, ccart_adv_bg, ccart_width
+
+    if ... == "--small" then
+
+        ccart = ([[\159\143\143\143\143\143\143\143\144
+\150>_     \150
+\150       \150
+\150       \150
+\150       \150
+\150      \140\150
+         ]]):gsub("\\159", "\159"):gsub("\\143", "\143"):gsub("\\144", "\144"):gsub("\\150", "\149"):gsub("\\140", "\140")
+
+        ccart_fg = [[ffffffff7
+f00fffff7
+ffffffff7
+ffffffff8
+ffffffff8
+f888888f8
+fffffffff]]
+
+        ccart_bg = [[77777777f
+7ffffffff
+7ffffffff
+8ffffffff
+8ffffffff
+88888888f
+fffffffff]]
+
+        ccart_adv_fg = [[ffffffff4
+f00fffff4
+ffffffff4
+ffffffff4
+ffffffff4
+f44444454
+fffffffff]]
+
+        ccart_adv_bg = [[44444444f
+4ffffffff
+4ffffffff
+4ffffffff
+4ffffffff
+44444444f
+fffffffff]]
+
+        ccart_width = 10
+
+    else
+        ccart = [[------------------------
 |                      |
 | -------------------- |
 | | \                | |
@@ -17,7 +64,7 @@ if os.pullEvent ~= nil then
 |                      |
 ------------------------]]
 
-    local ccart_fg = [[ffffffffffffffffffffffff
+        ccart_fg = [[ffffffffffffffffffffffff
 f7777777777777777777777f
 f7ffffffffffffffffffff7f
 f7ff0fffffffffffffffff7f
@@ -34,7 +81,7 @@ f888888888888888888fff8f
 f8888888888888888888888f
 ffffffffffffffffffffffff]]
 
-    local ccart_bg = [[ffffffffffffffffffffffff
+        ccart_bg = [[ffffffffffffffffffffffff
 f7777777777777777777777f
 f7ffffffffffffffffffff7f
 f7ffffffffffffffffffff7f
@@ -51,7 +98,7 @@ f888888888888888888fff8f
 f8888888888888888888888f
 ffffffffffffffffffffffff]]
 
-    local ccart_adv_fg = [[ffffffffffffffffffffffff
+        ccart_adv_fg = [[ffffffffffffffffffffffff
 f4444444444444444444444f
 f4ffffffffffffffffffff4f
 f4ff0fffffffffffffffff4f
@@ -68,7 +115,7 @@ f444444444444444444ddd4f
 f4444444444444444444444f
 ffffffffffffffffffffffff]]
 
-    local ccart_adv_bg = [[ffffffffffffffffffffffff
+        ccart_adv_bg = [[ffffffffffffffffffffffff
 f4444444444444444444444f
 f4ffffffffffffffffffff4f
 f4ffffffffffffffffffff4f
@@ -84,6 +131,10 @@ f4444444444444444444444f
 f444444444444444444ddd4f
 f4444444444444444444444f
 ffffffffffffffffffffffff]]
+
+        ccart_width = 25
+
+    end
 
     local function fg(l) if term.isColor() then return string.rep("4", l) else return string.rep("8", l) end end
     local function text(title, str) return {title .. str, fg(string.len(title)) .. string.rep("0", string.len(str)), string.rep("f", string.len(title .. str))} end
@@ -128,12 +179,19 @@ ffffffffffffffffffffffff]]
         text("Extensions: ", "")
     }
     ext(sysinfo)
-
-    print("")
-    for i = 1, string.len(ccart), 25 do 
-        term.blit(string.sub(ccart, i, i+23), string.sub(term.isColor() and ccart_adv_fg or ccart_fg, i, i+23), string.sub(term.isColor() and ccart_adv_bg or ccart_bg, i, i+23))
+    local lines, sw, sh = 2, term.getSize()
+    term.clear()
+    term.setCursorPos(1, 2)
+    for i = 1, string.len(ccart), ccart_width do 
+        term.blit(string.sub(ccart, i, i+ccart_width-2), string.sub(term.isColor() and ccart_adv_fg or ccart_fg, i, i+ccart_width-2), string.sub(term.isColor() and ccart_adv_bg or ccart_bg, i, i+ccart_width-2))
         write("  ")
-        if sysinfo[((i-1)/25)+1] ~= nil then term.blit(table.unpack(sysinfo[((i-1)/25)+1])) end
+        if sysinfo[((i-1)/ccart_width)+1] ~= nil then term.blit(table.unpack(sysinfo[((i-1)/ccart_width)+1])) end
+        print("")
+        lines = lines + 1
+    end
+    for i = lines - 1, #sysinfo do
+        write(string.rep(" ", ccart_width + 1))
+        term.blit(table.unpack(sysinfo[i]))
         print("")
     end
     print("")
