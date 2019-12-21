@@ -5,16 +5,16 @@ if os.pullEvent ~= nil then
     if ... == "--small" then
 
         ccart = ([[\159\143\143\143\143\143\143\143\144
-\150>_     \150
-\150       \150
+\150\136\144     \150
+\150\130 \131    \150
 \150       \150
 \150       \150
 \150      \140\150
-         ]]):gsub("\\159", "\159"):gsub("\\143", "\143"):gsub("\\144", "\144"):gsub("\\150", "\149"):gsub("\\140", "\140")
+         ]]):gsub("\\130", "\130"):gsub("\\131", "\131"):gsub("\\136", "\136"):gsub("\\140", "\140"):gsub("\\143", "\143"):gsub("\\144", "\144"):gsub("\\150", "\149"):gsub("\\159", "\159")
 
         ccart_fg = [[ffffffff7
 f00fffff7
-ffffffff7
+f0f0ffff7
 ffffffff8
 ffffffff8
 f888888f8
@@ -30,10 +30,10 @@ fffffffff]]
 
         ccart_adv_fg = [[ffffffff4
 f00fffff4
+f0f0ffff4
 ffffffff4
 ffffffff4
-ffffffff4
-f44444454
+f444444d4
 fffffffff]]
 
         ccart_adv_bg = [[44444444f
