@@ -150,6 +150,7 @@ ffffffffffffffffffffffff]]
     end
 
     local function ext(retval)
+        if debug ~= nil then table.insert(retval, text("    ", "Debug enabled")) end
         if http ~= nil then table.insert(retval, text("    ", "HTTP enabled")) 
         if http.websocket ~= nil then table.insert(retval, text("    ", "CC: Tweaked")) end end
         if mounter ~= nil then table.insert(retval, text("    ", "CraftOS-PC")) end
