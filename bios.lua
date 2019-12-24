@@ -176,6 +176,12 @@ if string.find( _HOST, "ComputerCraft" ) == 1 then
     end
 end
 
+-- Patch the error function on LuaJIT because specifying a level <= 0 crashes for some reason...?
+if jit then
+    local nativeError = error
+    _G.error = function(msg, level) if level <= 0 then return nativeError(msg) else return nativeError(msg, level) end end
+end
+
 -- Install lua parts of the os api
 function os.version()
     return "CraftOS 1.8"
@@ -1005,6 +1011,8 @@ settings.set( "paint.default_extension", "nfp" )
 settings.set( "lua.autocomplete", true )
 settings.set( "list.show_hidden", false )
 settings.set( "bios.use_cash", false )
+settings.set( "motd.enable", false )
+settings.set( "motd.path", "/motd.txt:/rom/motd.txt" )
 if term.isColour() then
     settings.set( "bios.use_multishell", true )
 end
