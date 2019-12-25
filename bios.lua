@@ -751,7 +751,7 @@ if http then
         return wrapRequest( _url, nil, _headers, _binary, _redirect )
     end
 
-    for k,v in pairs({"POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"}) do
+    for k,v in pairs({"POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD", "TRACE"}) do
         http[string.lower(v)] = function( _url, _post, _headers, _binary, _redirect )
             if type( _url ) ~= "string" then
                 error( "bad argument #1 (expected string, got " .. type( _url ) .. ")", 2 ) 
