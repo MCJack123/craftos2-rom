@@ -818,12 +818,13 @@ local function getPrompt()
     local retval = (if_statement > 0 or while_statement > 0 or case_statement > 0) and vars.PS2 or vars.PS1 or "\\$ "
     for k,v in pairs({
         ["\\d"] = dayToString(os.day()),
+        ["\\e"] = string.char(0x1b),
         ["\\h"] = string.sub(os.getComputerLabel() or "localhost", 1, string.find(os.getComputerLabel() or "localhost", "%.")),
         ["\\H"] = os.getComputerLabel() or "localhost",
         ["\\n"] = "\n",
         ["\\s"] = string.gsub(fs.getName(vars["0"]), ".lua", ""),
-        ["\\t"] = textutils.formatTime(os.epoch(), true),
-        ["\\T"] = textutils.formatTime(os.epoch(), false),
+        ["\\t"] = textutils.formatTime(os.time(), true),
+        ["\\T"] = textutils.formatTime(os.time(), false),
         ["\\u"] = USER,
         ["\\v"] = vars.CASH_VERSION,
         ["\\V"] = vars.CASH_VERSION,
