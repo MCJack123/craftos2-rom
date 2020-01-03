@@ -1047,7 +1047,9 @@ if args[1] ~= nil then
     for line in file:lines() do 
         shell.run(line) 
         vars.LINENUM = vars.LINENUM + 1
+        if not running then break end
     end
+    file:close()
     vars.LINENUM = nil
     return shell_retval
 end
