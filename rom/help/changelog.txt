@@ -1,3 +1,14 @@
+## v2.2.2 - January 2, 2020
+* Feature parity with CC: Tweaked 1.86.0
+* Added MOTD (disabled by default)
+* Added Ctrl+S and Ctrl+R hotkeys (#70)
+* Added configurable recording length and framerate
+* Fixed crash when resizing window to a smaller size (#71)
+* fs.makeDir no longer errors when creating a directory that already exists
+* io.write no longer adds a newline to the end of the string (#68)
+* os.setComputerLabel no longer errors when no label is provided (#69)
+* Fixed string length bug in debugger.print
+
 ## v2.2.1 - December 21, 2019
 * Added cash 0.3 as an optional shell (set bios.use_cash in the settings)
 * Added help files for CraftOS-PC features
