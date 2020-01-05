@@ -71,15 +71,10 @@ if _VERSION == "Lua 5.1" then
     local nativematch = string.match
     local nativegmatch = string.gmatch
     local nativegsub = string.gsub
-    local function fixZero(str)
-        local retval = ""
-        for i = 1, #str do if string.sub(str, i, i) == "\0" then retval = retval .. "%z" else retval = retval .. string.sub(str, i, i) end end
-        return retval
-    end
-    string.find = function(s, pattern, ...) return nativefind(s, fixZero(pattern), ...) end
-    string.match = function(s, pattern, ...) return nativematch(s, fixZero(pattern), ...) end
-    string.gmatch = function(s, pattern, ...) return nativegmatch(s, fixZero(pattern), ...) end
-    string.gsub = function(s, pattern, ...) return nativegsub(s, fixZero(pattern), ...) end
+    string.find = function(s, pattern, ...) return nativefind(s, nativegsub(pattern, "%z", "%%z"), ...) end
+    string.match = function(s, pattern, ...) return nativematch(s, nativegsub(pattern, "%z", "%%z"), ...) end
+    string.gmatch = function(s, pattern, ...) return nativegmatch(s, nativegsub(pattern, "%z", "%%z"), ...) end
+    string.gsub = function(s, pattern, ...) return nativegsub(s, nativegsub(pattern, "%z", "%%z"), ...) end
 
     if _CC_DISABLE_LUA51_FEATURES then
         -- Remove the Lua 5.1 features that will be removed when we update to Lua 5.2, for compatibility testing.
