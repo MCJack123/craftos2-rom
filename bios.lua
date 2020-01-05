@@ -66,6 +66,21 @@ if _VERSION == "Lua 5.1" then
     bit32.lshift = nativebit.blshift
     bit32.rshift = nativebit.blogic_rshift
 
+    -- Fix embedded zeroes in string match library
+    local nativefind = string.find
+    local nativematch = string.match
+    local nativegmatch = string.gmatch
+    local nativegsub = string.gsub
+    local function fixZero(str)
+        local retval = ""
+        for i = 1, #str do if string.sub(str, i, i) == "\0" then retval = retval .. "%z" else retval = retval .. string.sub(str, i, i) end end
+        return retval
+    end
+    string.find = function(s, pattern, ...) return nativefind(s, fixZero(pattern), ...) end
+    string.match = function(s, pattern, ...) return nativematch(s, fixZero(pattern), ...) end
+    string.gmatch = function(s, pattern, ...) return nativegmatch(s, fixZero(pattern), ...) end
+    string.gsub = function(s, pattern, ...) return nativegsub(s, fixZero(pattern), ...) end
+
     if _CC_DISABLE_LUA51_FEATURES then
         -- Remove the Lua 5.1 features that will be removed when we update to Lua 5.2, for compatibility testing.
         -- See "disable_lua51_functions" in ComputerCraft.cfg
