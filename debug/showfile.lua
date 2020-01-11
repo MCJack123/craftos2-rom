@@ -201,12 +201,18 @@ end
 
 print("Waiting for break...")
 local wait = true
+local screen = false
 while true do
     if wait then os.pullEvent("debugger_break") end
     w, h = term.getSize()
-    drawTraceback()
+    if screen then
+        selectedLine = 1
+        local info = debugger.getInfo(selectedLine - 1)
+        if info and info.short_src ~= "[C]" and info.short_src ~= "(tail call)" then
+            showFile(info)
+        end
+    else drawTraceback() end
     scrollPos = 1
-    local screen = false
     wait = true
     while true do
         local ev, p1, p2, p3 = os.pullEvent()

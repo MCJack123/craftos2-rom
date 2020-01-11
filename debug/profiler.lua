@@ -29,35 +29,6 @@ local function updateHeader()
     end
 end
 
-local function profile() return {
-    ["@/file.lua"] = {
-        a = {
-            count = 5,
-            time = 10.2,
-        },
-        b = {
-            count = 4,
-            time = 9.8,
-        },
-    },
-    ["@/rom/programs/shell.lua"] = {
-        run = {
-            count = 2,
-            time = 1.4,
-        },
-    },
-    ["@/test.lua"] = {
-        hello = {
-            count = 1,
-            time = 0.3,
-        },
-        foo = {
-            count = 1,
-            time = 0.1,
-        },
-    },
-} end
-
 local sortFunctions = {
     [0] = function(a, b) return a.count > b.count end,
     function(a, b) return a.source > b.source end,
