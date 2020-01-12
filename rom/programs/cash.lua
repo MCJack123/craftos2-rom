@@ -476,7 +476,7 @@ pack.loaders = {
         for pattern in string.gmatch(pack.path, "[^;]+") do
             local sPath = string.gsub(pattern, "%?", fname)
             if sPath:sub(1,1) ~= "/" then
-                sPath = fs.combine(PWD, sPath)
+                sPath = fs.combine(fs.getDir(vars._), sPath)
             end
             if fs.exists(sPath) and not fs.isDir(sPath) then
                 local fnFile, sError = loadfile( sPath, setmetatable({shell = shell, multishell = multishell, package = pack, require = require}, {__index = _ENV}) )
