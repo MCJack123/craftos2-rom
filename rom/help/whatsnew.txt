@@ -1,13 +1,16 @@
-New Features in CraftOS-PC v2.2.2:
+New Features in CraftOS-PC v2.2.3:
 
-* Feature parity with CC: Tweaked 1.86.0
-* Added MOTD (disabled by default)
-* Added Ctrl+S and Ctrl+R hotkeys (#70)
-* Added configurable recording length and framerate
-* Fixed crash when resizing window to a smaller size (#71)
-* fs.makeDir no longer errors when creating a directory that already exists
-* io.write no longer adds a newline to the end of the string (#68)
-* os.setComputerLabel no longer errors when no label is provided (#69)
-* Fixed string length bug in debugger.print
+* Added `useHDFont` virtual config option
+* Added support for reading UTF-8 files
+* Pressing enter in the debugger's Call Stack tab now keeps file open
+* Stepping multiple lines in the debugger now works as expected
+* Fixed accessing locals in the debugger
+* Updated cash to latest version
+* NUL bytes in string patterns no longer mark the end of the pattern
+* `io.input()`/`io.output()` no longer fail when called with `io.stdin`/`io.stdout`, `io.stderr` (#75)
+* Fixed bug that caused `file.read(x)` on binary files to always return one byte
+* Fixed segmentation fault when Lua crashes
+* Fixed some bugs relating to vanilla mode (#76)
+* Added preliminary Emscripten/WASM support (#73)
 
 Type "help changelog" to see the full version history.

@@ -1,3 +1,17 @@
+## v2.2.3 - January 13, 2020
+* Added `useHDFont` virtual config option
+* Added support for reading UTF-8 files
+* Pressing enter in the debugger's Call Stack tab now keeps file open
+* Stepping multiple lines in the debugger now works as expected
+* Fixed accessing locals in the debugger
+* Updated cash to latest version
+* NUL bytes in string patterns no longer mark the end of the pattern
+* `io.input()`/`io.output()` no longer fail when called with `io.stdin`/`io.stdout`, `io.stderr` (#75)
+* Fixed bug that caused `file.read(x)` on binary files to always return one byte
+* Fixed segmentation fault when Lua crashes
+* Fixed some bugs relating to vanilla mode (#76)
+* Added preliminary Emscripten/WASM support (#73)
+
 ## v2.2.2 - January 2, 2020
 * Feature parity with CC: Tweaked 1.86.0
 * Added MOTD (disabled by default)
