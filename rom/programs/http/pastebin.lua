@@ -20,8 +20,9 @@ end
  
 local function get(paste)
     write( "Connecting to pastebin.com... " )
+    local cacheBuster = ("%x"):format(math.random(0, 2 ^ 30))
     local response = http.get(
-        "https://pastebin.com/raw/"..textutils.urlEncode( paste )
+        "https://pastebin.com/raw/"..textutils.urlEncode( paste ).."?cb="..cacheBuster
     )
         
     if response then
