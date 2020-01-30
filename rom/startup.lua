@@ -329,7 +329,7 @@ if settings.get( "shell.allow_disk_startup" ) then
 end
 if tUserStartups then
     for _,v in pairs( tUserStartups ) do
-        shell.run( v )
+        shell.run( v, _CCPC_STARTUP_ARGS )
     end
 end
 
