@@ -1,3 +1,34 @@
+## v2.2.4 - February 14, 2020
+* Computer label now displays in title bar (including the terminal emulator's title in CLI mode)
+* Added cliControlKeyMode config option (#78, #79)
+* Added --args argument to command line to pass arguments to --script (#78)
+* Added UTF-8 support over HTTP
+* Unicode characters are now replaced with '?' (rather than being dropped)
+* file.read() now accepts a length in text mode
+* Insecure WebSockets ('ws://') no longer attempt to use secure WebSockets
+* Fixed WebSocket connection failure when no path is provided
+* Fixed crash when closing computer with open WebSockets
+* Fixed crash in fs.list() when a non-string argument is passed (#77)
+* Fixed crash when closing computer with running timers
+* Fixed crash when reading a string with an invalid UTF-8 codepoint
+* Fixed crash when too many events are queued
+  * This also fixes a crash when pasting long text in CLI mode
+* Fixed glitch/crash when resizing CLI window (#78, #80)
+* Fixed issue with clicking the mouse in CLI mode (#78)
+* Fixed 100% CPU usage when using CLI mode
+* Fixed term.setCursorPos clamping the cursor to [0, width)
+* Fixed term.clear filling with black/white instead of selected BG/FG combo
+* Fixed file.readAll() on Windows when the file has no end newline
+* Fixed issue when reading single character at a time from text files
+* Fixed POST data stopping at NUL characters
+* Made some HTTP error messages more descriptive
+* Fixed HTTP implementation in WASM port
+* Added --enable-wasm flag to ./configure to allow building for WASM
+* Added window switcher for WASM builds
+* Fixed debugger locals once again
+* table.concat() now works with non-contiguous tables
+* Fixed crash when a computer's config file was corrupt or empty
+
 ## v2.2.3 - January 13, 2020
 * Added `useHDFont` virtual config option
 * Added support for reading UTF-8 files

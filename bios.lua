@@ -76,6 +76,18 @@ if _VERSION == "Lua 5.1" then
     string.gmatch = function(s, pattern, ...) return nativegmatch(s, nativegsub(pattern, "%z", "%%z"), ...) end
     string.gsub = function(s, pattern, ...) return nativegsub(s, nativegsub(pattern, "%z", "%%z"), ...) end
 
+    -- Fix table.concat() error when a table is non-contiguous
+    table.concat = function(tab, sep, i, j)
+        sep = sep or ""
+        i = i or 1
+        j = j or table.maxn(tab)
+        local retval
+        for n = i, j do
+            if tab[n] ~= nil then retval = (retval and retval .. sep or "") .. tab[n] end
+        end
+        return retval or ""
+    end
+
     if _CC_DISABLE_LUA51_FEATURES then
         -- Remove the Lua 5.1 features that will be removed when we update to Lua 5.2, for compatibility testing.
         -- See "disable_lua51_functions" in ComputerCraft.cfg
