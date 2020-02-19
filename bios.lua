@@ -847,15 +847,17 @@ if http then
 
     local nativeWebsocket = http.websocket
     http.websocketAsync = nativeWebsocket
-    http.websocket = function( _url, _binary )
+    http.websocket = function( _url, _headers, _binary )
         if _url ~= nil and type( _url ) ~= "string" then
             error( "bad argument #1 (expected string, got " .. type( _url ) .. ")", 2 )
         end
-        if _binary ~= nil and type( _binary ) ~= "boolean" then
-            error( "bad argument #2 (expected boolean, got " .. type( _binary ) .. ")", 2)
+        if _headers ~= nil and type( _headers ) ~= "table" then
+            error( "bad argument #2 (expected table, got " .. type( _url ) .. ")", 2 )
         end
-
-        local ok, err = nativeWebsocket( _url, _binary )
+        if _binary ~= nil and type( _binary ) ~= "boolean" then
+            error( "bad argument #3 (expected boolean, got " .. type( _binary ) .. ")", 2)
+        end
+        local ok, err = nativeWebsocket( _url, _headers, _binary )
         if not ok then return ok, err end
 
         while true do
