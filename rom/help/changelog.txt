@@ -1,3 +1,11 @@
+## v2.2.5 - February 24, 2020
+* Added `--directory` argument to specify custom data directory
+* Added `--id` argument to specify launch computer, overriding `initialComputer` config option
+* Rewrote `--script` argument to no longer shadow real `startup.lua` (#83)
+* Added header option to `http.websocket` to match CC: Tweaked behavior (#82)
+* Fixed crash when writing below screen
+* Fixed crash when closing WebSocket
+
 ## v2.2.4 - February 14, 2020
 * Computer label now displays in title bar (including the terminal emulator's title in CLI mode)
 * Added cliControlKeyMode config option (#78, #79)
