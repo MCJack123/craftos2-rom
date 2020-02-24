@@ -311,6 +311,16 @@ if settings.get( "motd.enable" ) then
     shell.run( "motd" )
 end
 
+-- Run startup passed with --script if available
+if _CCPC_STARTUP_SCRIPT then
+    local fn, err = load(_CCPC_STARTUP_SCRIPT, "@startup.lua", "t", _ENV)
+    if fn then
+        local args = {}
+        if _CCPC_STARTUP_ARGS then for n in _CCPC_STARTUP_ARGS:gmatch("[^ ]+") do table.insert(args, n) end end
+        fn(table.unpack(args))
+    else printError("Could not load startup script: " .. err) end
+end
+
 -- Run the user created startup, either from disk drives or the root
 local tUserStartups
 if settings.get( "shell.allow_startup" ) then
@@ -329,7 +339,7 @@ if settings.get( "shell.allow_disk_startup" ) then
 end
 if tUserStartups then
     for _,v in pairs( tUserStartups ) do
-        shell.run( v, _CCPC_STARTUP_ARGS )
+        shell.run( v )
     end
 end
 
