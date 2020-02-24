@@ -6,5 +6,6 @@ New Features in CraftOS-PC v2.2.5:
 * Added header option to `http.websocket` to match CC: Tweaked behavior (#82)
 * Fixed crash when writing below screen
 * Fixed crash when closing WebSocket
+* Fixed terminal background not being affected by palette changes
 
 Type "help changelog" to see the full version history.
