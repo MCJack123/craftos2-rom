@@ -6,6 +6,8 @@ if #tArgs > 0 then
     return
 end
 
+local pretty = require "cc.pretty"
+
 local bRunning = true
 local tCommandHistory = {}
 local tEnv = {
@@ -87,18 +89,9 @@ while bRunning do
             local n = 1
             while n < tResults.n or (n <= nForcePrint) do
                 local value = tResults[ n + 1 ]
-                if type( value ) == "table" then
-                    local metatable = getmetatable( value )
-                    if type(metatable) == "table" and type(metatable.__tostring) == "function" then
-                        print( tostring( value ) )
-                    else
-                        local ok, serialised = pcall( textutils.serialise, value )
-                        if ok then
-                            print( serialised )
-                        else
-                            print( tostring( value ) )
-                        end
-                    end
+                local ok, serialised = pcall(pretty.pretty, value)
+                if ok then
+                    pretty.print(serialised)
                 else
                     print( tostring( value ) )
                 end
