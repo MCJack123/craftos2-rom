@@ -1,11 +1,16 @@
-New Features in CraftOS-PC v2.2.5:
+New Features in CraftOS-PC v2.2.6:
 
-* Added `--directory` argument to specify custom data directory
-* Added `--id` argument to specify launch computer, overriding `initialComputer` config option
-* Rewrote `--script` argument to no longer shadow real `startup.lua` (#83)
-* Added header option to `http.websocket` to match CC: Tweaked behavior (#82)
-* Fixed crash when writing below screen
-* Fixed crash when closing WebSocket
-* Fixed terminal background not being affected by palette changes
+* Added gist.lua to the default ROM
+* Reboot now resets graphics mode
+* Added `--rom` flag to allow changing ROM directory (#84)
+* Fixed extended ASCII character input conversion (#85)
+* Fixed key events not being sent when Ctrl+[TSR] are pressed (#86)
+* Fixed bug in fs.getFreeSpace
+* Fixed term.drawPixels cutting off bottom
+* Fixed crash when rebooting with events in queue
+* Fixed disk mount paths
+* Fixed deadlock when a peripheral method causes an error
+* Fixed getPixel boundaries being too small
+* Fixed paste events sending \r characters on Windows (#95)
 
 Type "help changelog" to see the full version history.

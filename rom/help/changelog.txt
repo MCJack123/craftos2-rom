@@ -1,3 +1,17 @@
+## v2.2.6 - March 15, 2020
+* Added gist.lua to the default ROM
+* Reboot now resets graphics mode
+* Added `--rom` flag to allow changing ROM directory (#84)
+* Fixed extended ASCII character input conversion (#85)
+* Fixed key events not being sent when Ctrl+[TSR] are pressed (#86)
+* Fixed bug in fs.getFreeSpace
+* Fixed term.drawPixels cutting off bottom
+* Fixed crash when rebooting with events in queue
+* Fixed disk mount paths
+* Fixed deadlock when a peripheral method causes an error
+* Fixed getPixel boundaries being too small
+* Fixed paste events sending \r characters on Windows (#95)
+
 ## v2.2.5 - February 24, 2020
 * Added `--directory` argument to specify custom data directory
 * Added `--id` argument to specify launch computer, overriding `initialComputer` config option
