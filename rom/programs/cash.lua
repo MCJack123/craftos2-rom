@@ -910,7 +910,7 @@ local function execv(tokens)
             local file = fs.open(path, "r")
             local firstLine = file.readLine()
             file.close()
-            if string.sub(firstLine, 1, 2) == "#!" then
+            if firstLine ~= nil and string.sub(firstLine, 1, 2) == "#!" then
                 table.insert(tokens, 1, path)
                 path = string.sub(firstLine, 3)
                 if not fs.exists(path) and fs.exists(path .. ".lua") then path = path .. ".lua" end
