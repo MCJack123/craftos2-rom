@@ -13,9 +13,9 @@ elseif args[1] == "--help" then
     term.setTextColor(colors.white)
 else
     local mounts = mounter.list()
-    print("/ on computer/0")
+    print("/ on computer/" .. os.getComputerID())
     for k,v in pairs(mounts) do
-        write("/" .. k .. " on " .. v)
+        write("/" .. k .. " on " .. (#v == 1 and v[1] or "(\n  " .. table.concat(v, ",\n  ") .. "\n)"))
         if mounter.isReadOnly(k) then print(" (read-only)") else print() end
     end
 end
