@@ -755,7 +755,7 @@ if http then
     local nativeHTTPRequest = http.request
 
     local function wrapRequest( _url, _post, _headers, _binary, _method, _redirect )
-        local ok, err = nativeHTTPRequest( _url, _post, _headers, _binary, _method )
+        local ok, err = nativeHTTPRequest( _url, _post, _headers, _binary, _method, _redirect )
         if ok then
             while true do
                 local event, param1, param2, param3 = os.pullEvent()
@@ -779,7 +779,7 @@ if http then
         if _binary ~= nil and type( _binary ) ~= "boolean" then
             error( "bad argument #3 (expected boolean, got " .. type( _binary ) .. ")", 2 ) 
         end
-        return wrapRequest( _url, nil, _headers, _binary, _redirect )
+        return wrapRequest( _url, nil, _headers, _binary, nil, _redirect )
     end
 
     for k,v in pairs({"POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD", "TRACE"}) do
