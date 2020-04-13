@@ -1,3 +1,11 @@
+-- gist.lua - Gist client for ComputerCraft
+-- Made by JackMacWindows for CraftOS-PC and CC: Tweaked
+
+-- The following code consists of a JSON library.
+
+local json
+do
+
 --
 -- json.lua
 --
@@ -22,7 +30,7 @@
 -- SOFTWARE.
 --
 
-local json = { _version = "0.1.2" }
+json = { _version = "0.1.2" }
 
 -------------------------------------------------------------------------------
 -- Encode
@@ -396,6 +404,8 @@ function json.decode(str)
   return res
 end
 
+end -- end of libraries
+
 -- Actual program
 
 local function getGistFile(data)
@@ -417,8 +427,9 @@ end
 -- * Otherwise, retrieves the first Lua file alphabetically (with a warning)
 -- * Otherwise, fails
 local function getGistData(id)
-    local file
-    if id:find("/") ~= nil then id, file = id:match("^([0-9A-Fa-f]+)/(.+)$") end
+    local file, rev
+    if id:find("/") ~= nil then id, file = id:match("^([0-9A-Fa-f:]+)/(.+)$") end
+    if id:find(":") ~= nil then id = id:gsub(":", "/") end
     write("Connecting to api.github.com... ")
     local handle = http.get("https://api.github.com/gists/" .. id)
     if handle == nil then print("Failed."); return nil end
@@ -443,21 +454,48 @@ local function getGistData(id)
     end
 end
 
+local function setTextColor(c) if term.isColor() then term.setTextColor(c) elseif c == colors.white then term.setTextColor(c) else term.setTextColor(colors.lightGray) end end
+
+local function requestAuth(headers)
+    if settings.get("gist.id") ~= nil then headers.Authorization = "token " .. settings.get("gist.id") else
+        setTextColor(colors.yellow)
+        write("You need to add a Personal Access Token (PAK) to upload Gists. Follow the instructions at ")
+        setTextColor(colors.blue)
+        write("https://tinyurl.com/GitHubPAK")
+        setTextColor(colors.yellow)
+        write(" to generate one. Make sure to check the '")
+        setTextColor(colors.blue)
+        write("gist")
+        setTextColor(colors.yellow)
+        print("' checkbox on step 7 (under 'Select scopes'). Once done, paste it here.")
+        setTextColor(colors.lime)
+        write("PAK: ")
+        setTextColor(colors.white)
+        local pak = read()
+        if pak == nil or pak == "" then error("Invalid PAK, please try again.") end
+        settings.set("gist.id", pak)
+        headers.Authorization = "token " .. pak
+    end
+end
+
 local args = {...}
 
+local helpstr = "Usages:\ngist put <filenames...> [-- description...]\ngist edit <id> <filenames...> [-- description]\ngist delete <id>\ngist get <id> <filename>\ngist run <id> [arguments...]\ngist info <id>"
+
 if #args < 2 then
-    print("Usages:\ngist put <filename> [description]\ngist get <id> <filename>\ngist run <id> [arguments...]")
+    print(helpstr)
     return 1
 end
 
 if not http then
-    printError("Gist requires http API" )
-    printError("Set http_enable to true in ComputerCraft.cfg")
+    printError("Gist requires http API")
+    if _G.config ~= nil then printError("Set http_enable to true in the CraftOS-PC configuration")
+    else printError("Set http_enable to true in ComputerCraft.cfg") end
     return 2
 end
 
 if args[1] == "get" then
-    if #args < 3 then print("Usages:\ngist put <filename> [description]\ngist get <id> <filename>\ngist run <id> [arguments...]"); return 1 end
+    if #args < 3 then print(helpstr); return 1 end
     local data = getGistData(args[2])
     if data == nil then return 3 end
     local file = fs.open(shell.resolve(args[3]), "w")
@@ -485,27 +523,7 @@ elseif args[1] == "put" then
     if args[i] == "--" then data.description = table.concat({table.unpack(args, i+1)}, " ") end
     -- Get authorization
     local headers = {["Content-Type"] = "application/json"}
-    if settings.get("gist.id") ~= nil then headers.Authorization = "token " .. settings.get("gist.id") else
-        local id = math.random(0, 999999)
-        print("Authorization is required to post a gist.\nPlease visit http://cppconsole.bruienne.com/cc-gist/ and enter this code:\n" .. id)
-        while true do
-            local handle = http.get("http://cppconsole.bruienne.com/cc-gist/await_token.php?token=" .. id)
-            if handle then
-                if handle.getResponseCode() == 200 then
-                    local auth = json.decode(handle.readAll())
-                    if auth.access_token ~= nil and auth.scope == "gist" then
-                        settings.set("gist.id", auth.access_token)
-                        settings.save(".settings")
-                        headers.Authorization = "token " .. auth.access_token
-                        handle.close()
-                        break
-                    else print("An error occurred.") end
-                end
-                handle.close()
-            end
-            sleep(1)
-        end
-    end
+    requestAuth(headers)
     local jsonfiles = ""
     for k,v in pairs(data.files) do jsonfiles = jsonfiles .. (jsonfiles == "" and "" or ",\n") .. ("    \"%s\": {\n      \"content\": %s\n    }"):format(k, json.encode(v.content)) end
     local jsondata = ([[{
@@ -515,12 +533,134 @@ elseif args[1] == "put" then
 %s
   }
 }]]):format(data.description and '"' .. data.description .. '"' or "null", jsonfiles)
-    print(jsondata)
     write("Connecting to api.github.com... ")
     local handle = http.post("https://api.github.com/gists", jsondata, headers)
     if handle == nil then print("Failed."); return 3 end
     local resp = json.decode(handle.readAll())
-    if handle.getResponseCode() ~= 201 or resp == nil then print("Failed: " .. handle.getResponseCode() .. ": " .. (resp and json.encode(resp) or "")); handle.close(); return 3 end
+    if handle.getResponseCode() ~= 201 or resp == nil then print("Failed: " .. handle.getResponseCode() .. ": " .. (resp and json.encode(resp) or "Unknown error")); handle.close(); return 3 end
     handle.close()
     print("Success. Uploaded as " .. resp.id .. "\nRun 'gist get " .. resp.id .. "' to download anywhere")
-else print("Usages:\ngist put <filenames...> [-- description...]\ngist get <id> <filename>\ngist run <id> [arguments...]"); return 1 end
+elseif args[1] == "info" then
+    local id = args[2]
+    if id:find("/") ~= nil then id = id:match("^([0-9A-Fa-f:]+)/.+$") end
+    if id:find(":") ~= nil then id = id:gsub(":", "/") end
+    write("Connecting to api.github.com... ")
+    local handle = http.get("https://api.github.com/gists/" .. id)
+    if handle == nil then print("Failed."); return 3 end
+    if handle.getResponseCode() ~= 200 then print("Failed."); handle.close(); return 3 end
+    local meta = json.decode(handle.readAll())
+    handle.close()
+    if meta == nil or meta.files == nil then print("Failed."); return 3 end
+    local f = {}
+    for k in pairs(meta.files) do table.insert(f, k) end
+    table.sort(f)
+    print("Success.")
+    setTextColor(colors.yellow)
+    write("Description: ")
+    setTextColor(colors.white)
+    print(meta.description)
+    setTextColor(colors.yellow)
+    write("Author: ")
+    setTextColor(colors.white)
+    print(meta.owner.login)
+    setTextColor(colors.yellow)
+    write("Revisions: ")
+    setTextColor(colors.white)
+    print(#meta.history)
+    setTextColor(colors.yellow)
+    print("Files in this Gist:")
+    setTextColor(colors.white)
+    textutils.tabulate(f)
+elseif args[1] == "edit" then
+    if #args < 3 then print(helpstr); return 1 end
+    local data = {files = {}, public = true}
+    local id = args[2]
+    if id:find("/") ~= nil then id = id:match("^([0-9A-Fa-f:]+)/.+$") end
+    if id:find(":") ~= nil then id = id:gsub(":", "/") end
+    local i = 3
+    while args[i] ~= nil and args[i] ~= "--" do
+        if data.files[fs.getName(args[i])] then error("Cannot upload files with duplicate names.") end
+        local file = fs.open(shell.resolve(args[i]), "r")
+        if file == nil then data.files[fs.getName(args[i])] = {} else
+            data.files[fs.getName(args[i])] = {content = file.readAll()}
+            file.close()
+        end
+        i=i+1
+    end
+    if args[i] == "--" then data.description = table.concat({table.unpack(args, i+1)}, " ") else
+        write("Connecting to api.github.com... ")
+        local handle = http.get("https://api.github.com/gists/" .. id)
+        if handle == nil then print("Failed."); return 3 end
+        if handle.getResponseCode() ~= 200 then print("Failed."); handle.close(); return 3 end
+        local meta = json.decode(handle.readAll())
+        handle.close()
+        if meta == nil or meta.files == nil then print("Failed."); return 3 end
+        data.description = meta.description
+        print("Success.")
+    end
+    -- Get authorization
+    local headers = {["Content-Type"] = "application/json"}
+    requestAuth(headers)
+    local jsonfiles = ""
+    for k,v in pairs(data.files) do jsonfiles = jsonfiles .. (jsonfiles == "" and "" or ",\n") .. (v.content == nil and ("    \"%s\": null"):format(k) or ("    \"%s\": {\n      \"content\": %s\n    }"):format(k, json.encode(v.content))) end
+    local jsondata = ([[{
+  "description": %s,
+  "public": true,
+  "files": {
+%s
+  }
+}]]):format(data.description and '"' .. data.description .. '"' or "null", jsonfiles)
+    write("Connecting to api.github.com... ")
+    local handle
+    if http.patch ~= nil then handle = http.patch("https://api.github.com/gists/" .. id, jsondata, headers)
+    elseif http.websocket ~= nil then
+        local _url = "https://api.github.com/gists/" .. id
+        local ok, err = http.request(_url, jsondata, headers, false, "PATCH")
+        if ok then
+            while true do
+                local event, param1, param2, param3 = os.pullEvent()
+                if event == "http_success" and param1 == _url then
+                    handle = param2
+                    break
+                elseif event == "http_failure" and param1 == _url then
+                    print("Failed: ", param2, param3)
+                    return 3
+                end
+            end
+        else print("Failed: " .. err); return 3 end
+    else print("Failed: This version of ComputerCraft doesn't support the PATCH method. Update to CC: Tweaked or a compatible emulator (CraftOS-PC, CCEmuX) to use 'edit'."); return 3 end
+    if handle == nil then print("Failed."); return 3 end
+    local resp = json.decode(handle.readAll())
+    if handle.getResponseCode() ~= 200 or resp == nil then print("Failed: " .. handle.getResponseCode() .. ": " .. (resp and json.encode(resp) or "Unknown error")); handle.close(); return 3 end
+    handle.close()
+    print("Success. Uploaded as " .. resp.id .. "\nRun 'gist get " .. resp.id .. "' to download anywhere")
+elseif args[1] == "delete" then
+    local id = args[2]
+    if id:find("/") ~= nil or id:find(":") ~= nil then id = id:match("^([0-9A-Fa-f]+)") end
+    local headers = {}
+    requestAuth(headers)
+    local handle
+    write("Connecting to api.github.com... ")
+    if http.delete ~= nil then handle = http.delete("https://api.github.com/gists/" .. id, nil, headers)
+    elseif http.websocket ~= nil then
+        local _url = "https://api.github.com/gists/" .. id
+        local ok, err = http.request(_url, nil, headers, false, "DELETE")
+        if ok then
+            while true do
+                local event, param1, param2, param3 = os.pullEvent()
+                if event == "http_success" and param1 == _url then
+                    handle = param2
+                    break
+                elseif event == "http_failure" and param1 == _url then
+                    print("Failed: ", param2, param3)
+                    return 3
+                end
+            end
+        else print("Failed: " .. err); return 3 end
+    else print("Failed: This version of ComputerCraft doesn't support the PATCH method. Update to CC: Tweaked or a compatible emulator (CraftOS-PC, CCEmuX) to use 'edit'."); return 3 end
+    if handle == nil then print("Failed."); return 3 end
+    if handle.getResponseCode() ~= 204 then print("Failed: " .. handle.getResponseCode() .. "."); handle.close(); return 3 end
+    handle.close()
+    print("Success.")
+    print("The requested Gist has been deleted.")
+else print(helpstr); return 1 end
