@@ -158,6 +158,17 @@ local function completePastebin( shell, nIndex, sText, tPreviousText )
         end
     end
 end
+local tGistOptions = { "put ", "edit ", "delete ", "get ", "run ", "info " }
+local function completeGist( shell, nIndex, sText, tPreviousText )
+    if nIndex == 1 then
+        return completeMultipleChoice( sText, tGistOptions )
+    elseif nIndex >= 2 then
+        for _,v in ipairs(tPreviousText) do if v == "--" then return nil end end
+        if tPreviousText[2] == "put" or (tPreviousText[2] == "edit" and nIndex > 3) then
+            return fs.complete( sText, shell.dir(), true, false )
+        end
+    end
+end
 local function completeWget( shell, nIndex, sText, tPreviousText ) 
     if nIndex == 1 then return completeMultipleChoice( sText, {"run "} ) 
     else return nil end
@@ -232,6 +243,7 @@ shell.setCompletionFunction( "rom/programs/advanced/fg.lua", completeProgram )
 shell.setCompletionFunction( "rom/programs/fun/dj.lua", completeDJ )
 shell.setCompletionFunction( "rom/programs/fun/advanced/paint.lua", completeFile )
 shell.setCompletionFunction( "rom/programs/http/pastebin.lua", completePastebin )
+shell.setCompletionFunction( "rom/programs/http/gist.lua", completeGist )
 shell.setCompletionFunction( "rom/programs/http/wget.lua", completeWget )
 shell.setCompletionFunction( "rom/programs/rednet/chat.lua", completeChat )
 if completeAttach then

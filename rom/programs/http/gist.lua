@@ -507,25 +507,23 @@ elseif args[1] == "run" then
     if data == nil then return 3 end
     local fn, err = load(data, name, "t", _ENV)
     if fn == nil then error(err) end
-    local ok, msg = fn(table.unpack(args, 3))
+    local ok, msg = pcall(fn, table.unpack(args, 3))
     if not ok then error(msg) end
 elseif args[1] == "put" then
     local data = {files = {}, public = true}
     local i = 2
     while args[i] ~= nil and args[i] ~= "--" do
-        if data.files[fs.getName(args[i])] then error("Cannot upload files with duplicate names.") end
+        if data.files[fs.getName(args[i])] then print("Cannot upload files with duplicate names."); return 2 end
         local file = fs.open(shell.resolve(args[i]), "r")
-        if file == nil then error("Could not read " .. shell.resolve(args[i]) .. ".") end
+        if file == nil then print("Could not read " .. shell.resolve(args[i]) .. "."); return 2 end
         data.files[fs.getName(args[i])] = {content = file.readAll()}
         file.close()
         i=i+1
     end
     if args[i] == "--" then data.description = table.concat({table.unpack(args, i+1)}, " ") end
-    -- Get authorization
-    local headers = {["Content-Type"] = "application/json"}
-    requestAuth(headers)
     local jsonfiles = ""
     for k,v in pairs(data.files) do jsonfiles = jsonfiles .. (jsonfiles == "" and "" or ",\n") .. ("    \"%s\": {\n      \"content\": %s\n    }"):format(k, json.encode(v.content)) end
+    if jsonfiles == "" then print("No such file"); return 2 end
     local jsondata = ([[{
   "description": %s,
   "public": true,
@@ -533,13 +531,15 @@ elseif args[1] == "put" then
 %s
   }
 }]]):format(data.description and '"' .. data.description .. '"' or "null", jsonfiles)
+    local headers = {["Content-Type"] = "application/json"}
+    requestAuth(headers)
     write("Connecting to api.github.com... ")
     local handle = http.post("https://api.github.com/gists", jsondata, headers)
     if handle == nil then print("Failed."); return 3 end
     local resp = json.decode(handle.readAll())
     if handle.getResponseCode() ~= 201 or resp == nil then print("Failed: " .. handle.getResponseCode() .. ": " .. (resp and json.encode(resp) or "Unknown error")); handle.close(); return 3 end
     handle.close()
-    print("Success. Uploaded as " .. resp.id .. "\nRun 'gist get " .. resp.id .. "' to download anywhere")
+    print("Success.\nUploaded as " .. resp.html_url .. "\nRun 'gist get " .. resp.id .. "' to download anywhere")
 elseif args[1] == "info" then
     local id = args[2]
     if id:find("/") ~= nil then id = id:match("^([0-9A-Fa-f:]+)/.+$") end
@@ -633,7 +633,7 @@ elseif args[1] == "edit" then
     local resp = json.decode(handle.readAll())
     if handle.getResponseCode() ~= 200 or resp == nil then print("Failed: " .. handle.getResponseCode() .. ": " .. (resp and json.encode(resp) or "Unknown error")); handle.close(); return 3 end
     handle.close()
-    print("Success. Uploaded as " .. resp.id .. "\nRun 'gist get " .. resp.id .. "' to download anywhere")
+    print("Success. Uploaded as " .. resp.html_url .. "\nRun 'gist get " .. resp.id .. "' to download anywhere")
 elseif args[1] == "delete" then
     local id = args[2]
     if id:find("/") ~= nil or id:find(":") ~= nil then id = id:match("^([0-9A-Fa-f]+)") end
