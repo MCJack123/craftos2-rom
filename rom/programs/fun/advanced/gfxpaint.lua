@@ -17,6 +17,7 @@ while true do
         end
     elseif ev == "char" and ch == "q" then break end
 end
+term.clear()
 term.setGraphicsMode(false)
 term.setBackgroundColor(colors.black)
 term.setTextColor(colors.white)

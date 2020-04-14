@@ -784,6 +784,16 @@ if http then
 
     for k,v in pairs({"POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD", "TRACE"}) do
         http[string.lower(v)] = function( _url, _post, _headers, _binary, _redirect )
+            local _method = v
+            if type( _url ) == "table" then
+                local t = _url
+                _url = t.url
+                _post = t.body
+                _headers = t.headers
+                _binary = t.binary
+                _redirect = t.redirect
+                _method = t.method or v
+            end
             if type( _url ) ~= "string" then
                 error( "bad argument #1 (expected string, got " .. type( _url ) .. ")", 2 ) 
             end
@@ -796,7 +806,7 @@ if http then
             if _binary ~= nil and type( _binary ) ~= "boolean" then
                 error( "bad argument #4 (expected boolean, got " .. type( _binary ) .. ")", 2 ) 
             end
-            return wrapRequest( _url, _post or "", _headers, _binary, v, _redirect )
+            return wrapRequest( _url, _post or "", _headers, _binary, _method, _redirect )
         end
     end
 
