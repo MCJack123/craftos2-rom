@@ -29,14 +29,11 @@ jobs:
 
     # Runs a set of commands using the runners shell
     - name: Pack ROM
-      run: |
-        node packStandaloneROM.js
-        mkdir artifacts
-        mv fs_standalone.cpp artifacts/
+      run: node packStandaloneROM.js
       
     - name: Upload artifact
       uses: actions/upload-artifact@v1.0.0
       with:
         name: Standalone ROM file
-        path: artifacts
+        path: fs_standalone.cpp
         
