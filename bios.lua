@@ -174,7 +174,7 @@ if _VERSION == "Lua 5.3" then
     ]] )()
 end
 
-if string.find( _HOST, "ComputerCraft" ) == 1 then
+--[[if string.find( _HOST, "ComputerCraft" ) == 1 then
     -- Prevent access to metatables or environments of strings, as these are global between all computers
     local nativegetmetatable = getmetatable
     local nativeerror = error
@@ -205,7 +205,7 @@ if string.find( _HOST, "ComputerCraft" ) == 1 then
             end
         end
     end
-end
+end]]
 
 -- Patch the error function on LuaJIT because specifying a level <= 0 crashes for some reason...?
 if jit then
