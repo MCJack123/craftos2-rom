@@ -1,99 +1,6 @@
 -- gist.lua - Gist client for ComputerCraft
 -- Made by JackMacWindows for CraftOS-PC and CC: Tweaked
 
--- The following code is a JSON decoder. It was retreived from
--- https://gist.github.com/tylerneylon/59f4bcf316be525b30ab, and is in the public domain.
-
-local json = {}
-do
-
-  -- Internal functions.
-  -- Returns pos, did_find; there are two cases:
-  -- 1. Delimiter found: pos = pos after leading space + delim; did_find = true.
-  -- 2. Delimiter not found: pos = pos after leading space;     did_find = false.
-  -- This throws an error if err_if_missing is true and the delim is not found.
-  local function skip_delim(str, pos, delim, err_if_missing)
-    pos = pos + #str:match('^%s*', pos)
-    if str:sub(pos, pos) ~= delim then
-      if err_if_missing then
-        error('Expected ' .. delim .. ' near position ' .. pos)
-      end
-      return pos, false
-    end
-    return pos + 1, true
-  end
-  
-  -- Expects the given pos to be the first character after the opening quote.
-  -- Returns val, pos; the returned pos is after the closing quote character.
-  local function parse_str_val(str, pos, val)
-    val = val or ''
-    local early_end_error = 'End of input found while parsing string.'
-    if pos > #str then error(early_end_error) end
-    local c = str:sub(pos, pos)
-    if c == '"'  then return val, pos + 1 end
-    if c ~= '\\' then return parse_str_val(str, pos + 1, val .. c) end
-    -- We must have a \ character.
-    local esc_map = {b = '\b', f = '\f', n = '\n', r = '\r', t = '\t'}
-    local nextc = str:sub(pos + 1, pos + 1)
-    if not nextc then error(early_end_error) end
-    return parse_str_val(str, pos + 2, val .. (esc_map[nextc] or nextc))
-  end
-  
-  -- Returns val, pos; the returned pos is after the number's final character.
-  local function parse_num_val(str, pos)
-    local num_str = str:match('^-?%d+%.?%d*[eE]?[+-]?%d*', pos)
-    local val = tonumber(num_str)
-    if not val then error('Error parsing number at position ' .. pos .. '.') end
-    return val, pos + #num_str
-  end
-  
-  json.null = {}  -- This is a one-off table to represent the null value.
-  
-  function json.decode(str, pos, end_delim)
-    pos = pos or 1
-    if pos > #str then error('Reached unexpected end of input.') end
-    pos = pos + #str:match('^%s*', pos)  -- Skip whitespace.
-    local first = str:sub(pos, pos)
-    if first == '{' then  -- Parse an object.
-      local obj, key, delim_found = {}, true, true
-      pos = pos + 1
-      while true do
-        key, pos = json.decode(str, pos, '}')
-        if key == nil then return obj, pos end
-        if not delim_found then error('Comma missing between object items.') end
-        pos = skip_delim(str, pos, ':', true)  -- true -> error if missing.
-        obj[key], pos = json.decode(str, pos)
-        pos, delim_found = skip_delim(str, pos, ',')
-      end
-    elseif first == '[' then  -- Parse an array.
-      local arr, val, delim_found = {}, true, true
-      pos = pos + 1
-      while true do
-        val, pos = json.decode(str, pos, ']')
-        if val == nil then return arr, pos end
-        if not delim_found then error('Comma missing between array items.') end
-        arr[#arr + 1] = val
-        pos, delim_found = skip_delim(str, pos, ',')
-      end
-    elseif first == '"' then  -- Parse a string.
-      return parse_str_val(str, pos + 1)
-    elseif first == '-' or first:match('%d') then  -- Parse a number.
-      return parse_num_val(str, pos)
-    elseif first == end_delim then  -- End of an object or array.
-      return nil, pos + 1
-    else  -- Parse true, false, or null.
-      local literals = {['true'] = true, ['false'] = false, ['null'] = json.null}
-      for lit_str, lit_val in pairs(literals) do
-        local lit_end = pos + #lit_str - 1
-        if str:sub(pos, lit_end) == lit_str then return lit_val, lit_end + 1 end
-      end
-      local pos_info_str = 'position ' .. pos .. ': ' .. str:sub(pos, pos + 10)
-      error('Invalid json syntax starting at ' .. pos_info_str)
-    end
-  end
-
-end -- end of library
-
 -- Actual program
 
 local function getGistFile(data)
@@ -125,7 +32,7 @@ local function getGistData(id)
     local handle = http.get("https://api.github.com/gists/" .. id)
     if handle == nil then print("Failed.") return nil end
     if handle.getResponseCode() ~= 200 then print("Failed.") handle.close() return nil end
-    local meta = json.decode(handle.readAll())
+    local meta = textutils.unserializeJSON(handle.readAll())
     handle.close()
     if meta == nil or meta.files == nil then print("Failed.") return nil end
     print("Success.")
@@ -227,7 +134,7 @@ elseif args[1] == "put" then
     write("Connecting to api.github.com... ")
     local handle = http.post("https://api.github.com/gists", jsondata, headers)
     if handle == nil then print("Failed.") return 3 end
-    local resp = json.decode(handle.readAll())
+    local resp = textutils.unserializeJSON(handle.readAll())
     if handle.getResponseCode() ~= 201 or resp == nil then print("Failed: " .. handle.getResponseCode() .. ": " .. (resp and textutils.serializeJSON(resp) or "Unknown error")) handle.close() return 3 end
     handle.close()
     print("Success.\nUploaded as " .. resp.html_url .. "\nRun 'gist get " .. resp.id .. "' to download anywhere")
@@ -239,7 +146,7 @@ elseif args[1] == "info" then
     local handle = http.get("https://api.github.com/gists/" .. id)
     if handle == nil then print("Failed.") return 3 end
     if handle.getResponseCode() ~= 200 then print("Failed.") handle.close() return 3 end
-    local meta = json.decode(handle.readAll())
+    local meta = textutils.unserializeJSON(handle.readAll())
     handle.close()
     if meta == nil or meta.files == nil then print("Failed.") return 3 end
     local f = {}
@@ -283,7 +190,7 @@ elseif args[1] == "edit" then
         local handle = http.get("https://api.github.com/gists/" .. id)
         if handle == nil then print("Failed.") return 3 end
         if handle.getResponseCode() ~= 200 then print("Failed.") handle.close() return 3 end
-        local meta = json.decode(handle.readAll())
+        local meta = textutils.unserializeJSON(handle.readAll())
         handle.close()
         if meta == nil or meta.files == nil then print("Failed.") return 3 end
         data.description = meta.description
@@ -307,7 +214,7 @@ elseif args[1] == "edit" then
     elseif http.websocket ~= nil then handle = http.post{url = "https://api.github.com/gists/" .. id, body = jsondata, headers = headers, method = "PATCH"}
     else print("Failed: This version of ComputerCraft doesn't support the PATCH method. Update to CC: Tweaked or a compatible emulator (CraftOS-PC, CCEmuX) to use 'edit'.") return 3 end
     if handle == nil then print("Failed.") return 3 end
-    local resp = json.decode(handle.readAll())
+    local resp = textutils.unserializeJSON(handle.readAll())
     if handle.getResponseCode() ~= 200 or resp == nil then print("Failed: " .. handle.getResponseCode() .. ": " .. (resp and textutils.serializeJSON(resp) or "Unknown error")) handle.close() return 3 end
     handle.close()
     print("Success.\nUploaded as " .. resp.html_url .. "\nRun 'gist get " .. resp.id .. "' to download anywhere")

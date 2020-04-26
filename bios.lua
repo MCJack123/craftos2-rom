@@ -51,8 +51,6 @@ if _VERSION == "Lua 5.1" then
             error( p1, 2 )
         end        
     end
-    table.unpack = unpack
-    table.pack = function( ... ) return { n = select( "#", ... ), ... } end
 
     -- Install the bit32 api
     local nativebit = bit
@@ -1054,7 +1052,7 @@ settings.set( "paint.default_extension", "nfp" )
 settings.set( "lua.autocomplete", true )
 settings.set( "list.show_hidden", false )
 settings.set( "bios.use_cash", false )
-settings.set( "motd.enable", false )
+settings.set( "motd.enable", true )
 settings.set( "motd.path", "/motd.txt:/rom/motd.txt" )
 if term.isColour() then
     settings.set( "bios.use_multishell", true )
