@@ -1,3 +1,65 @@
+## v2.3 - April 26, 2020
+* Massively improved performance of emulation
+  * Speed issues are caused by the debugger's hooks (specifically line hooks)
+  * This version only enables the required hooks depending on what features are required
+  * In general, more debugging features -> lower performance
+  * Depending on the machine, expect between 4-20x faster emulation
+* Added official support for WASM, including an online client (CraftOS-PC Online)
+  * CraftOS-PC Online is available at https://www.craftos-pc.cc/online/
+  * Supports Chrome/Chrome-based browsers, and new versions of Firefox with the following options enabled in `about:config`:
+    * `javascript.options.shared_memory`
+    * `dom.postMessage.sharedArrayBuffer.withCOOP_COEP`
+    * `browser.tabs.remote.useCrossOriginEmbedderPolicy`
+    * `browser.tabs.remote.useCrossOriginOpenerPolicy`
+* Added speaker peripheral
+  * Includes open-source sounds for notes
+  * Users can manually add in custom sounds (including offical Minecraft ones)
+    * See https://www.craftos-pc.cc/docs/periphemu.html#speaker-sounds for more info
+* Updated CC:T compatibility to 1.87.1
+  * Added `fs.getAttributes` and `fs.getCapacity` functions
+  * Added optional timeout argument to `websocket.receive`
+  * Ported pretty printer to `lua.lua`
+  * Added `__len` metamethod for tables
+  * Strings now accept `\xNN`, `\u{NNN}`, and `\z` escape codes
+  * Added `utf8` library
+  * Added base argument to `math.log`
+  * Moved `table.pack` and `table.unpack` out of the ROM and into C
+  * Added `textutils.unserializeJSON`
+  * Rewrote `settings` API
+  * Enabled MOTD by default
+  * `http.post` now accepts a table as an argument as expected
+* Added raw terminal renderer
+  * See the documentation (https://www.craftos-pc.cc/docs/rawmode.html) for more info
+* Added TRoR (Terminal Redirect over Rednet) terminal renderer
+* Added the ability to place modems on multiple separate networks
+  * This can be done by adding a third argument when attaching the peripheral, specifying the network ID
+  * Modems with different network IDs won't be able to communicate with each other
+* Added prompt when mounting a real directory, for security
+  * This is to mitigate the possibility that a malicious script deletes arbitrary files
+  * A prompt also appears when changing the `mount_mode` option
+  * To disable this (not recommended), set `showMountPrompt` to false in global.json
+    * This option cannot be changed inside CraftOS-PC
+* Added filesystem merge mount support
+* Added standalone executable option for Windows & Linux
+* Added scrollback to debugger console
+* Added pop-up when a computer is hung and ignores terminate events
+* Revamped `gist` program with new commands
+  * Added `edit`, `delete`, and `info` commands
+  * Gist logins now use Personal Access Tokens instead of a private server with OAuth2
+* Improved command-line usage
+* Cursor color can now be changed as expected
+* Fixed 256-color graphics mode on monitors
+* Fixed crash when receiving tables over a modem connection
+* Fixed a crash relating to timers
+* Fixed memory leak when taking a screenshot on Mac
+* Fixed missing Content-Type and Content-Length headers in HTTP requests
+* Fixed mouse event location in graphics mode when using an HD font
+* Fixed a crash when an error occurs while creating a peripheral
+* Fixed missing error messages when an HTTP connection fails
+* Accessing the string metatable is no longer blocked
+* Removed path argument to `term.screenshot()`
+* Added a rate limit to `term.screenshot()`
+
 ## v2.2.6 - March 15, 2020
 * Added gist.lua to the default ROM
 * Reboot now resets graphics mode
