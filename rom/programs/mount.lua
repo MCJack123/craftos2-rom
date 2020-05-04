@@ -1,3 +1,4 @@
+if mounter == nil then error("Mounting directories is not supported in vanilla mode.") end
 local args = { ... }
 
 if args[2] ~= nil then

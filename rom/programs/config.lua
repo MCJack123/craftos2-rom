@@ -1,3 +1,4 @@
+if config == nil then error("Accessing the configuration is not supported in vanilla mode.") end
 local args = { ... }
 
 if args[1] == "list" then

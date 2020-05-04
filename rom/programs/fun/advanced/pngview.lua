@@ -617,7 +617,7 @@ do -- png.lua
     end
 end -- png.lua
 
-if not term.getGraphicsMode then error("This requires CraftOS-PC v2.1 or later.") end
+if not term.getGraphicsMode or not term.drawPixels then error("This requires CraftOS-PC v2.1 or later.") end
 
 local args = {...}
 if #args < 1 then error("Usage: pngread <image.png>") end
