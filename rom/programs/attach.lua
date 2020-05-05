@@ -1,3 +1,4 @@
+if periphemu == nil then error("Attaching peripherals is not supported in vanilla mode.") end
 local args = { ... }
 if type(args[1]) ~= "string" or type(args[2]) ~= "string" then
     print("Usage: attach <side> <type> [options...]")
