@@ -4,8 +4,9 @@ Functions in the peripheral API:
 peripheral.getNames()
 peripheral.isPresent( name )
 peripheral.getType( name )
+peripheral.getName( peripheral )
 peripheral.getMethods( name )
-peripheral.call( name, methodName, param1, param2, etc )
+peripheral.call( name, methodName, param1, param2, ... )
 peripheral.wrap( name )
 peripheral.find( type, [fnFilter] )
 

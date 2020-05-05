@@ -34,20 +34,33 @@ function isPresent( _sSide )
 end
 
 function getType( _sSide )
-    if type( _sSide ) ~= "string" then
-        error( "bad argument #1 (expected string, got " .. type( _sSide ) .. ")", 2 )
-    end
-	if native.isPresent( _sSide ) then
-		return native.getType( _sSide )
+    if type( _sSide ) ~= "string" and type( _sSide ) ~= "table" then
+        error( "bad argument #1 (expected string or table, got " .. type( _sSide ) .. ")", 2 )
 	end
-	for n,sSide in ipairs( rs.getSides() ) do
-		if native.getType( sSide ) == "modem" and not native.call( sSide, "isWireless" ) then
-			if native.call( sSide, "isPresentRemote", _sSide )  then
-				return native.call( sSide, "getTypeRemote", _sSide ) 
+	if type( _sSide ) == "string" then
+		if native.isPresent( _sSide ) then
+			return native.getType( _sSide )
+		end
+		for n,sSide in ipairs( rs.getSides() ) do
+			if native.getType( sSide ) == "modem" and not native.call( sSide, "isWireless" ) then
+				if native.call( sSide, "isPresentRemote", _sSide )  then
+					return native.call( sSide, "getTypeRemote", _sSide ) 
+				end
 			end
 		end
+		return nil
+	else
+		local mt = getmetatable(_sSide)
+		if mt == nil or mt.type == nil then error("bad argument #1 (table is not a peripheral)", 2) end
+		return mt.type
 	end
-	return nil
+end
+
+function getName(peripheral)
+	if type(peripheral) ~= "table" then error("bad argument #1 (expected table, got " .. type(peripheral) .. ")", 2) end
+	local mt = getmetatable(peripheral)
+	if mt == nil or mt.name == nil then error("bad argument #1 (table is not a peripheral)", 2) end
+	return mt.name
 end
 
 function getMethods( _sSide )
@@ -93,7 +106,11 @@ function wrap( _sSide )
     end
 	if peripheral.isPresent( _sSide ) then
 		local tMethods = peripheral.getMethods( _sSide )
-		local tResult = {}
+		local tResult = setmetatable({}, {
+			__name = "peripheral",
+			name = _sSide,
+			type = peripheral.getType(_sSide)
+		})
 		for n,sMethod in ipairs( tMethods ) do
 			tResult[sMethod] = function( ... )
 				return peripheral.call( _sSide, sMethod, ... )

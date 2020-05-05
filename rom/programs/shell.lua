@@ -120,7 +120,8 @@ else
     bgColour = colours.black
 end
 
-local function run( _sCommand, ... )
+function shell.execute( _sCommand, ... )
+    if type(_sCommand) ~= "string" then error("bad argument #1 (expected string, got " .. type(_sCommand) .. ")", 2) end
     local sPath = shell.resolveProgram( _sCommand )
     if sPath ~= nil then
         tProgramStack[#tProgramStack + 1] = sPath
@@ -174,7 +175,7 @@ function shell.run( ... )
     local tWords = tokenise( ... )
     local sCommand = tWords[1]
     if sCommand then
-        return run( sCommand, table.unpack( tWords, 2 ) )
+        return shell.execute( sCommand, table.unpack( tWords, 2 ) )
     end
     return false
 end
