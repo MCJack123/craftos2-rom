@@ -14,7 +14,7 @@
 * Added speaker peripheral
   * Includes open-source sounds for notes
   * Users can manually add in custom sounds (including offical Minecraft ones)
-    * See https://www.craftos-pc.cc/docs/periphemu.html#speaker-sounds for more info
+    * See https://www.craftos-pc.cc/docs/periphemu#speaker-sounds for more info
 * Updated CC:T compatibility to 1.87.1
   * Added `fs.getAttributes` and `fs.getCapacity` functions
   * Added optional timeout argument to `websocket.receive`
