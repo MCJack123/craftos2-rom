@@ -768,6 +768,13 @@ if http then
     end
     
     http.get = function( _url, _headers, _binary, _redirect )
+        if type( _url ) == "table" then
+            local t = _url
+            _url = t.url
+            _headers = t.headers
+            _binary = t.binary
+            _redirect = t.redirect
+        end
         if type( _url ) ~= "string" then
             error( "bad argument #1 (expected string, got " .. type( _url ) .. ")", 2 ) 
         end
@@ -809,6 +816,15 @@ if http then
     end
 
     http.request = function( _url, _post, _headers, _binary, _method, _redirect )
+        if type( _url ) == "table" then
+            local t = _url
+            _url = t.url
+            _post = t.body
+            _headers = t.headers
+            _binary = t.binary
+            _redirect = t.redirect
+            _method = t.method
+        end
         if type( _url ) ~= "string" then
             error( "bad argument #1 (expected string, got " .. type( _url ) .. ")", 2 ) 
         end
