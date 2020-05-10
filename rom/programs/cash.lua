@@ -47,6 +47,8 @@ local pausedJob
 local CCKernel2 = kernel and users and kernel.getPID
 local OpusOS = kernel and kernel.hook
 
+if table.maxn == nil then table.maxn = function(t) local i = 1 while t[i] ~= nil do i = i + 1 end return i - 1 end end
+
 local function trim(s) return string.match(s, '^()%s*$') and '' or string.match(s, '^%s*(.*%S)') end
 
 HOME = "/"

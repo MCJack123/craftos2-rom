@@ -87,7 +87,7 @@ if _VERSION == "Lua 5.1" then
     table.concat = function(tab, sep, i, j)
         sep = sep or ""
         i = i or 1
-        j = j or table.maxn(tab)
+        j = j or (table.maxn and table.maxn(tab) or (function() local i = 1 while tab[i] ~= nil do i = i + 1 end return i - 1 end)())
         local retval
         for n = i, j do
             if tab[n] ~= nil then retval = (retval and retval .. sep or "") .. tab[n] end

@@ -1,3 +1,42 @@
+## v2.3.1 - May 9, 2020
+* CraftOS-PC is now available as a notarized build on Mac
+  * This means it is no longer necessary to right-click the app to open it for the first time
+* Added new crash handler that outputs a stack trace for debugging
+  * Mac & Linux builds will output the stack trace to the console
+  * Windows builds will only show a dialog showing a crash occurred; the actual stack trace will be saved in a minidump
+  * Mac app builds will show a crash report dialog as usual
+* Added mouse_move event (disabled by default)
+  * The `mouse_move_throttle` config option sets the amount of time between events sent
+  * It is disabled by default because SquidDev-CC/CC-Tweaked#434 is still in progress
+    * Set `mouse_move_throttle` to a whole number (50 is recommended) to enable
+* Added file.readAll for binary file handles
+* Added maxOpenPorts config option to cap maximum number of open ports
+* Added a couple of upcoming CraftOS features from CC: Tweaked upstream
+* Added `term.showMouse` to toggle whether the real mouse cursor should appear
+* Added startComputer capability to plugins
+* Added return value from `config.set` specifying when the change will take effect
+* Improved error message reporting across the board
+* Using non-vanilla programs in vanilla mode now shows a descriptive error
+* Fixed crash when creating directories
+* Fixed term.drawPixels not working properly for table arguments when in mode 1
+* Fixed writing text files with binary by writing in UTF-8
+* Fixed crash when an HTTP request times out
+* Fixed a security vulnerability involving the drive peripheral
+* Fixed multiple mouse_drag events being sent for the same position (#107)
+* Fixed computer not unpausing when closing debugger
+* Fixed mount dialog showing incorrect text relating to read-write mount
+* Fixed some bugs with the modem
+* Fixed a bunch of small memory leaks & issues
+* Fixed a race condition when taking a screenshot
+* Fixed a bug where the size operator of a table may not represent its actual size
+* Fixed a crash when using a modem or debugger after rebooting
+  * This was done by adding a `reinitialize` method to peripherals
+    * This method is called after restarting a computer while having the peripheral attached
+    * Use this if your peripheral holds any references to the computer's Lua state or a sub-thread
+* Fixed a bug where coroutines created before attaching a debugger won't be able to be paused from the debugger when resumed
+* Fixed `http.get` and `http.request` not allowing using a table as a parameter
+* Fixed a bug where the computer wouldn't boot when `disable_lua51_features` is enabled (#110)
+
 ## v2.3 - April 26, 2020
 * Massively improved performance of emulation
   * Speed issues are caused by the debugger's hooks (specifically line hooks)
