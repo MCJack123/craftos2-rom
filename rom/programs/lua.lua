@@ -67,6 +67,13 @@ while bRunning do
     if s:match("%S") and tCommandHistory[#tCommandHistory] ~= s then
         table.insert( tCommandHistory, s )
     end
+    if settings.get("lua.warn_against_use_of_local") and s:match("^%s*local%s+") then
+        if term.isColour() then
+            term.setTextColour(colours.yellow)
+        end
+       print("To access local variables in later inputs, remove the local keyword.")
+       term.setTextColour(colours.white)
+    end
     
     local nForcePrint = 0
     local func, e = load( s, "lua", "t", tEnv )
@@ -89,7 +96,10 @@ while bRunning do
             local n = 1
             while n < tResults.n or (n <= nForcePrint) do
                 local value = tResults[ n + 1 ]
-                local ok, serialised = pcall(pretty.pretty, value)
+                local ok, serialised = pcall(pretty.pretty, value, {
+                    function_args = settings.get("lua.function_args"),
+                    function_source = settings.get("lua.function_source"),
+                })
                 if ok then
                     pretty.print(serialised)
                 else

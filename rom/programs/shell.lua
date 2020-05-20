@@ -1,3 +1,4 @@
+local make_package = dofile("rom/modules/main/cc/require.lua").make
 local multishell = multishell
 local parentShell = shell
 local parentTerm = term.current()
@@ -17,94 +18,7 @@ local function createShellEnv( sDir, sPath, ... )
     tEnv[ "shell" ] = shell
     tEnv[ "multishell" ] = multishell
     tEnv[ "arg" ] = { [ 0 ] = "/" .. sPath, ... }
-
-    local package = {}
-    package.loaded = {
-        _G = _G,
-        bit32 = bit32,
-        coroutine = coroutine,
-        math = math,
-        package = package,
-        string = string,
-        table = table,
-    }
-    package.path = "?;?.lua;?/init.lua;/rom/modules/main/?;/rom/modules/main/?.lua;/rom/modules/main/?/init.lua"
-    if turtle then
-        package.path = package.path..";/rom/modules/turtle/?;/rom/modules/turtle/?.lua;/rom/modules/turtle/?/init.lua"
-    elseif command then
-        package.path = package.path..";/rom/modules/command/?;/rom/modules/command/?.lua;/rom/modules/command/?/init.lua"
-    end
-    package.config = "/\n;\n?\n!\n-"
-    package.preload = {}
-    package.loaders = {
-        function( name )
-            if package.preload[name] then
-                return package.preload[name]
-            else
-                return nil, "no field package.preload['" .. name .. "']"
-            end
-        end,
-        function( name )
-            local fname = string.gsub(name, "%.", "/")
-            local sError = ""
-            for pattern in string.gmatch(package.path, "[^;]+") do
-                local sPath = string.gsub(pattern, "%?", fname)
-                if sPath:sub(1,1) ~= "/" then
-                    sPath = fs.combine(sDir, sPath)
-                end
-                if fs.exists(sPath) and not fs.isDir(sPath) then
-                    local fnFile, sError = loadfile( sPath, tEnv )
-                    if fnFile then
-                        return fnFile, sPath
-                    else
-                        return nil, sError
-                    end
-                else
-                    if #sError > 0 then
-                        sError = sError .. "\n"
-                    end
-                    sError = sError .. "no file '" .. sPath .. "'"
-                end
-            end
-            return nil, sError
-        end
-    }
-
-    local sentinel = {}
-    local function require( name )
-        if type( name ) ~= "string" then
-            error( "bad argument #1 (expected string, got " .. type( name ) .. ")", 2 )
-        end
-        if package.loaded[name] == sentinel then
-            error("Loop detected requiring '" .. name .. "'", 0)
-        end
-        if package.loaded[name] then
-            return package.loaded[name]
-        end
-
-        local sError = "Error loading module '" .. name .. "':"
-        for n,searcher in ipairs(package.loaders) do
-            local loader, err = searcher(name)
-            if loader then
-                package.loaded[name] = sentinel
-                local result = loader( err )
-                if result ~= nil then
-                    package.loaded[name] = result
-                    return result
-                else
-                    package.loaded[name] = true
-                    return true
-                end
-            else
-                sError = sError .. "\n" .. err
-            end
-        end
-        error(sError, 2)
-    end
-
-    tEnv["package"] = package
-    tEnv["require"] = require
-
+    tEnv[ "require" ], tEnv[ "package" ] = make_package(tEnv, sDir)
     return tEnv
 end
 
