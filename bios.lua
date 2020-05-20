@@ -52,17 +52,30 @@ if _VERSION == "Lua 5.1" then
         end        
     end
 
-    -- Install the bit32 api
-    local nativebit = bit
-    bit32 = {}
-    bit32.arshift = nativebit.brshift
-    bit32.band = nativebit.band
-    bit32.bnot = nativebit.bnot
-    bit32.bor = nativebit.bor
-    bit32.btest = function( a, b ) return nativebit.band(a,b) ~= 0 end
-    bit32.bxor = nativebit.bxor
-    bit32.lshift = nativebit.blshift
-    bit32.rshift = nativebit.blogic_rshift
+    -- Install the bit32 or bit api
+    if bit and not bit32 then
+        local nativebit = bit
+        bit32 = {}
+        bit32.arshift = nativebit.brshift
+        bit32.band = nativebit.band
+        bit32.bnot = nativebit.bnot
+        bit32.bor = nativebit.bor
+        bit32.btest = function( a, b ) return nativebit.band(a,b) ~= 0 end
+        bit32.bxor = nativebit.bxor
+        bit32.lshift = nativebit.blshift
+        bit32.rshift = nativebit.blogic_rshift
+    elseif bit32 and not bit then
+        -- Inject a stub for the old bit library
+        _G.bit = {
+            bnot = bit32.bnot,
+            band = bit32.band,
+            bor = bit32.bor,
+            bxor = bit32.bxor,
+            brshift = bit32.arshift,
+            blshift = bit32.lshift,
+            blogic_rshift = bit32.rshift,
+        }
+    end
 
     -- Fix embedded zeroes in string match library
     local nativefind = string.find
