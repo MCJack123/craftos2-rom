@@ -1,3 +1,33 @@
+## v2.3.2 - May 23, 2020
+* Feature parity with CC: Tweaked 1.88.1
+  * Add peripheral.getName - returns the name of a wrapped peripheral.
+  * The Lua REPL warns when declaring locals (lupus590, exerro)
+  * Add fs.isDriveRoot - checks if a path is the root of a drive.
+  * cc.pretty can now display a function's arguments and where it was defined. The Lua REPL will show arguments by default.
+  * Move the shell's require/package implementation to a separate cc.require module.
+* CraftOS-PC builds with the CC: Tweaked ROM are now available
+  * These builds use the stock ROM, with CraftOS-PC-specific programs included
+  * Some ROM features (notably, autocomplete for CCPC programs) may not be available
+  * CC:T Edition will replace the standard CraftOS-PC ROM, so they can't be used alongside each other
+    * This does not apply to Mac builds, which are distributed as single apps
+  * Ubuntu: Install the `craftos-pc-cct-data` package to use the CC:T ROM
+* `bit32` is now the default bit API
+  * The BIOS will set up a wrapper to allow programs to continue using `bit`
+* Added `file.readLine` to file handles opened in binary mode
+* Added `getLabel` method to computer peripherals
+* Rewrote Gist program again
+  * This will be changing once again in the next version
+* Added new plugin capabilities
+  * `register_queueTask`: Returns a function of the form `void* queueTask(std::function<void*(void*)> func, void* userdata, bool async)`
+  * `register_getComputerById`: Returns a function of the form `Computer * getComputerById(int id)`
+  * `get_selectedRenderer`: Returns a number representing the currently selected renderer
+* Capability callbacks now receive the name of the function it's called for
+* `plugin_info` can now safely throw errors
+  * If a plugin throws an error here, its API will not be loaded and the error will be reported to the user on boot
+* Added SDLTerminal::resizeWholeWindow, which resizes a terminal and its window
+* Fixed `file.readLine` only returning up to 255 characters
+* Fixed a possible race condition
+
 ## v2.3.1 - May 9, 2020
 * CraftOS-PC is now available as a notarized build on Mac
   * This means it is no longer necessary to right-click the app to open it for the first time
