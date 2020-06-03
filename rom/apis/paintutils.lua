@@ -1,7 +1,7 @@
 
 local function drawPixelInternal( xPos, yPos )
     if term.getGraphicsMode and term.getGraphicsMode() then
-        term.setPixel(xPos, yPos, term.getBackgroundColor())
+        term.setPixel(xPos - 1, yPos - 1, term.getBackgroundColor())
     else
         term.setCursorPos( xPos, yPos )
         term.write(" ")

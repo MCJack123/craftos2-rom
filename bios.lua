@@ -257,6 +257,8 @@ function write( sText )
         error( "bad argument #1 (expected string or number, got " .. type( sText ) .. ")", 2 ) 
     end
 
+    if type(sText) == "number" then sText = tostring(sText) end
+
     local w,h = term.getSize()
     local x,y = term.getCursorPos()
     
