@@ -1,3 +1,19 @@
+## v2.3.3 - June 6, 2020
+* Added a `record` domain to drives
+  * Inserting a disk in the format `record:<name>` will insert a music disc from `minecraft:music_disc.*` in the speaker sound data
+  * `disk.insertDisk("left", "record:cat")` will insert the "cat" music disc from the sound files as a playable music disc
+* Updated `gist` (again)
+* Fixed an error preventing the debugger from starting up
+* Fixed `fs.readLine` returning weird strings on empty lines (#113)
+* Fixed an error when writing numbers to the screen
+* Fixed a bug that overrode User-Agent and Content-Type HTTP headers
+* Fixed audio clipping when playing pitched sound through the speaker
+* Fixed a crash when playing some notes on Windows
+* Fixed stack corruption in the debugger
+* Fixed origin point of paintutils calls in graphics mode
+* Fixed a bug that may lead to events being sent with the wrong parameters
+* Computers now shut down automatically if the BIOS exits
+
 ## v2.3.2 - May 23, 2020
 * Feature parity with CC: Tweaked 1.88.1
   * Add peripheral.getName - returns the name of a wrapped peripheral.
