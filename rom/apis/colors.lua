@@ -19,7 +19,6 @@ black = 32768
 function combine( a, ... )
     local r = 0
     local args = table.pack(a, ...)
-    if args.n < 1 then error("bad argument #" .. (args.n + 1) .. " (expected number, got nil)", 2) end
     for n = 1, args.n do
         local c = args[n]
         if type( c ) ~= "number" then
