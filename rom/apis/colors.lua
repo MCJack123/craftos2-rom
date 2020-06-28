@@ -16,9 +16,9 @@ green = 8192
 red = 16384
 black = 32768
 
-function combine( a, ... )
+function combine( ... )
     local r = 0
-    local args = table.pack(a, ...)
+    local args = table.pack(...)
     for n = 1, args.n do
         local c = args[n]
         if type( c ) ~= "number" then
