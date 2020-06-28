@@ -16,7 +16,7 @@ native.redirect = function( target )
     if type( target ) ~= "table" then
         error( "bad argument #1 (expected table, got " .. type( target ) .. ")", 2 ) 
     end
-    if target == term then
+    if target == term or (target == _G.term and native ~= _G.term) then
         error( "term is not a recommended redirect target, try term.current() instead", 2 )
     end
 	--traceback("redirecting")

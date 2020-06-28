@@ -16,9 +16,12 @@ green = 8192
 red = 16384
 black = 32768
 
-function combine( ... )
+function combine( a, ... )
     local r = 0
-    for n,c in ipairs( { ... } ) do
+    local args = table.pack(a, ...)
+    if args.n < 2 then error("bad argument #" .. (args.n + 1) .. " (expected number, got nil)", 2) end
+    for n = 1, args.n do
+        local c = args[n]
         if type( c ) ~= "number" then
             error( "bad argument #"..n.." (expected number, got " .. type( c ) .. ")", 2 )
         end
@@ -31,9 +34,11 @@ function subtract( colors, ... )
     if type( colors ) ~= "number" then
         error( "bad argument #1 (expected number, got " .. type( colors ) .. ")", 2 )
     end
-    if ({ ... })[1] == nil then error( "bad argument #2 (expected number, got nil)", 2 ) end
+    if ... == nil then error( "bad argument #2 (expected number, got nil)", 2 ) end
     local r = colors
-    for n,c in ipairs( { ... } ) do
+    local args = table.pack(...)
+    for n = 1, args.n do
+        local c = args[n]
         if type( c ) ~= "number" then
             error( "bad argument #"..tostring( n+1 ).." (expected number, got " .. type( c ) .. ")", 2 )
         end

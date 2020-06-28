@@ -47,7 +47,7 @@ function shell.execute( _sCommand, ... )
             multishell.setTitle( multishell.getCurrent(), sTitle )
         end
         local sDir = fs.getDir( sPath )
-        local result = os.run( createShellEnv( sDir, sPath, ... ), sPath, ... )
+        local result = os.run( createShellEnv( sDir, _sCommand, ... ), sPath, ... )
         tProgramStack[#tProgramStack] = nil
         if multishell then
             if #tProgramStack > 0 then

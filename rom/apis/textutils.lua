@@ -111,9 +111,19 @@ function pagedPrint( _sText, _nFreeLines )
     return result
 end
 
+local function npairs(t)
+    if t.n == nil then error("no number field", 2) end
+    local i = 0
+    return function()
+        i = i + 1
+        if i > t.n then return nil
+        else return i, t[i] end
+    end
+end
+
 local function tabulateCommon( bPaged, ... )
-    local tAll = { ... }
-    for k,v in ipairs( tAll ) do
+    local tAll = table.pack( ... )
+    for k,v in npairs( tAll ) do
         if type( v ) ~= "number" and type( v ) ~= "table" then
             error( "bad argument #"..k.." (expected number or table, got " .. type( v ) .. ")", 3 ) 
         end
@@ -121,7 +131,7 @@ local function tabulateCommon( bPaged, ... )
     
     local w,h = term.getSize()
     local nMaxLen = w / 8
-    for n, t in ipairs( tAll ) do
+    for n, t in npairs( tAll ) do
         if type(t) == "table" then
             for n, sItem in pairs(t) do
                 nMaxLen = math.max( string.len( sItem ) + 1, nMaxLen )
@@ -156,7 +166,7 @@ local function tabulateCommon( bPaged, ... )
         end
         print()
     end
-    for n, t in ipairs( tAll ) do
+    for n, t in npairs( tAll ) do
         if type(t) == "table" then
             if #t > 0 then
                 drawCols( t )
@@ -261,6 +271,9 @@ local function serializeJSONImpl( t, tTracking, bNBTStyle )
     local sType = type(t)
     if t == empty_json_array then
         return "[]"
+
+    elseif t == json_null then
+        return "null"
 
     elseif sType == "table" then
         if tTracking[t] ~= nil then

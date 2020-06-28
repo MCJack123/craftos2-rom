@@ -1,7 +1,7 @@
 
 local tArgs = { ... }
 if #tArgs < 1 then
-    print( "Usage: rm <path...>" )
+    print( "Usage: rm <paths>" )
     return
 end
 
@@ -15,7 +15,7 @@ for i = 1, #tArgs do
             elseif fs.isDriveRoot(file) then
                 printError("Cannot delete mount /" .. file)
                 if fs.isDir(file) then
-                    print("To delete its contents run rm /" .. fs.combine(file, "*") .. ", or to unmount it run unmount /" .. file)
+                    print("To delete its contents run rm /" .. fs.combine(file, "*") .. ((file == "" or file == "rom") and "" or ", or to unmount it run unmount /" .. file))
                 end
             else
                 local ok, err = pcall(fs.delete, file)
@@ -25,6 +25,6 @@ for i = 1, #tArgs do
             end
         end
     else
-        printError( "No matching files" )
+        printError( sPath .. ": No matching files" )
     end
 end
