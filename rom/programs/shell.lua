@@ -17,7 +17,7 @@ local function createShellEnv( sDir, sPath, ... )
     local tEnv = {}
     tEnv[ "shell" ] = shell
     tEnv[ "multishell" ] = multishell
-    tEnv[ "arg" ] = { [ 0 ] = "/" .. sPath, ... }
+    tEnv[ "arg" ] = { [ 0 ] = sPath, ... }
     tEnv[ "require" ], tEnv[ "package" ] = make_package(tEnv, sDir)
     return tEnv
 end
