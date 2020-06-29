@@ -64,7 +64,7 @@ if _VERSION == "Lua 5.1" then
         bit32.bxor = nativebit.bxor
         bit32.lshift = nativebit.blshift
         bit32.rshift = nativebit.blogic_rshift
-    elseif bit32 and not bit then
+    elseif bit32 and not bit and not _CC_DISABLE_LUA51_FEATURES then
         -- Inject a stub for the old bit library
         _G.bit = {
             bnot = bit32.bnot,
@@ -118,6 +118,14 @@ if _VERSION == "Lua 5.1" then
         math.log10 = nil
         table.maxn = nil
         bit = nil
+    else
+        local function prefix(chunkname)
+            if type(chunkname) ~= "string" then return chunkname end
+            local head = chunkname:sub(1, 1)
+            if head == "=" or head == "@" then return chunkname
+            else return "=" .. chunkname end
+        end
+        _G.loadstring = function(string, chunkname) return nativeloadstring(string, prefix(chunkname)) end
     end
 end
 
