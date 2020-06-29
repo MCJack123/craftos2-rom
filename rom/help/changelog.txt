@@ -1,3 +1,25 @@
+## v2.3.4 - June 29, 2020
+* `fs.delete` no longer errors when deleting a non-existent file
+* Updated CC:T version to 1.89.1
+* Fixed `io.open` creating a directory instead of opening a file in write mode (#116)
+* Fixed `fs.getDrive` returning the wrong results
+* Added an error dialog when an error occurs reading the configuration files
+  * The dialog includes a message describing where the JSON parsing error occurred
+  * If an error occurs, the defaults will be used, and no changes will be saved
+* Fixed a whole bunch of warnings
+* `fs.getSize` now returns 0 when used on a directory instead of erroring
+* Added proper `ingame` locale for `os.day/time/epoch`
+  * This is based on a 20-minute clock that starts when the computer boots
+  * This change is to improve compatibility with CCEmuX/CC:T
+* Added CCEmuX command-line flags
+  * `--assets-dir`, `--computers-dir`, `--start-dir`, `--data-dir` (alias of `--directory`), `--plugin`, `--renderer`
+  * The `--start-dir` flag only affects the initial computer (specified by `--id`)
+* Fixed a bug causing audio glitches when playing low notes through the speaker
+* Fixed an error when writing `nil` or a number to a file (#118)
+* Fixed a crash when an invalid format string is passed to `os.date`
+* `os.time` now properly parses tables returned by `os.date("*t")`
+* CraftOS-PC now reports its real version and CC version in HTTP User-Agent strings
+
 ## v2.3.3 - June 6, 2020
 * Added a `record` domain to drives
   * Inserting a disk in the format `record:<name>` will insert a music disc from `minecraft:music_disc.*` in the speaker sound data

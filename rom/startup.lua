@@ -71,6 +71,9 @@ local function completeEither( shell, nIndex, sText )
         return fs.complete( sText, shell.dir(), true, true )
     end
 end
+local function completeEitherMult( shell, nIndex, sText )
+    return fs.complete( sText, shell.dir(), true, true )
+end
 local function completeEitherEither( shell, nIndex, sText )
     if nIndex == 1 then
         local tResults = fs.complete( sText, shell.dir(), true, true )
@@ -230,7 +233,7 @@ shell.setCompletionFunction( "rom/programs/help.lua", completeHelp )
 shell.setCompletionFunction( "rom/programs/id.lua", completePeripheral )
 shell.setCompletionFunction( "rom/programs/label.lua", completeLabel )
 shell.setCompletionFunction( "rom/programs/list.lua", completeDir )
-shell.setCompletionFunction( "rom/programs/mkdir.lua", completeEither )
+shell.setCompletionFunction( "rom/programs/mkdir.lua", completeEitherMult )
 shell.setCompletionFunction( "rom/programs/monitor.lua", completeMonitor )
 shell.setCompletionFunction( "rom/programs/move.lua", completeEitherEither )
 shell.setCompletionFunction( "rom/programs/redstone.lua", completeRedstone )
