@@ -1,24 +1,48 @@
 ## v2.3.4 - June 29, 2020
-* `fs.delete` no longer errors when deleting a non-existent file
 * Updated CC:T version to 1.89.1
-* Fixed `io.open` creating a directory instead of opening a file in write mode (#116)
-* Fixed `fs.getDrive` returning the wrong results
+  * This includes full testing on the CC:T test set
+  * CraftOS-PC now fully passes all CC:T tests
 * Added an error dialog when an error occurs reading the configuration files
   * The dialog includes a message describing where the JSON parsing error occurred
   * If an error occurs, the defaults will be used, and no changes will be saved
-* Fixed a whole bunch of warnings
-* `fs.getSize` now returns 0 when used on a directory instead of erroring
 * Added proper `ingame` locale for `os.day/time/epoch`
   * This is based on a 20-minute clock that starts when the computer boots
   * This change is to improve compatibility with CCEmuX/CC:T
 * Added CCEmuX command-line flags
   * `--assets-dir`, `--computers-dir`, `--start-dir`, `--data-dir` (alias of `--directory`), `--plugin`, `--renderer`
   * The `--start-dir` flag only affects the initial computer (specified by `--id`)
+* Headless mode now reports a color terminal (for advanced testing)
+* `os.time` now properly parses tables returned by `os.date("*t")`
+* CraftOS-PC now reports its real version and CC version in HTTP User-Agent strings
+* `fs.delete` no longer errors when deleting a non-existent file
+* Fixed `io.open` creating a directory instead of opening a file in write mode (#116)
+* Fixed `fs.getDrive` returning the wrong results
+* Fixed a whole bunch of warnings
+* `fs.getSize` now returns 0 when used on a directory instead of erroring
 * Fixed a bug causing audio glitches when playing low notes through the speaker
 * Fixed an error when writing `nil` or a number to a file (#118)
 * Fixed a crash when an invalid format string is passed to `os.date`
-* `os.time` now properly parses tables returned by `os.date("*t")`
-* CraftOS-PC now reports its real version and CC version in HTTP User-Agent strings
+* Fixed missing cc.completion and cc.shell.completion modules
+* Fixed programs getting the path to the program in arg[0] instead of the command as it was run
+* Raised maximum Lua call depth to 32768 (from 256)
+* `loadstring` now automatically adds an `=` sign to the chunk name
+* Fixed `debug.getlocal` not returning function parameter names
+  * This fixes the `cc.pretty` module's parameter detection function
+* Fixed vulnerability in `io` library
+* Fixed `io.lines()` with no arguments
+* Fixed missing `*L` option for `io.read`/`file:read`
+* Fixed `io.write`/`file:write` not returning file handle
+* Fixed `string.format` erroring when using nil as a string parameter
+* `fs.copy` can now copy folders as expected
+* Fixed `fs.find("/")` returning an empty table
+* Fixed `fs.attributes` having the wrong name
+* Fixed `fs.makeDir` not erroring when it tries to create a directory where a file is already present
+* Fixed a boatload of string differences to comply with CC: Tweaked
+* Fixed a bunch more small inconsistencies
+* Fixed `io.open` not creating all parent directories if they're missing
+* Added support for custom options to `io.lines`
+* Fixed support for '+' modes in `io.open`
+* Fixed errors in Lua prompt showing `[string "lua"]:` instead of `lua:`
 
 ## v2.3.3 - June 6, 2020
 * Added a `record` domain to drives
