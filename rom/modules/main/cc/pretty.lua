@@ -389,6 +389,7 @@ local function pretty_impl(obj, options, tracking)
         local doc = setmetatable({ tag = "concat", n = 1, space_line }, Doc)
 
         local length, keys, keysn = #obj, {}, 1
+        for i = 1, length do if obj[i] == nil then length = i-1 break end end
         for k in pairs(obj) do keys[keysn], keysn = k, keysn + 1 end
         table.sort(keys, key_compare)
 
