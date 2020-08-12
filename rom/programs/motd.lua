@@ -2,6 +2,7 @@ if _CCPC_FIRST_RUN then
     print([[Welcome to CraftOS-PC! This is the ComputerCraft shell prompt, where you can run programs.
 * Type "programs" to see the programs you can run.
 * Type "help <program>" to see help for a specific program.
+* Read the documentation at https://www.craftos-pc.cc/docs/.
 * Report bugs to https://www.craftos-pc.cc/bugreport.
 ]])
 elseif _CCPC_UPDATED_VERSION then
