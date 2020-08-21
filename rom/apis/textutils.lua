@@ -407,7 +407,7 @@ do
                     buf[n], n, pos = utf8.char(tonumber(num_str, 16)), n + 1, pos + 6
                 else
                     local unesc = escapes[c]
-                    if not unesc then error_at(pos + 1, "Unknown escape character %q.", unesc) end
+                    if not unesc then error_at(pos + 1, "Unknown escape character %q.", escapes[c]) end
                     buf[n], n, pos = unesc, n + 1, pos + 2
                 end
             elseif c >= '\x20' then
