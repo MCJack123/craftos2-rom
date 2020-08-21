@@ -229,7 +229,7 @@ end]]
 -- Patch the error function on LuaJIT because specifying a level <= 0 crashes for some reason...?
 if jit then
     local nativeError = error
-    _G.error = function(msg, level) if level <= 0 then return nativeError(msg) else return nativeError(msg, level) end end
+    _G.error = function(msg, level) if level and level <= 0 then return nativeError(msg) else return nativeError(msg, level) end end
 end
 
 -- Install lua parts of the os api
