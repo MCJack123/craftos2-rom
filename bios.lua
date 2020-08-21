@@ -55,7 +55,7 @@ if _VERSION == "Lua 5.1" then
     -- Install the bit32 or bit api
     if bit and not bit32 then
         local wrapBitFunc
-        if jit then wrapBitFunc = function(f) return function(a, b) return f(math.floor(a), math.floor(b)) end end
+        if jit then wrapBitFunc = function(f) return function(a, b) return f(a and math.floor(a), b and math.floor(b)) end end
         else wrapBitFunc = function(f) return f end end
         local nativebit = bit
         bit32 = {}
