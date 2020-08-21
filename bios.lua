@@ -54,16 +54,23 @@ if _VERSION == "Lua 5.1" then
 
     -- Install the bit32 or bit api
     if bit and not bit32 then
+        local wrapBitFunc
+        if jit then wrapBitFunc = function(f) return function(a, b) return f(math.floor(a), math.floor(b)) end end
+        else wrapBitFunc = function(f) return f end end
         local nativebit = bit
         bit32 = {}
-        bit32.arshift = nativebit.brshift
-        bit32.band = nativebit.band
-        bit32.bnot = nativebit.bnot
-        bit32.bor = nativebit.bor
-        bit32.btest = function( a, b ) return nativebit.band(a,b) ~= 0 end
-        bit32.bxor = nativebit.bxor
-        bit32.lshift = nativebit.blshift
-        bit32.rshift = nativebit.blogic_rshift
+        bit32.arshift = wrapBitFunc(nativebit.brshift)
+        bit32.band = wrapBitFunc(nativebit.band)
+        bit32.bnot = wrapBitFunc(nativebit.bnot)
+        bit32.bor = wrapBitFunc(nativebit.bor)
+        bit32.btest = wrapBitFunc(function( a, b ) return nativebit.band(a,b) ~= 0 end)
+        bit32.bxor = wrapBitFunc(nativebit.bxor)
+        bit32.lshift = wrapBitFunc(nativebit.blshift)
+        bit32.rshift = wrapBitFunc(nativebit.blogic_rshift)
+        if jit then
+            bit32.rrotate = wrapBitFunc(nativebit.ror)
+            bit32.lrotate = wrapBitFunc(nativebit.rol)
+        end
     elseif bit32 and not bit and not _CC_DISABLE_LUA51_FEATURES then
         -- Inject a stub for the old bit library
         _G.bit = {
