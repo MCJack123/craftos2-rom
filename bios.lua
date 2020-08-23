@@ -237,6 +237,7 @@ end]]
 if jit then
     local nativeError = error
     _G.error = function(msg, level) if level and level < 0 then return nativeError(msg) else return nativeError(msg, level) end end
+    io.read = function(...) if io.input() == io.stdin then return read() else return io.input():read(...) end end
 end
 
 -- Install lua parts of the os api
