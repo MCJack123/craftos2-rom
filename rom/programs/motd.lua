@@ -6,7 +6,7 @@ if _CCPC_FIRST_RUN then
 * Report bugs to https://www.craftos-pc.cc/bugreport.
 ]])
 elseif _CCPC_UPDATED_VERSION then
-    print("CraftOS-PC has been updated to " .. _HOST:match("CraftOS%-PC (v[%d%.]+)") .. ". To see the new changes, type \"help whatsnew\".")
+    print("CraftOS-PC has been updated to " .. _HOST:match("CraftOS%-PC [%a]* ?(v[%d%.]+)") .. ". To see the new changes, type \"help whatsnew\".")
 else
     local tMotd = {}
 
