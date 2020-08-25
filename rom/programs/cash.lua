@@ -1,7 +1,7 @@
 --[[
 MIT License
 
-Copyright (c) 2019 JackMacWindows
+Copyright (c) 2019-2020 JackMacWindows
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -46,6 +46,7 @@ local shell_env = _ENV
 local pausedJob
 local CCKernel2 = kernel and users and kernel.getPID
 local OpusOS = kernel and kernel.hook
+local make_require = dofile("/rom/modules/main/cc/require.lua")
 
 if table.maxn == nil then table.maxn = function(t) local i = 1 while t[i] ~= nil do i = i + 1 end return i - 1 end end
 
@@ -455,90 +456,6 @@ builtins = {
 }
 builtins["["] = builtins.test
 
-pack.loaded = {
-    _G = _G,
-    bit32 = bit32,
-    coroutine = coroutine,
-    math = math,
-    package = pack,
-    string = string,
-    table = table,
-}
-pack.loaders = {
-    function( name )
-        if pack.preload[name] then
-            return pack.preload[name]
-        else
-            return nil, "no field package.preload['" .. name .. "']"
-        end
-    end,
-    function( name )
-        local fname = string.gsub(name, "%.", "/")
-        local sError = ""
-        for pattern in string.gmatch(pack.path, "[^;]+") do
-            local sPath = string.gsub(pattern, "%?", fname)
-            if sPath:sub(1,1) ~= "/" then
-                sPath = fs.combine(fs.getDir(vars._), sPath)
-            end
-            if fs.exists(sPath) and not fs.isDir(sPath) then
-                local fnFile, sError = loadfile( sPath, setmetatable({shell = shell, multishell = multishell, package = pack, require = require}, {__index = _ENV}) )
-                if fnFile then
-                    return fnFile, sPath
-                else
-                    return nil, sError
-                end
-            else
-                if #sError > 0 then
-                    sError = sError .. "\n"
-                end
-                sError = sError .. "no file '" .. sPath .. "'!"
-            end
-        end
-        return nil, sError
-    end
-}
-pack.preload = {}
-pack.config = "/\n;\n?\n!\n-"
-pack.path = "?;?.lua;?/init.lua;/rom/modules/main/?;/rom/modules/main/?.lua;/rom/modules/main/?/init.lua"
-if turtle then
-    pack.path = pack.path..";/rom/modules/turtle/?;/rom/modules/turtle/?.lua;/rom/modules/turtle/?/init.lua"
-elseif command then
-    pack.path = pack.path..";/rom/modules/command/?;/rom/modules/command/?.lua;/rom/modules/command/?/init.lua"
-end
-pack.custom = true
-
-local sentinel = {}
-function require( name )
-    if type( name ) ~= "string" then
-        error( "bad argument #1 (expected string, got " .. type( name ) .. ")", 2 )
-    end
-    if pack.loaded[name] == sentinel then
-        error("Loop detected requiring '" .. name .. "'", 0)
-    end
-    if pack.loaded[name] then
-        return pack.loaded[name]
-    end
-
-    local sError = "Error loading module '" .. name .. "':"
-    for n,searcher in ipairs(pack.loaders) do
-        local loader, err = searcher(name)
-        if loader then
-            pack.loaded[name] = sentinel
-            local result = loader( err )
-            if result ~= nil then
-                pack.loaded[name] = result
-                return result
-            else
-                pack.loaded[name] = true
-                return true
-            end
-        else
-            sError = sError .. "\n" .. err
-        end
-    end
-    error(sError, 2)
-end
-
 function shell.exit(retval)
     running = false
     shell_retval = retval or 0
@@ -920,7 +837,9 @@ local function execv(tokens)
         end
         local _old = vars._
         vars._ = path
-        run(setmetatable({shell = shell, multishell = multishell, package = pack, require = require}, {__index = shell_env}), path, table.unpack(tokens)) 
+        local cmdenv = setmetatable({shell = shell, multishell = multishell}, {__index = shell_env})
+        cmdenv.require, cmdenv.package = make_require(cmdenv, PWD)
+        run(cmdenv, path, table.unpack(tokens)) 
         vars._ = _old
     end
     for k,v in pairs(tokens.vars) do _ENV[k] = oldenv[k] end
