@@ -46,7 +46,7 @@ local shell_env = _ENV
 local pausedJob
 local CCKernel2 = kernel and users and kernel.getPID
 local OpusOS = kernel and kernel.hook
-local make_require = dofile("/rom/modules/main/cc/require.lua")
+local make_require = dofile("/rom/modules/main/cc/require.lua").make
 
 if table.maxn == nil then table.maxn = function(t) local i = 1 while t[i] ~= nil do i = i + 1 end return i - 1 end end
 

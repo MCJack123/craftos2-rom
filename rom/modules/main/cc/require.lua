@@ -14,7 +14,7 @@
 --     env.require, env.package = r.make(env, "/")
 
 local expect = require and require("cc.expect") or dofile("rom/modules/main/cc/expect.lua")
-local expect = expect.expect
+expect = expect.expect
 
 local function preload(package)
     return function(name)
@@ -98,8 +98,11 @@ local function make_package(env, dir)
     local package = {}
     package.loaded = {
         _G = _G,
+        bit = bit,
         bit32 = bit32,
         coroutine = coroutine,
+        ffi = ffi,
+        jit = jit,
         math = math,
         package = package,
         string = string,
