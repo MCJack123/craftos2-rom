@@ -105,6 +105,9 @@ if _VERSION == "Lua 5.1" then
 
     -- Fix table.concat() error when a table is non-contiguous
     table.concat = function(tab, sep, i, j)
+        if type( tab ) ~= "table" then
+            error( "bad argument #1 (expected table, got " .. type( tab ) .. ")", 2 )
+        end
         sep = sep or ""
         i = i or 1
         j = j or (table.maxn and table.maxn(tab) or (function() local i = 1 while tab[i] ~= nil do i = i + 1 end return i - 1 end)())
