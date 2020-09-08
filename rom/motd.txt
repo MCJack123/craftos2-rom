@@ -1,5 +1,5 @@
 Visit the website at https://www.craftos-pc.cc
-Please report bugs at https://github.com/MCJack123/craftos2. Thanks!
+Please report bugs at https://www.craftos-pc.cc/bugreport. Thanks!
 View the documentation at https://wiki.computercraft.cc
 Show off your programs or ask for help at our forum: https://forums.computercraft.cc
 You can disable these messages by running "set motd.enable false".
@@ -19,3 +19,5 @@ Running "set" lists the current values of all settings.
 Holding the Ctrl and T keys terminates the running program.
 You can attach peripherals using the "attach" program.
 You can change to the alternate cash shell with "set shell.use_cash true".
+Check out the source code at https://github.com/MCJack123/craftos2.
+Is a program not working correctly? Please report it to https://www.craftos-pc.cc/compatibility.

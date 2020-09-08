@@ -1,11 +1,43 @@
-New Features in CraftOS-PC v2.4.1:
+New Features in CraftOS-PC v2.4.2:
 
-* Grayscale terminals now render using 16 grays instead of forcing colors to 4 grays (#132)
-  * For example, you can now set the color to `colors.red` and the color will render as the grayscale version of red
-* Fixed a crash when using the profiler (#129)
-* Fixed incorrect cursor color in hardware terminal (#130)
-* Last version check now saves right after boot
-* Fixed up a whole bunch of stuff for WASM ports
-* Re-introduced CraftOS-PC Accelerated for v2.4.1
+* Updated CC:T version to 1.91.0
+  * Add string.{pack,unpack,packsize} (MCJack123)
+  * Escape non-ASCII characters in JSON strings (neumond)
+  * Make field names in fs.attributes more consistent (abby)
+  * Fix textutils.formatTime correctly handle 12 AM (R93950X)
+* Speakers are now emulated closer to how they work in ComputerCraft
+  * Each speaker has its own channel pool
+  * Channels are allocated as needed
+  * The `maxNotesPerTick` option now properly caps notes every 1/20 s
+  * Only one sound can be played at once
+  * Channel numbers are now returned as a second argument
+    * These can be passed to `stopSounds` to stop one channel
+* Replaced custom bit32 library with standard Lua 5.2 implementation
+  * This fixes a bug where functions can't take more than two arguments
+  * This should also fix any other possible bugs in the bit32 library
+* Fixed yielding from callbacks of certain functions:
+  * `string.gsub`
+  * `table.sort`
+  * debug hooks
+  * The only function that can't yield from a callback is `load`
+* Added `--mc-save` argument to load computers from a Minecraft save
+  * This reads from the default Minecraft save directory
+  * If the save isn't stored there, you can't use this argument (use `--computers-dir` instead)
+* Added date-specific MOTDs
+  * One of these appears today (September 8)!
+* Added support for hardware renderer in raw client mode
+* Functions can now return an unlimited* number of values
+* Updated cash to use `cc.require` module
+* Fixed a bug causing the same MOTD to appear on each boot
+* Fixed a bug causing a failure to connect to `localhost` over HTTP
+* Fixed a bug with the \x escape code
+* Modified internals of plugin loader, fixing a memory leak in the process
+* JIT: Updated LuaJIT to 2.1.0-beta3
+* JIT: Moved plugin path back to `plugins-luajit` as expected
+* JIT: Added FFI library (available with `jit_ffi_enable` set to true)
+* JIT: Removed `os.setHaltOnLongRunMode`, count hooks are no longer used
+* JIT: Fixed a bug causing `io.read` to not work
+* Windows: Added error dialog when using console-only options with non-console builds
+* Mac: Application is now built as a Universal binary (excluding CraftOS-PC Accelerated, as LuaJIT does not fully support ARM64 yet)
 
 Type "help changelog" to see the full version history.
