@@ -1,3 +1,14 @@
+## v2.4.3 - September 12, 2020
+* Updated CC:T version to 1.92.0
+  * Add support for the `__pairs` metamethod.
+  * `string.format` now uses the `__tostring` metamethod.
+  * Correctly handle tabs within `textutils.unserializeJSON`.
+* Fixed a crash when using plugins
+* Fixed crashing when a Lua panic occurs
+* Fixed a bug causing lesser performance in C CraftOS functions
+* JIT: No longer using LuaJIT BitOp library as it is incompatible with `bit32`
+  * Now using PUC Lua `bit32` implementation instead
+
 ## v2.4.2 - September 8, 2020
 * Updated CC:T version to 1.91.0
   * Add string.{pack,unpack,packsize} (MCJack123)
