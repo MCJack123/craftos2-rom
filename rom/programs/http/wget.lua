@@ -49,7 +49,7 @@ if tArgs[1] == "run" then
         printError( "Failed to download" )
         return
     end
-    local func, err = load( res, fs.getName( sUrl ), "t", _ENV )
+    local func, err = load( res, '@' .. fs.getName( sUrl ), "t", _ENV )
     if not func then
         printError( err )
         return
