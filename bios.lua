@@ -85,23 +85,25 @@ if _VERSION == "Lua 5.1" then
     end
 
     -- Fix embedded zeroes in string match library
-    local nativefind = string.find
-    local nativematch = string.match
-    local nativegmatch = string.gmatch
-    local nativegsub = string.gsub
-    local function wrapStringFunc(f, name) return function(s, pattern, ...)
-        if type(s) ~= "string" then error("bad argument #1 to '" .. name .. "' (expected string, got " .. type(s) .. ")", 2) end
-        if type(pattern) ~= "string" then error("bad argument #2 to '" .. name .. "' (expected string, got " .. type(pattern) .. ")", 2) end
-        local ok, psub = pcall(nativegsub, pattern, "%z", "%%z")
-        if not ok then error(nativegsub(psub, "^.?bios.lua:%d+:", ""), 2) end
-        local res = table.pack(pcall(f, s, psub, ...))
-        if not table.remove(res, 1) then error(nativegsub(res[1], "^.?bios.lua:%d+:", ""), 2)
-        else return table.unpack(res, 1, res.n) end
-    end end
-    string.find = wrapStringFunc(nativefind, "find")
-    string.match = wrapStringFunc(nativematch, "match")
-    string.gmatch = wrapStringFunc(nativegmatch, "gmatch")
-    string.gsub = wrapStringFunc(nativegsub, "gsub")
+    if not pcall(string.match, "", "[\0]") then
+        local nativefind = string.find
+        local nativematch = string.match
+        local nativegmatch = string.gmatch
+        local nativegsub = string.gsub
+        local function wrapStringFunc(f, name) return function(s, pattern, ...)
+            if type(s) ~= "string" then error("bad argument #1 to '" .. name .. "' (expected string, got " .. type(s) .. ")", 2) end
+            if type(pattern) ~= "string" then error("bad argument #2 to '" .. name .. "' (expected string, got " .. type(pattern) .. ")", 2) end
+            local ok, psub = pcall(nativegsub, pattern, "%z", "%%z")
+            if not ok then error(nativegsub(psub, "^.?bios.lua:%d+:", ""), 2) end
+            local res = table.pack(pcall(f, s, psub, ...))
+            if not table.remove(res, 1) then error(nativegsub(res[1], "^.?bios.lua:%d+:", ""), 2)
+            else return table.unpack(res, 1, res.n) end
+        end end
+        string.find = wrapStringFunc(nativefind, "find")
+        string.match = wrapStringFunc(nativematch, "match")
+        string.gmatch = wrapStringFunc(nativegmatch, "gmatch")
+        string.gsub = wrapStringFunc(nativegsub, "gsub")
+    end
 
     -- Fix table.concat() error when a table is non-contiguous
     table.concat = function(tab, sep, i, j)
