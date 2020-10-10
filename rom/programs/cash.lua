@@ -466,6 +466,7 @@ function shell.dir()
 end
 
 function shell.setDir(path)
+    expect(1, path, "string")
     OLDPWD = PWD
     PWD = path
 end
@@ -475,15 +476,18 @@ function shell.path()
 end
 
 function shell.setPath(path)
+    expect(1, path, "string")
     PATH = path
 end
 
 function shell.resolve(localPath)
+    expect(1, localPath, "string")
     if string.sub(localPath, 1, 1) == "/" then return fs.combine(localPath, "")
     else return fs.combine(PWD, localPath) end
 end
 
 function shell.resolveProgram(name)
+    expect(1, name, "string")
     if builtins[name] ~= nil then return name end
     if aliases[name] ~= nil then name = aliases[name] end
     for path in string.gmatch(PATH, "[^:]+") do
@@ -500,10 +504,13 @@ function shell.aliases()
 end
 
 function shell.setAlias(alias, program)
+    expect(1, alias, "string")
+    expect(2, program, "string")
     aliases[alias] = program
 end
 
 function shell.clearAlias(alias)
+    expect(1, alias, "string")
     aliases[alias] = nil
 end
 
@@ -513,6 +520,7 @@ local function combineArray(dst, src, prefix)
 end
 
 function shell.programs(showHidden)
+    -- todo: implement showHidden
     local retval = {}
     for path in string.gmatch(PATH, "[^:]+") do combineArray(retval, fs.find(fs.combine(shell.resolve(path), "*"))) end
     combineArray(retval, fs.find(fs.combine(PWD, "*")), "./")
@@ -524,10 +532,12 @@ function shell.getRunningProgram()
 end
 
 function shell.complete(prefix)
+    expect(1, prefix, "string")
     return fs.complete(prefix, PWD)
 end
 
 function shell.completeProgram(prefix)
+    expect(1, prefix, "string")
     if string.find(prefix, "/") then
         return fs.complete(prefix, PWD, true, false)
     else
@@ -538,6 +548,8 @@ function shell.completeProgram(prefix)
 end
 
 function shell.setCompletionFunction(path, completionFunction)
+    expect(1, path, "string")
+    expect(2, completionFunction, "function")
     completion[path] = {fnComplete = completionFunction}
 end
 
@@ -556,6 +568,7 @@ function multishell.getCount()
 end
 
 function multishell.setFocus(id)
+    expect(1, id, "number")
     return id == 1
 end
 
@@ -576,6 +589,7 @@ function shell.environment()
 end
 
 function shell.setEnvironment(e)
+    expect(1, e, "table")
     shell_env = e
 end
 
@@ -919,6 +933,8 @@ function shell.runAsync(...)
 end
 
 function multishell.launch(environment, path, ...)
+    expect(1, environment, "table")
+    expect(2, path, "string")
     local coro, pid
     local tok = {[0] = path, ...}
     if CCKernel2 then pid = kernel.fork(path, function() execv(tok) end)
