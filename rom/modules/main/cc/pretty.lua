@@ -322,6 +322,8 @@ local function render(doc, width, ribbon_frac)
     return table.concat(out, "", 1, out.n)
 end
 
+Doc.__tostring = render
+
 local keywords = {
     [ "and" ] = true, [ "break" ] = true, [ "do" ] = true, [ "else" ] = true,
     [ "elseif" ] = true, [ "end" ] = true, [ "false" ] = true, [ "for" ] = true,

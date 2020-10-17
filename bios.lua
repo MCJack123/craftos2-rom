@@ -141,7 +141,7 @@ if _VERSION == "Lua 5.1" then
     end
 end
 
-if _VERSION == "Lua 5.3" then
+if _VERSION == "Lua 5.3" or _VERSION == "Lua 5.4" then
     -- If we're on Lua 5.3, install the bit32 api from Lua 5.2
     -- (Loaded from a string so this file will still parse on <5.3 lua)
     load( [[
@@ -278,7 +278,7 @@ function write( sText )
         error( "bad argument #1 (expected string or number, got " .. type( sText ) .. ")", 2 ) 
     end
 
-    if type(sText) == "number" then sText = tostring(sText) end
+    if type(sText) ~= "string" then sText = tostring(sText) end
 
     local w,h = term.getSize()
     local x,y = term.getCursorPos()

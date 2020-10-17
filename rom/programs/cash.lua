@@ -47,6 +47,7 @@ local pausedJob
 local CCKernel2 = kernel and users and kernel.getPID
 local OpusOS = kernel and kernel.hook
 local make_require = dofile("/rom/modules/main/cc/require.lua").make
+local expect = dofile("/rom/modules/main/cc/expect.lua").expect
 
 if table.maxn == nil then table.maxn = function(t) local i = 1 while t[i] ~= nil do i = i + 1 end return i - 1 end end
 
