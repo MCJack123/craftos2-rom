@@ -1,4 +1,9 @@
-## v2.4.4 - ?
+## v2.4.4 - October 18, 2020
+* Bumped CC:T version to 1.93.0
+* Added computer size counting to `fs.getFreeSpace`
+  * This is only enabled with `standardsMode` on
+  * Without `standardsMode`, old behavior is kept
+  * May reduce performance of `fs.getFreeSpace`
 * Fixed path resolution on Windows systems using non-ASCII characters in paths
   * This involved rewriting all of the path-related code to accept wide strings on Windows
     * Why did Windows have to keep using UTF-16??? >:(
@@ -10,8 +15,11 @@
 * Fixed some crashes related to the printer
 * Fixed HTTP >= 400 response codes not being returned as failures
 * Fixed `terminate` event not being sent unconditionally when a filter is set
+* `term.screenshot` can now be called with a boolean value specifying whether to copy the image to the clipboard
 * Added error message to `periphemu.create`
 * Fixed name of scripts run through `wget`
+* Added some extra argument checks to `shell` functions in `cash`
+* Fixed `__tostring` metamethod missing from `cc.pretty` objects
 * Fixed standalone CI builds
 
 ## v2.4.3 - September 12, 2020
