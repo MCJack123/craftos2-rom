@@ -2,7 +2,7 @@
 -- aesthetically pleasing manner.
 --
 -- In order to display something using @{cc.pretty}, you build up a series of
--- @{documents|Doc}. These behave a little bit like strings; you can concatenate
+-- @{Doc|documents}. These behave a little bit like strings; you can concatenate
 -- them together and then print them to the screen.
 --
 -- However, documents also allow you to control how they should be printed. There
@@ -13,13 +13,11 @@
 -- @module cc.pretty
 -- @usage Print a table to the terminal
 --     local pretty = require "cc.pretty"
---     pretty.write(pretty.dump({ 1, 2, 3 }))
+--     pretty.print(pretty.pretty({ 1, 2, 3 }))
 --
 -- @usage Build a custom document and display it
 --     local pretty = require "cc.pretty"
---     pretty.write(pretty.group(pretty.text("hello") .. pretty.space_line .. pretty.text("world")))
---
--- Borrowed from [CC: Tweaked](https://github.com/SquidDev/CC-Tweaked)
+--     pretty.print(pretty.group(pretty.text("hello") .. pretty.space_line .. pretty.text("world")))
 
 local expect = require "cc.expect"
 local expect, field = expect.expect, expect.field
@@ -34,7 +32,7 @@ local function append(out, value)
     out[n], out.n = value, n
 end
 
---- A document, which
+--- A document containing formatted text, with multiple possible layouts.
 --
 -- Documents effectively represent a sequence of strings in alternative layouts,
 -- which we will try to print in the most compact form necessary.
@@ -67,8 +65,11 @@ end
 --
 -- @tparam      string text   The string to construct a new document with.
 -- @tparam[opt] number colour The colour this text should be printed with. If not given, we default to the current
---                            colour.
+-- colour.
 -- @treturn Doc The document with the provided text.
+-- @usage Write some blue text.
+--     local pretty = require "cc.pretty"
+--     pretty.print(pretty.text("Hello!", colours.blue))
 local function text(text, colour)
     expect(1, text, "string")
     expect(2, colour, "number", "nil")
@@ -100,11 +101,14 @@ local function text(text, colour)
 end
 
 --- Concatenate several documents together. This behaves very similar to string concatenation.
-
+--
 -- @tparam Doc|string ... The documents to concatenate.
 -- @treturn Doc The concatenated documents.
--- @usage pretty.concat(doc1, " - ", doc2)
--- @usage doc1 .. " - " .. doc2
+-- @usage <!-- -->
+--     local pretty = require "cc.pretty"
+--     local doc1, doc2 = pretty.text("doc1"), pretty.text("doc2")
+--     print(pretty.concat(doc1, " - ", doc2))
+--     print(doc1 .. " - " .. doc2) -- Also supports ..
 local function concat(...)
     local args = table.pack(...)
     for i = 1, args.n do
@@ -119,7 +123,7 @@ local function concat(...)
     return setmetatable(args, Doc)
 end
 
-Doc.__concat = concat
+Doc.__concat = concat --- @local
 
 --- Indent later lines of the given document with the given number of spaces.
 --
@@ -127,7 +131,7 @@ Doc.__concat = concat
 -- ```txt
 -- foo
 -- bar
--- ``
+-- ```
 -- by two spaces will produce
 -- ```txt
 -- foo
@@ -137,7 +141,9 @@ Doc.__concat = concat
 -- @tparam number depth The number of spaces with which the document should be indented.
 -- @tparam Doc    doc   The document to indent.
 -- @treturn Doc The nested document.
--- @usage pretty.nest(2, pretty.text("foo\nbar"))
+-- @usage <!-- -->
+--     local pretty = require "cc.pretty"
+--     print(pretty.nest(2, pretty.text("foo\nbar")))
 local function nest(depth, doc)
     expect(1, depth, "number")
     if getmetatable(doc) ~= Doc then expect(2, doc, "document") end
@@ -171,6 +177,12 @@ end
 --
 -- @tparam Doc doc The document to group.
 -- @treturn Doc The grouped document.
+-- @usage Uses group to show things being displayed on one or multiple lines.
+--
+--     local pretty = require "cc.pretty"
+--     local doc = pretty.group("Hello" .. pretty.space_line .. "World")
+--     print(pretty.render(doc, 5)) -- On multiple lines
+--     print(pretty.render(doc, 20)) -- Collapsed onto one.
 local function group(doc)
     if getmetatable(doc) ~= Doc then expect(1, doc, "document") end
 
@@ -277,8 +289,9 @@ end
 --
 -- @tparam      Doc     doc         The document to render.
 -- @tparam[opt] number  width       The maximum width of this document. Note that long strings will not be wrapped to
---                                  fit this width - it is only used for finding the best layout.
+-- fit this width - it is only used for finding the best layout.
 -- @tparam[opt] number  ribbon_frac The maximum fraction of the width that we should write in.
+-- @treturn string The rendered document as a string.
 local function render(doc, width, ribbon_frac)
     if getmetatable(doc) ~= Doc then expect(1, doc, "document") end
     expect(2, width, "number", "nil")
@@ -322,14 +335,14 @@ local function render(doc, width, ribbon_frac)
     return table.concat(out, "", 1, out.n)
 end
 
-Doc.__tostring = render
+Doc.__tostring = render --- @local
 
 local keywords = {
-    [ "and" ] = true, [ "break" ] = true, [ "do" ] = true, [ "else" ] = true,
-    [ "elseif" ] = true, [ "end" ] = true, [ "false" ] = true, [ "for" ] = true,
-    [ "function" ] = true, [ "if" ] = true, [ "in" ] = true, [ "local" ] = true,
-    [ "nil" ] = true, [ "not" ] = true, [ "or" ] = true, [ "repeat" ] = true, [ "return" ] = true,
-    [ "then" ] = true, [ "true" ] = true, [ "until" ] = true, [ "while" ] = true,
+    ["and"] = true, ["break"] = true, ["do"] = true, ["else"] = true,
+    ["elseif"] = true, ["end"] = true, ["false"] = true, ["for"] = true,
+    ["function"] = true, ["if"] = true, ["in"] = true, ["local"] = true,
+    ["nil"] = true, ["not"] = true, ["or"] = true, ["repeat"] = true, ["return"] = true,
+    ["then"] = true, ["true"] = true, ["until"] = true, ["while"] = true,
   }
 
 local comma = text(",")
@@ -391,7 +404,6 @@ local function pretty_impl(obj, options, tracking)
         local doc = setmetatable({ tag = "concat", n = 1, space_line }, Doc)
 
         local length, keys, keysn = #obj, {}, 1
-        for i = 1, length do if obj[i] == nil then length = i-1 break end end
         for k in pairs(obj) do keys[keysn], keysn = k, keysn + 1 end
         table.sort(keys, key_compare)
 
@@ -408,7 +420,7 @@ local function pretty_impl(obj, options, tracking)
                 append(doc, pretty_impl(v, options, tracking))
             else
                 append(doc, obracket)
-                append(doc, pretty_impl(k, tracking))
+                append(doc, pretty_impl(k, options, tracking))
                 append(doc, cbracket)
                 append(doc, pretty_impl(v, options, tracking))
             end
@@ -427,12 +439,12 @@ end
 -- @tparam[opt] { function_args = boolean, function_source = boolean } options
 -- Controls how various properties are displayed.
 --  - `function_args`: Show the arguments to a function if known (`false` by default).
---  - `function_source: Show where the function was defined, instead of
+--  - `function_source`: Show where the function was defined, instead of
 --    `function: xxxxxxxx` (`false` by default).
 -- @treturn Doc The object formatted as a document.
 -- @usage Display a table on the screen
 --     local pretty = require "cc.pretty"
---     pretty.print(pretty.pretty({ 1, 2, 3 })
+--     pretty.print(pretty.pretty({ 1, 2, 3 }))
 local function pretty(obj, options)
     expect(2, options, "table", "nil")
     options = options or {}

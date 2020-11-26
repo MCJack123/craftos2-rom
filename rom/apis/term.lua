@@ -1,69 +1,93 @@
+--- The Terminal API provides functions for writing text to the terminal and
+-- monitors, and drawing ASCII graphics.
+--
+-- @module term
 
-local native = (term.native and term.native()) or term
+local expect = dofile("rom/modules/main/cc/expect.lua").expect
+
+local native = term.native and term.native() or term
 local redirectTarget = native
 
-local function wrap( _sFunction )
-	return function( ... )
-        if redirectTarget[_sFunction] == nil then error("Target missing function " .. _sFunction) end
-		return redirectTarget[ _sFunction ]( ... )
-	end
+local function wrap(_sFunction)
+    return function(...)
+        return redirectTarget[_sFunction](...)
+    end
 end
 
-local mainTerm = term
-local term = {}
+local term = _ENV
 
-native.redirect = function( target )
-    if type( target ) ~= "table" then
-        error( "bad argument #1 (expected table, got " .. type( target ) .. ")", 2 ) 
+--- Redirects terminal output to a monitor, a @{window}, or any other custom
+-- terminal object. Once the redirect is performed, any calls to a "term"
+-- function - or to a function that makes use of a term function, as @{print} -
+-- will instead operate with the new terminal object.
+--
+-- A "terminal object" is simply a table that contains functions with the same
+-- names - and general features - as those found in the term table. For example,
+-- a wrapped monitor is suitable.
+--
+-- The redirect can be undone by pointing back to the previous terminal object
+-- (which this function returns whenever you switch).
+--
+-- @tparam Redirect target The terminal redirect the @{term} API will draw to.
+-- @treturn Redirect The previous redirect object, as returned by
+-- @{term.current}.
+-- @usage
+-- Redirect to a monitor on the right of the computer.
+--     term.redirect(peripheral.wrap("right"))
+term.redirect = function(target)
+    expect(1, target, "table")
+    if target == term or target == _G.term then
+        error("term is not a recommended redirect target, try term.current() instead", 2)
     end
-    if target == term or (target == _G.term and native ~= _G.term) then
-        error( "term is not a recommended redirect target, try term.current() instead", 2 )
-    end
-	--traceback("redirecting")
-	if target.setGraphicsMode == nil then target.setGraphicsMode = native.setGraphicsMode end
+    if target.setGraphicsMode == nil then target.setGraphicsMode = native.setGraphicsMode end
 	if target.getGraphicsMode == nil then target.getGraphicsMode = native.getGraphicsMode end
 	if target.setPixel == nil then target.setPixel = native.setPixel end
 	if target.getPixel == nil then target.getPixel = native.getPixel end
 	if target.drawPixels == nil then target.drawPixels = native.drawPixels end
-	for k,v in pairs( native ) do
-		if type( k ) == "string" and type( v ) == "function" and k ~= "native" and k ~= "current" and k ~= "redirect" then
-			if type( target[k] ) ~= "function" then
-				target[k] = function()
-					error( "Redirect object is missing method "..k..".", 2 )
-				end
-			end
-		end
-	end
-	target.native = redirectTarget.native
-	target.current = redirectTarget.current
-	target.redirect = redirectTarget.redirect
-	local oldRedirectTarget = redirectTarget
-	redirectTarget = target
-	return oldRedirectTarget
+    for k, v in pairs(native) do
+        if type(k) == "string" and type(v) == "function" then
+            if type(target[k]) ~= "function" then
+                target[k] = function()
+                    error("Redirect object is missing method " .. k .. ".", 2)
+                end
+            end
+        end
+    end
+    local oldRedirectTarget = redirectTarget
+    redirectTarget = target
+    return oldRedirectTarget
 end
 
-native.current = function()
+--- Returns the current terminal object of the computer.
+--
+-- @treturn Redirect The current terminal redirect
+-- @usage
+-- Create a new @{window} which draws to the current redirect target
+--     window.create(term.current(), 1, 1, 10, 10)
+term.current = function()
     return redirectTarget
 end
 
-native.native = function()
-    -- NOTE: please don't use this function unless you have to.
-    -- If you're running in a redirected or multitasked enviorment, term.native() will NOT be
-    -- the current terminal when your program starts up. It is far better to use term.current()
+--- Get the native terminal object of the current computer.
+--
+-- It is recommended you do not use this function unless you absolutely have
+-- to. In a multitasked environment, @{term.native} will _not_ be the current
+-- terminal object, and so drawing may interfere with other programs.
+--
+-- @treturn Redirect The native terminal redirect.
+term.native = function()
     return native
 end
 
-native.redirect(native)
-
-for k,v in pairs( native ) do
-	if type( k ) == "string" and type( v ) == "function" then
-		if term[k] == nil then
-			term[k] = wrap( k )
-		end
-	end
+-- Some methods shouldn't go through redirects, so we move them to the main
+-- term API.
+for _, method in ipairs { "nativePaletteColor", "nativePaletteColour" } do
+    term[method] = native[method]
+    native[method] = nil
 end
-	
-local env = _ENV
-for k,v in pairs( term ) do
-	env[k] = v
+
+for k, v in pairs(native) do
+    if type(k) == "string" and type(v) == "function" and rawget(term, k) == nil then
+        term[k] = wrap(k)
+    end
 end

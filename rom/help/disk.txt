@@ -10,6 +10,7 @@ disk.playAudio( drive )
 disk.stopAudio( )
 disk.eject( drive )
 disk.getID( drive )
+disk.insertDisk( drive, path )
 
 Events fired by the disk API:
 "disk" when a disk or other item is inserted into a disk drive. Argument is the name of the drive

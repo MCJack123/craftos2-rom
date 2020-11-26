@@ -7,6 +7,3 @@ Thanks to EveryOS for sending me a patched version of Lua that finally fixed iss
 Join the ComputerCraft community online at http://www.computercraft.cc.
 
 To help contribute to CraftOS-PC, browse the source code at https://github.com/MCJack123/craftos2.
-
-GitHub Contributors:
-${gitcontributors}

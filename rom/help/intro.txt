@@ -1,4 +1,4 @@
-Welcome to CraftOS!
+Welcome to CraftOS-PC!
 Type "programs" to see the programs you can run.
 Type "help <program>" to see help for a specific program.
 Type "help programming" to learn about programming.

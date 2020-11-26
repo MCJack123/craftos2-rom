@@ -1,3 +1,5 @@
+## v2.5 - December 19, 2020
+
 ## v2.4.4 - October 18, 2020
 * Bumped CC:T version to 1.93.0
 * Added computer size counting to `fs.getFreeSpace`

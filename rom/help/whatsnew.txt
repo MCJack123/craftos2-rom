@@ -1,26 +1,5 @@
-New Features in CraftOS-PC v2.4.4:
+New Features in CraftOS-PC v2.5:
 
-* Bumped CC:T version to 1.93.0
-* Added computer size counting to `fs.getFreeSpace`
-  * This is only enabled with `standardsMode` on
-  * Without `standardsMode`, old behavior is kept
-  * May reduce performance of `fs.getFreeSpace`
-* Fixed path resolution on Windows systems using non-ASCII characters in paths
-  * This involved rewriting all of the path-related code to accept wide strings on Windows
-    * Why did Windows have to keep using UTF-16??? >:(
-* Fixed keyboard layouts not being respected (#138)
-* Fixed string pattern matching with NUL bytes in patterns
-  * This was previously done in the default ROM, but now Lua itself has been modified to fix the issue
-  * Alternate ROMs (such as the CC:T ROM) no longer have this issue
-* Fixed automatic directory creation reversing the new directory names (#137)
-* Fixed some crashes related to the printer
-* Fixed HTTP >= 400 response codes not being returned as failures
-* Fixed `terminate` event not being sent unconditionally when a filter is set
-* `term.screenshot` can now be called with a boolean value specifying whether to copy the image to the clipboard
-* Added error message to `periphemu.create`
-* Fixed name of scripts run through `wget`
-* Added some extra argument checks to `shell` functions in `cash`
-* Fixed `__tostring` metamethod missing from `cc.pretty` objects
-* Fixed standalone CI builds
+
 
 Type "help changelog" to see the full version history.

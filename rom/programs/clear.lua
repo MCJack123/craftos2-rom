@@ -1,8 +1,44 @@
-if term.setGraphicsMode then
-    term.setGraphicsMode( true )
-    term.clear()
-    term.setGraphicsMode( false )
+local tArgs = { ... }
+
+local function printUsage()
+    local programName = arg[0] or fs.getName(shell.getRunningProgram())
+    print("Usages:")
+    print(programName)
+    print(programName .. " screen")
+    print(programName .. " palette")
+    print(programName .. " all")
 end
-term.clear()
-term.setCursorPos( 1, 1 )
-for i = 0, 15 do term.setPaletteColor( 2^i, term.nativePaletteColor( 2^i ) ) end
+
+local function clear()
+    term.clear()
+    term.setCursorPos(1, 1)
+end
+
+local function clearPixels()
+    if term.getGraphicsMode then
+        term.setGraphicsMode(1)
+        term.clear()
+        term.setGraphicsMode(0)
+    end
+end
+
+local function resetPalette()
+    for i = 0, 15 do
+        term.setPaletteColour(2^i, term.nativePaletteColour(2^i))
+    end
+end
+
+local sCommand = tArgs[1] or "screen"
+if sCommand == "screen" then
+    clear()
+elseif sCommand == "palette" then
+    resetPalette()
+elseif sCommand == "graphics" then
+    clearPixels()
+elseif sCommand == "all" then
+    clear()
+    clearPixels()
+    resetPalette()
+else
+    printUsage()
+end

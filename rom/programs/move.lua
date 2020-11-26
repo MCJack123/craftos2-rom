@@ -1,13 +1,13 @@
-
 local tArgs = { ... }
 if #tArgs < 2 then
-    print( "Usage: mv <source> <destination>" )
+    local programName = arg[0] or fs.getName(shell.getRunningProgram())
+    print("Usage: " .. programName .. " <source> <destination>")
     return
 end
 
-local sSource = shell.resolve( tArgs[1] )
-local sDest = shell.resolve( tArgs[2] )
-local tFiles = fs.find( sSource )
+local sSource = shell.resolve(tArgs[1])
+local sDest = shell.resolve(tArgs[2])
+local tFiles = fs.find(sSource)
 
 local function sanity_checks(source, dest)
     if fs.exists(dest) then
@@ -27,8 +27,8 @@ local function sanity_checks(source, dest)
 end
 
 if #tFiles > 0 then
-    for _, sFile in ipairs( tFiles ) do
-        if fs.isDir( sDest ) then
+    for _, sFile in ipairs(tFiles) do
+        if fs.isDir(sDest) then
             local dest = fs.combine(sDest, fs.getName(sFile))
             if sanity_checks(sFile, dest) then
                 fs.move(sFile, dest)
@@ -38,10 +38,10 @@ if #tFiles > 0 then
                 fs.move(sFile, sDest)
             end
         else
-            printError( "Cannot overwrite file multiple times" )
+            printError("Cannot overwrite file multiple times")
             return
         end
     end
 else
-    printError( "No matching files" )
+    printError("No matching files")
 end

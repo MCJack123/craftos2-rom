@@ -1,88 +1,87 @@
-
 local function printUsage()
-    print( "Usage:" )
-    print( "wget <url> [filename]" )
-    print( "wget run <url> [args...]" )
+    local programName = arg[0] or fs.getName(shell.getRunningProgram())
+    print("Usage:")
+    print(programName .. " <url> [filename]")
+    print(programName .. " run <url>")
 end
- 
+
 local tArgs = { ... }
-if #tArgs < 1 or (tArgs[1] == "run" and #tArgs < 2) then
+
+local run = false
+if tArgs[1] == "run" then
+    table.remove(tArgs, 1)
+    run = true
+end
+
+if #tArgs < 1 then
     printUsage()
     return
 end
- 
+
+local url = table.remove(tArgs, 1)
+
 if not http then
-    printError( "wget requires http API" )
-    printError( "Set http_enable to true in ComputerCraft.cfg" )
+    printError("wget requires the http API")
+    printError("Set http.enabled to true in CC: Tweaked's config")
     return
 end
- 
-local function get( sUrl )
-    write( "Connecting to " .. sUrl .. "... " )
 
-    local ok, err = http.checkURL( sUrl )
+local function getFilename(sUrl)
+    sUrl = sUrl:gsub("[#?].*" , ""):gsub("/+$" , "")
+    return sUrl:match("/([^/]+)$")
+end
+
+local function get(sUrl)
+    -- Check if the URL is valid
+    local ok, err = http.checkURL(url)
     if not ok then
-        print( "Failed." )
-        if err then
-            printError( err )
-        end
-        return nil
+        printError(err or "Invalid URL.")
+        return
     end
 
-    local response = http.get( sUrl , nil , true )
+    write("Connecting to " .. sUrl .. "... ")
+
+    local response = http.get(sUrl , nil , true)
     if not response then
-        print( "Failed." )
+        print("Failed.")
         return nil
     end
 
-    print( "Success." )
+    print("Success.")
 
     local sResponse = response.readAll()
     response.close()
     return sResponse
 end
 
-if tArgs[1] == "run" then
-    local sUrl = tArgs[2]
-    local res = get( sUrl )
-    if not res then
-        printError( "Failed to download" )
-        return
-    end
-    local func, err = load( res, '@' .. fs.getName( sUrl ), "t", _ENV )
+if run then
+    local res = get(url)
+    if not res then return end
+
+    local func, err = load(res, getFilename(url), "t", _ENV)
     if not func then
-        printError( err )
+        printError(err)
         return
     end
 
-    local ok, err = pcall( func, table.unpack( tArgs, 3 ) )
+    local ok, err = pcall(func, table.unpack(tArgs))
     if not ok then
-        printError( err )
+        printError(err)
     end
 else
-    -- Determine file to download
-    local sUrl = tArgs[1]
-    local sFile = tArgs[2] or fs.getName(sUrl)
-    if sFile == "" then
-        print( "File name could not be determined, please specify name manually" )
-        return
-    end
-    local sPath = shell.resolve( sFile )
-    if fs.exists( sPath ) then
-        print( "File already exists" )
+    local sFile = tArgs[1] or getFilename(url)
+    local sPath = shell.resolve(sFile)
+    if fs.exists(sPath) then
+        print("File already exists")
         return
     end
 
-    -- Do the get
-    local res = get( sUrl )
-    if res then
-        local file = fs.open( sPath, "wb" )
-        file.write( res )
-        file.close()
+    local res = get(url)
+    if not res then return end
 
-        print( "Downloaded as "..sFile )
-    else
-        printError( "Failed to download" )
-        return
-    end
+    local file = fs.open(sPath, "wb")
+    file.write(res)
+    file.close()
+
+    print("Downloaded as " .. sFile)
 end

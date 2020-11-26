@@ -1,10 +1,11 @@
 local tArgs = { ... }
 
 local function printUsage()
-    print( "Usages:")
-    print( "dj play" )
-    print( "dj play <drive>" )
-    print( "dj stop" )
+    local programName = arg[0] or fs.getName(shell.getRunningProgram())
+    print("Usages:")
+    print(programName .. " play")
+    print(programName .. " play <drive>")
+    print(programName .. " stop")
 end
 
 if #tArgs > 2 then
@@ -23,28 +24,28 @@ elseif sCommand == "play" or sCommand == nil then
     if sName == nil then
         -- No disc specified, pick one at random
         local tNames = {}
-        for n,sName in ipairs( peripheral.getNames() ) do
-            if disk.isPresent( sName ) and disk.hasAudio( sName ) then
-                table.insert( tNames, sName )
+        for _, sName in ipairs(peripheral.getNames()) do
+            if disk.isPresent(sName) and disk.hasAudio(sName) then
+                table.insert(tNames, sName)
             end
         end
         if #tNames == 0 then
-            print( "No Music Discs in attached disk drives" )
+            print("No Music Discs in attached disk drives")
             return
         end
-        sName = tNames[ math.random(1,#tNames) ]
+        sName = tNames[math.random(1, #tNames)]
     end
 
     -- Play the disc
-    if disk.isPresent( sName ) and disk.hasAudio( sName ) then
-        print( "Playing "..disk.getAudioTitle( sName ) )
-        disk.playAudio( sName )
+    if disk.isPresent(sName) and disk.hasAudio(sName) then
+        print("Playing " .. disk.getAudioTitle(sName))
+        disk.playAudio(sName)
     else
-        print( "No Music Disc in disk drive: "..sName )
+        print("No Music Disc in disk drive: " .. sName)
         return
     end
-    
+
 else
     printUsage()
-    
+
 end

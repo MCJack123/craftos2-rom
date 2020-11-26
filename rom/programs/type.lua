@@ -1,18 +1,17 @@
-
 local tArgs = { ... }
 if #tArgs < 1 then
-    print( "Usage: type <path>" )
+    local programName = arg[0] or fs.getName(shell.getRunningProgram())
+    print("Usage: " .. programName .. " <path>")
     return
 end
 
-local sPath = shell.resolve( tArgs[1] )
-if fs.exists( sPath ) then
-    if fs.isDir( sPath ) then
-        print( "directory" )
+local sPath = shell.resolve(tArgs[1])
+if fs.exists(sPath) then
+    if fs.isDir(sPath) then
+        print("directory")
     else
-        print( "file" )
+        print("file")
     end
 else
-    print( "No such path" )
+    print("No such path")
 end
-

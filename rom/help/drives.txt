@@ -12,6 +12,7 @@ playAudio()
 stopAudio()
 ejectDisk()
 getDiskID()
+insertDisk( path )
 
 Events fired by the Disk Drive:
 "disk" when a disk or other item is inserted into the drive. Argument is the name of the drive.
