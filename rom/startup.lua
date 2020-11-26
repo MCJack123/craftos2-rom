@@ -221,3 +221,10 @@ if tUserStartups then
         shell.run(v)
     end
 end
+
+if _CCPC_PLUGIN_ERRORS and settings.get("shell.report_plugin_errors") then
+    printError("Some plugins failed to load:")
+    for k,v in pairs(_CCPC_PLUGIN_ERRORS) do
+        printError("  " .. k .. " - " .. v)
+    end
+end

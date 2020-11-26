@@ -970,6 +970,12 @@ settings.define("bios.strict_globals", {
     type = "boolean",
 })
 
+settings.define("shell.report_plugin_errors", {
+    default = true,
+    description = "Show errors on startup if a plugin(s) failed to load.",
+    type = "boolean",
+})
+
 settings.define("bios.use_cash", {
     default = true,
     description = [[Switch the default shell interpreter to cash, a Bourne-compatible shell. (Beta)]],
