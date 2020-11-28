@@ -1,3 +1,18 @@
+## v2.4.5 - November 28, 2020
+* Bumped CC:T version to 1.93.1
+  * 1.94.0 support will be coming in v2.5
+* CC:T Edition builds will now update to the standard ROM due to deprecation in v2.5
+  * v2.5 is merging the CC:T ROM into the main ROM, so CC:T Edition downloads will be removed
+  * Further auto-updates will download the standard version regardless of whether CC:T Edition was installed
+  * v2.5 will be the last version with a CC:T Edition download available - after that, updating from CC:T Edition will fail
+* Added some previously missing checks from `term` API functions
+* Fixed `term.setGraphicsMode(false)` not working properly
+* Fixed a possible crash in `file.readLine` on empty lines
+* Fixed a memory leak in `os.startTimer`
+* Fixed `ccemux.openDataDir` not working on Windows
+* Fixed monitor_touch events not being sent when monitorsUseMouseEvents is disabled
+* Fixed update message appearing when switching between standard and Accelerated versions
+
 ## v2.4.4 - October 18, 2020
 * Bumped CC:T version to 1.93.0
 * Added computer size counting to `fs.getFreeSpace`
