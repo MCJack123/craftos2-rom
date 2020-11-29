@@ -601,8 +601,8 @@ function os.sleep(nTime)
 end
 
 local nativeShutdown = os.shutdown
-function os.shutdown()
-    nativeShutdown()
+function os.shutdown(...)
+    nativeShutdown(...)
     while true do
         coroutine.yield()
     end
