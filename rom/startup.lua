@@ -49,14 +49,14 @@ end
 
 local function completeConfigPart2(shell, text, previous)
     if previous[2] == "get" or previous[2] == "set" then
-        return completion.choice(text, config.list(), previous[2] == "set")
+        return completion.choice(shell, text, previous, config.list(), previous[2] == "set")
     end
 end
 
 local function completeConfigPart3(shell, text, previous)
     if previous[2] == "set" then
-        if config.getType(previous[3]) == 0 then return completion.choice("true", "false")
-        elseif previous[3] == "mount_mode" then return completion.choice("none", "ro", "rw") end
+        if config.getType(previous[3]) == 0 then return completion.choice(shell, text, previous, {"true", "false"})
+        elseif previous[3] == "mount_mode" then return completion.choice(shell, text, previous, {"none", "ro", "ro_strict", "rw"}) end
     end
 end
 

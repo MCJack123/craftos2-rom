@@ -102,8 +102,11 @@ local function make_package(env, dir)
     local package = {}
     package.loaded = {
         _G = _G,
+        bit = bit,
         bit32 = bit32,
         coroutine = coroutine,
+        ffi = ffi,
+        jit = jit,
         math = math,
         package = package,
         string = string,

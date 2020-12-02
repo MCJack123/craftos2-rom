@@ -1,5 +1,6 @@
 multishell.setTitle(multishell.getCurrent(), "Debugger")
 local ok, err = pcall(function()
+local pretty = require "cc.pretty"
 local history = {}
 local function split(inputstr, sep)
     sep = sep or "%s"
@@ -113,21 +114,7 @@ while true do
                     local n = 1
                     while n < tResults.n or (n <= nForcePrint) do
                         local value = tResults[ n + 1 ]
-                        if type( value ) == "table" then
-                            local metatable = getmetatable( value )
-                            if type(metatable) == "table" and type(metatable.__tostring) == "function" then
-                                print( tostring( value ) )
-                            else
-                                local ok, serialised = pcall( textutils.serialise, value )
-                                if ok then
-                                    print( serialised )
-                                else
-                                    print( tostring( value ) )
-                                end
-                            end
-                        else
-                            print( tostring( value ) )
-                        end
+                        pretty.print(pretty.pretty(value))
                         n = n + 1
                     end
                 else
