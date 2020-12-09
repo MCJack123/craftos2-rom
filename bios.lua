@@ -691,6 +691,21 @@ if http then
         return wrapRequest(_url, _url, _post, _headers, _binary)
     end
 
+    for k in pairs(methods) do if k ~= "GET" and k ~= "POST" then
+        http[k:lower()] = function(_url, _post, _headers, _binary)
+            if type(_url) == "table" then
+                checkOptions(_url, true)
+                return wrapRequest(_url.url, _url)
+            end
+
+            expect(1, _url, "string")
+            expect(2, _post, "string")
+            expect(3, _headers, "table", "nil")
+            expect(4, _binary, "boolean", "nil")
+            return wrapRequest(_url, {url = _url, body = _post, headers = _headers, binary = _binary, method = k})
+        end
+    end end
+
     http.request = function(_url, _post, _headers, _binary)
         local url
         if type(_url) == "table" then

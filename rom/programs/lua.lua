@@ -5,7 +5,7 @@ if #tArgs > 0 then
     return
 end
 
-local pretty = require "cc.pretty"
+local pretty = require and require "cc.pretty" or dofile "/rom/modules/main/cc/expect.lua"
 
 local bRunning = true
 local tCommandHistory = {}
@@ -23,7 +23,7 @@ setmetatable(tEnv, { __index = _ENV })
 -- Replace our package.path, so that it loads from the current directory, rather
 -- than from /rom/programs. This makes it a little more friendly to use and
 -- closer to what you'd expect.
-do
+if shell then
     local dir = shell.dir()
     if dir:sub(1, 1) ~= "/" then dir = "/" .. dir end
     if dir:sub(-1) ~= "/" then dir = dir .. "/" end
@@ -40,7 +40,7 @@ end
 if term.isColour() then
     term.setTextColour(colours.yellow)
 end
-print("Interactive Lua prompt.")
+print(_G._CCPC_DEBUGGER_ACTIVE and "Entering debugger." or "Interactive Lua prompt.")
 print("Call exit() to exit.")
 term.setTextColour(colours.white)
 
@@ -48,7 +48,7 @@ while bRunning do
     --if term.isColour() then
     --    term.setTextColour( colours.yellow )
     --end
-    write("lua> ")
+    write(_G._CCPC_DEBUGGER_ACTIVE and "lua_debug> " or "lua> ")
     --term.setTextColour( colours.white )
 
     local s = read(nil, tCommandHistory, function(sLine)
