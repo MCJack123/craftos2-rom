@@ -8,6 +8,5 @@ else
         return
     end
     if tonumber(args[3]) ~= nil then args[3] = tonumber(args[3]) end
-    local ok, err = periphemu.create(args[1], args[2], args[3])
-    if not ok then printError("Could not attach peripheral" .. (err and ": " .. err or "")) end
+    if not periphemu.create(args[1], args[2], args[3]) then printError("Could not attach peripheral") end
 end

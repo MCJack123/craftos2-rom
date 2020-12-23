@@ -620,7 +620,7 @@ end -- png.lua
 if not term.getGraphicsMode or not term.drawPixels then error("This requires CraftOS-PC v2.1 or later.") end
 
 local args = {...}
-if #args < 1 then error("Usage: pngread <image.png>") end
+if #args < 1 then error("Usage: pngview <image.png>") end
 
 local image = png.load_from_file(shell.resolve(args[1]))
 if image.data == nil then error("data is nil") end
@@ -636,25 +636,25 @@ if image.color_type == 0 or image.color_type == 4 then for i = 0, 2^image.bit_de
 elseif image.color_type == 3 then for i = 0, #image.palette do term.setPaletteColor(i, image.palette[i].r/255, image.palette[i].g/255, image.palette[i].b/255) end
 elseif image.color_type == 2 or image.color_type == 6 then
     local palette = {}
-    local bpp = 3 + (bit.band(image.color_type, 4) / 4)
-    local data = ""
+    --local bpp = 3 + (bit.band(image.color_type, 4) / 4) --?
+    local data = {}
     for p, x, y in png.pixels(image) do
         local idx
         for i,v in ipairs(palette) do if v.r == p.r and v.g == p.g and v.b == p.b then idx = i; break end end
         if idx == nil then
-            if #palette >= 256 then 
+            if #palette >= 256 then
                 term.setGraphicsMode(false)
-                error("Image has too many colors") 
+                error("Image has too many colors")
             end
-            print(x, y, p.r, p.g, p.b) 
             idx = #palette + 1
             palette[idx] = p
         end
-        term.setPixel(x, y, idx-1)
-        if x == 0 then os.sleep(0) end
+        if data[y] == nil then data[y] = {} end
+        data[y][x] = idx-1
+        --if x == 0 then os.sleep(0) end
     end
     for i,v in ipairs(palette) do term.setPaletteColor(i-1, v.r / 255, v.g / 255, v.b / 255) end
-    --image.data = data
+    term.drawPixels(0, 0, data)
     read()
     term.setGraphicsMode(false)
     for i = 0, 15 do term.setPaletteColor(2^i, term.nativePaletteColor(2^i)) end
@@ -662,17 +662,26 @@ elseif image.color_type == 2 or image.color_type == 6 then
 else error("Image not supported") end
 
 term.clear()
-local start = os.epoch("utc")
+--local start = os.epoch("utc")
 local pixels = {}
-for y = 0, image.height - 1 do 
+for y = 0, image.height - 1 do
     if image.color_type == 4 then
         local str = string.sub(image.data, y * (image.width * 2 + 1) + 1, (y + 1) * (image.width * 2 + 1))
-        pixels[y] = ""
-        for i = 1, #str, 1 do pixels[y] = pixels[y] .. string.sub(str, i, i) end
-    else pixels[y] = string.sub(image.data, y * (image.width + 1) + 1, (y + 1) * (image.width + 1)) end
+        pixels[y] = str
+        for i = 1, #str, 2 do pixels[y] = pixels[y] .. string.sub(str, i, i) end
+    else
+        if image.bit_depth == 8 then pixels[y] = string.sub(image.data, y * (image.width + 2) + 1, (y + 1) * (image.width + 2))
+        else
+            pixels[y] = ""
+            for x = 1, image.width / (8 / image.bit_depth) do
+                for i = 1, 8 / image.bit_depth do
+                    pixels[y] = pixels[y] .. string.char(bit32.band(bit32.rshift(string.byte(image.data, y * math.floor(image.width / (8 / image.bit_depth) + 1) + x), ((8/image.bit_depth)-i) * image.bit_depth), 2^image.bit_depth - 1))
+                end
+            end
+        end
+    end
 end
 term.drawPixels(0, 0, pixels)
---for y = 0, #pixels do for x = 1, #pixels[y] do term.setPixel(x - 1, y, string.byte(pixels[y], x, x)) end end
 --print("Render took " .. os.epoch("utc") - start .. " ms")
 read()
 

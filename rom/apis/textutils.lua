@@ -1,41 +1,67 @@
+--- The @{textutils} API provides helpful utilities for formatting and
+-- manipulating strings.
+--
+-- @module textutils
+
 local expect = dofile("rom/modules/main/cc/expect.lua")
 local expect, field = expect.expect, expect.field
 
-function slowWrite( sText, nRate )
-    if nRate ~= nil and type( nRate ) ~= "number" then
-        error( "bad argument #2 (expected number, got " .. type( nRate ) .. ")", 2 )
-    end
+--- Slowly writes string text at current cursor position,
+-- character-by-character.
+--
+-- Like @{_G.write}, this does not insert a newline at the end.
+--
+-- @tparam string sText The the text to write to the screen
+-- @tparam[opt] number nRate The number of characters to write each second,
+-- Defaults to 20.
+-- @usage textutils.slowWrite("Hello, world!")
+-- @usage textutils.slowWrite("Hello, world!", 5)
+function slowWrite(sText, nRate)
+    expect(2, nRate, "number", "nil")
     nRate = nRate or 20
     if nRate < 0 then
-        error( "Rate must be positive", 2 )
+        error("Rate must be positive", 2)
     end
     local nSleep = 1 / nRate
-        
-    sText = tostring( sText )
-    local x,y = term.getCursorPos()
-    local len = string.len( sText )
-    
-    for n=1,len do
-        term.setCursorPos( x, y )
-        sleep( nSleep )
-        local nLines = write( string.sub( sText, 1, n ) )
-        local newX, newY = term.getCursorPos()
+
+    sText = tostring(sText)
+    local x, y = term.getCursorPos()
+    local len = #sText
+
+    for n = 1, len do
+        term.setCursorPos(x, y)
+        sleep(nSleep)
+        local nLines = write(string.sub(sText, 1, n))
+        local _, newY = term.getCursorPos()
         y = newY - nLines
     end
 end
 
-function slowPrint( sText, nRate )
-    slowWrite( sText, nRate )
+--- Slowly prints string text at current cursor position,
+-- character-by-character.
+--
+-- Like @{print}, this inserts a newline after printing.
+--
+-- @tparam string sText The the text to write to the screen
+-- @tparam[opt] number nRate The number of characters to write each second,
+-- Defaults to 20.
+-- @usage textutils.slowPrint("Hello, world!")
+-- @usage textutils.slowPrint("Hello, world!", 5)
+function slowPrint(sText, nRate)
+    slowWrite(sText, nRate)
     print()
 end
 
-function formatTime( nTime, bTwentyFourHour )
-    if type( nTime ) ~= "number" then
-        error( "bad argument #1 (expected number, got " .. type( nTime ) .. ")", 2 )
-    end
-    if bTwentyFourHour ~= nil and type( bTwentyFourHour ) ~= "boolean" then
-        error( "bad argument #2 (expected boolean, got " .. type( bTwentyFourHour ) .. ")", 2 ) 
-    end
+--- Takes input time and formats it in a more readable format such as `6:30 PM`.
+--
+-- @tparam number nTime The time to format, as provided by @{os.time}.
+-- @tparam[opt] boolean bTwentyFourHour Whether to format this as a 24-hour
+-- clock (`18:30`) rather than a 12-hour one (`6:30 AM`)
+-- @treturn string The formatted time
+-- @usage textutils.formatTime(os.time())
+function formatTime(nTime, bTwentyFourHour)
+    expect(1, nTime, "number")
+    expect(2, bTwentyFourHour, "boolean", "nil")
     local sTOD = nil
     if not bTwentyFourHour then
         if nTime >= 12 then
@@ -49,28 +75,28 @@ function formatTime( nTime, bTwentyFourHour )
     end
 
     local nHour = math.floor(nTime)
-    local nMinute = math.floor((nTime - nHour)*60)
+    local nMinute = math.floor((nTime - nHour) * 60)
     if sTOD then
-        return string.format( "%d:%02d %s", nHour == 0 and 12 or nHour, nMinute, sTOD )
+        return string.format("%d:%02d %s", nHour == 0 and 12 or nHour, nMinute, sTOD)
     else
-        return string.format( "%d:%02d", nHour, nMinute )
+        return string.format("%d:%02d", nHour, nMinute)
     end
 end
 
-local function makePagedScroll( _term, _nFreeLines )
+local function makePagedScroll(_term, _nFreeLines)
     local nativeScroll = _term.scroll
     local nFreeLines = _nFreeLines or 0
-    return function( _n )
-        for n=1,_n do
-            nativeScroll( 1 )
-            
+    return function(_n)
+        for _ = 1, _n do
+            nativeScroll(1)
+
             if nFreeLines <= 0 then
-                local w,h = _term.getSize()
-                _term.setCursorPos( 1, h )
-                _term.write( "Press any key to continue" )
-                os.pullEvent( "key" )
+                local _, h = _term.getSize()
+                _term.setCursorPos(1, h)
+                _term.write("Press any key to continue")
+                os.pullEvent("key")
                 _term.clearLine()
-                _term.setCursorPos( 1, h )
+                _term.setCursorPos(1, h)
             else
                 nFreeLines = nFreeLines - 1
             end
@@ -78,142 +104,169 @@ local function makePagedScroll( _term, _nFreeLines )
     end
 end
 
-function pagedPrint( _sText, _nFreeLines )
-    if _nFreeLines ~= nil and type( _nFreeLines ) ~= "number" then
-        error( "bad argument #2 (expected number, got " .. type( _nFreeLines ) .. ")", 2 ) 
-    end
+--- Prints a given string to the display.
+--
+-- If the action can be completed without scrolling, it acts much the same as
+-- @{print}; otherwise, it will throw up a "Press any key to continue" prompt at
+-- the bottom of the display. Each press will cause it to scroll down and write
+-- a single line more before prompting again, if need be.
+--
+-- @tparam string _sText The text to print to the screen.
+-- @tparam[opt] number _nFreeLines The number of lines which will be
+-- automatically scrolled before the first prompt appears (meaning _nFreeLines +
+-- 1 lines will be printed). This can be set to the terminal's height - 2 to
+-- always try to fill the screen. Defaults to 0, meaning only one line is
+-- displayed before prompting.
+-- @treturn number The number of lines printed.
+-- @usage
+--     local width, height = term.getSize()
+--     textutils.pagedPrint(("This is a rather verbose dose of repetition.\n"):rep(30), height - 2)
+function pagedPrint(_sText, _nFreeLines)
+    expect(2, _nFreeLines, "number", "nil")
     -- Setup a redirector
     local oldTerm = term.current()
     local newTerm = {}
-    for k,v in pairs( oldTerm ) do
+    for k, v in pairs(oldTerm) do
         newTerm[k] = v
     end
-    newTerm.scroll = makePagedScroll( oldTerm, _nFreeLines )
-    term.redirect( newTerm )
+    newTerm.scroll = makePagedScroll(oldTerm, _nFreeLines)
+    term.redirect(newTerm)
 
     -- Print the text
     local result
-    local ok, err = pcall( function()
+    local ok, err = pcall(function()
         if _sText ~= nil then
-            result = print( _sText )
+            result = print(_sText)
         else
             result = print()
         end
-    end )
+    end)
 
     -- Removed the redirector
-    term.redirect( oldTerm )
+    term.redirect(oldTerm)
 
     -- Propogate errors
     if not ok then
-        error( err, 0 )
+        error(err, 0)
     end
     return result
 end
 
-local function npairs(t)
-    if t.n == nil then error("no number field", 2) end
-    local i = 0
-    return function()
-        i = i + 1
-        if i > t.n then return nil
-        else return i, t[i] end
+local function tabulateCommon(bPaged, ...)
+    local tAll = table.pack(...)
+    for i = 1, tAll.n do
+        expect(i, tAll[i], "number", "table")
     end
-end
 
-local function tabulateCommon( bPaged, ... )
-    local tAll = table.pack( ... )
-    for k,v in npairs( tAll ) do
-        if type( v ) ~= "number" and type( v ) ~= "table" then
-            error( "bad argument #"..k.." (expected number or table, got " .. type( v ) .. ")", 3 ) 
-        end
-    end
-    
-    local w,h = term.getSize()
+    local w, h = term.getSize()
     local nMaxLen = w / 8
-    for n, t in npairs( tAll ) do
+    for n, t in ipairs(tAll) do
         if type(t) == "table" then
-            for n, sItem in pairs(t) do
-                nMaxLen = math.max( string.len( sItem ) + 1, nMaxLen )
+            for nu, sItem in pairs(t) do
+                local ty = type(sItem)
+                if ty ~= "string" and ty ~= "number" then
+                    error("bad argument #" .. n .. "." .. nu .. " (expected string, got " .. ty .. ")", 3)
+                end
+                nMaxLen = math.max(#tostring(sItem) + 1, nMaxLen)
             end
         end
     end
-    local nCols = math.floor( w / nMaxLen )
+    local nCols = math.floor(w / nMaxLen)
     local nLines = 0
     local function newLine()
-        if bPaged and nLines >= (h-3) then
+        if bPaged and nLines >= h - 3 then
             pagedPrint()
         else
             print()
         end
         nLines = nLines + 1
     end
-    
-    local function drawCols( _t )
+
+    local function drawCols(_t)
         local nCol = 1
-        for n, s in ipairs( _t ) do
+        for _, s in ipairs(_t) do
             if nCol > nCols then
                 nCol = 1
                 newLine()
             end
 
             local cx, cy = term.getCursorPos()
-            cx = 1 + ((nCol - 1) * nMaxLen)
-            term.setCursorPos( cx, cy )
-            term.write( s )
+            cx = 1 + (nCol - 1) * nMaxLen
+            term.setCursorPos(cx, cy)
+            term.write(s)
 
-            nCol = nCol + 1      
+            nCol = nCol + 1
         end
         print()
     end
-    for n, t in npairs( tAll ) do
+    for _, t in ipairs(tAll) do
         if type(t) == "table" then
             if #t > 0 then
-                drawCols( t )
+                drawCols(t)
             end
         elseif type(t) == "number" then
-            term.setTextColor( t )
+            term.setTextColor(t)
         end
-    end    
+    end
 end
 
-function tabulate( ... )
-    tabulateCommon( false, ... )
+--- Prints tables in a structured form.
+--
+-- This accepts multiple arguments, either a table or a number. When
+-- encountering a table, this will be treated as a table row, with each column
+-- width being auto-adjusted.
+--
+-- When encountering a number, this sets the text color of the subsequent rows to it.
+--
+-- @tparam {string...}|number ... The rows and text colors to display.
+-- @usage textutils.tabulate(colors.orange, { "1", "2", "3" }, colors.lightBlue, { "A", "B", "C" })
+function tabulate(...)
+    return tabulateCommon(false, ...)
 end
 
-function pagedTabulate( ... )
-    tabulateCommon( true, ... )
+--- Prints tables in a structured form, stopping and prompting for input should
+-- the result not fit on the terminal.
+--
+-- This functions identically to @{textutils.tabulate}, but will prompt for user
+-- input should the whole output not fit on the display.
+--
+-- @tparam {string...}|number ... The rows and text colors to display.
+-- @usage textutils.tabulate(colors.orange, { "1", "2", "3" }, colors.lightBlue, { "A", "B", "C" })
+-- @see textutils.tabulate
+-- @see textutils.pagedPrint
+function pagedTabulate(...)
+    return tabulateCommon(true, ...)
 end
 
 local g_tLuaKeywords = {
-    [ "and" ] = true,
-    [ "break" ] = true,
-    [ "do" ] = true,
-    [ "else" ] = true,
-    [ "elseif" ] = true,
-    [ "end" ] = true,
-    [ "false" ] = true,
-    [ "for" ] = true,
-    [ "function" ] = true,
-    [ "if" ] = true,
-    [ "in" ] = true,
-    [ "local" ] = true,
-    [ "nil" ] = true,
-    [ "not" ] = true,
-    [ "or" ] = true,
-    [ "repeat" ] = true,
-    [ "return" ] = true,
-    [ "then" ] = true,
-    [ "true" ] = true,
-    [ "until" ] = true,
-    [ "while" ] = true,
+    ["and"] = true,
+    ["break"] = true,
+    ["do"] = true,
+    ["else"] = true,
+    ["elseif"] = true,
+    ["end"] = true,
+    ["false"] = true,
+    ["for"] = true,
+    ["function"] = true,
+    ["if"] = true,
+    ["in"] = true,
+    ["local"] = true,
+    ["nil"] = true,
+    ["not"] = true,
+    ["or"] = true,
+    ["repeat"] = true,
+    ["return"] = true,
+    ["then"] = true,
+    ["true"] = true,
+    ["until"] = true,
+    ["while"] = true,
 }
 
-local function serializeImpl( t, tTracking, sIndent )
+local function serializeImpl(t, tTracking, sIndent)
     local sType = type(t)
     if sType == "table" then
         if tTracking[t] ~= nil then
-            error( "Cannot serialize table with recursive entries", 0 )
+            error("Cannot serialize table with recursive entries", 0)
         end
         tTracking[t] = true
 
@@ -225,17 +278,17 @@ local function serializeImpl( t, tTracking, sIndent )
             local sResult = "{\n"
             local sSubIndent = sIndent .. "  "
             local tSeen = {}
-            for k,v in ipairs(t) do
+            for k, v in ipairs(t) do
                 tSeen[k] = true
-                sResult = sResult .. sSubIndent .. serializeImpl( v, tTracking, sSubIndent ) .. ",\n"
+                sResult = sResult .. sSubIndent .. serializeImpl(v, tTracking, sSubIndent) .. ",\n"
             end
-            for k,v in pairs(t) do
+            for k, v in pairs(t) do
                 if not tSeen[k] then
                     local sEntry
-                    if type(k) == "string" and not g_tLuaKeywords[k] and string.match( k, "^[%a_][%a%d_]*$" ) then
-                        sEntry = k .. " = " .. serializeImpl( v, tTracking, sSubIndent ) .. ",\n"
+                    if type(k) == "string" and not g_tLuaKeywords[k] and string.match(k, "^[%a_][%a%d_]*$") then
+                        sEntry = k .. " = " .. serializeImpl(v, tTracking, sSubIndent) .. ",\n"
                     else
-                        sEntry = "[ " .. serializeImpl( k, tTracking, sSubIndent ) .. " ] = " .. serializeImpl( v, tTracking, sSubIndent ) .. ",\n"
+                        sEntry = "[ " .. serializeImpl(k, tTracking, sSubIndent) .. " ] = " .. serializeImpl(v, tTracking, sSubIndent) .. ",\n"
                     end
                     sResult = sResult .. sSubIndent .. sEntry
                 end
@@ -243,16 +296,16 @@ local function serializeImpl( t, tTracking, sIndent )
             sResult = sResult .. sIndent .. "}"
             return sResult
         end
-        
+
     elseif sType == "string" then
-        return string.format( "%q", t )
-    
+        return string.format("%q", t)
+
     elseif sType == "number" or sType == "boolean" or sType == "nil" then
         return tostring(t)
-        
+
     else
-        error( "Cannot serialize type "..sType, 0 )
-        
+        error("Cannot serialize type " .. sType, 0)
+
     end
 end
 
@@ -264,7 +317,23 @@ local function mk_tbl(str, name)
     })
 end
 
+--- A table representing an empty JSON array, in order to distinguish it from an
+-- empty JSON object.
+--
+-- The contents of this table should not be modified.
+--
+-- @usage textutils.serialiseJSON(textutils.empty_json_array)
+-- @see textutils.serialiseJSON
+-- @see textutils.unserialiseJSON
 empty_json_array = mk_tbl("[]", "empty_json_array")
+
+--- A table representing the JSON null value.
+--
+-- The contents of this table should not be modified.
+--
+-- @usage textutils.serialiseJSON(textutils.json_null)
+-- @see textutils.serialiseJSON
+-- @see textutils.unserialiseJSON
 json_null = mk_tbl("null", "json_null")
 
 local serializeJSONString
@@ -288,21 +357,18 @@ do
     end
 
     serializeJSONString = function(s)
-        return ('"%s"'):format(s:gsub("[%z\1-\x1f\"\\]", map):gsub("[\x7f-\xff]", hexify))
+        return ('"%s"'):format(s:gsub("[\0-\x1f\"\\]", map):gsub("[\x7f-\xff]", hexify))
     end
 end
 
-local function serializeJSONImpl( t, tTracking, bNBTStyle )
+local function serializeJSONImpl(t, tTracking, bNBTStyle)
     local sType = type(t)
-    if t == empty_json_array then
-        return "[]"
-
-    elseif t == json_null then
-        return "null"
+    if t == empty_json_array then return "[]"
+    elseif t == json_null then return "null"
 
     elseif sType == "table" then
         if tTracking[t] ~= nil then
-            error( "Cannot serialize table with recursive entries", 0 )
+            error("Cannot serialize table with recursive entries", 0)
         end
         tTracking[t] = true
 
@@ -315,13 +381,13 @@ local function serializeJSONImpl( t, tTracking, bNBTStyle )
             local sArrayResult = "["
             local nObjectSize = 0
             local nArraySize = 0
-            for k,v in pairs(t) do
+            for k, v in pairs(t) do
                 if type(k) == "string" then
                     local sEntry
                     if bNBTStyle then
-                        sEntry = tostring(k) .. ":" .. serializeJSONImpl( v, tTracking, bNBTStyle )
+                        sEntry = tostring(k) .. ":" .. serializeJSONImpl(v, tTracking, bNBTStyle)
                     else
-                        sEntry = serializeJSONString( k ) .. ":" .. serializeJSONImpl( v, tTracking, bNBTStyle )
+                        sEntry = serializeJSONString(k) .. ":" .. serializeJSONImpl(v, tTracking, bNBTStyle)
                     end
                     if nObjectSize == 0 then
                         sObjectResult = sObjectResult .. sEntry
@@ -331,8 +397,8 @@ local function serializeJSONImpl( t, tTracking, bNBTStyle )
                     nObjectSize = nObjectSize + 1
                 end
             end
-            for n,v in ipairs(t) do
-                local sEntry = serializeJSONImpl( v, tTracking, bNBTStyle )
+            for _, v in ipairs(t) do
+                local sEntry = serializeJSONImpl(v, tTracking, bNBTStyle)
                 if nArraySize == 0 then
                     sArrayResult = sArrayResult .. sEntry
                 else
@@ -350,13 +416,13 @@ local function serializeJSONImpl( t, tTracking, bNBTStyle )
         end
 
     elseif sType == "string" then
-        return serializeJSONString( t )
+        return serializeJSONString(t)
 
     elseif sType == "number" or sType == "boolean" then
         return tostring(t)
 
     else
-        error( "Cannot serialize type "..sType, 0 )
+        error("Cannot serialize type " .. sType, 0)
 
     end
 end
@@ -388,13 +454,13 @@ do
         error_at(pos, "Unexpected %s, expected %s.", actual, exp)
     end
 
-    local function parse_string(str, pos)
+    local function parse_string(str, pos, terminate)
         local buf, n = {}, 1
 
         while true do
             local c = sub(str, pos, pos)
             if c == "" then error_at(pos, "Unexpected end of input, expected '\"'.") end
-            if c == '"' then break end
+            if c == terminate then break end
 
             if c == '\\' then
                 -- Handle the various escapes
@@ -420,13 +486,13 @@ do
         return concat(buf, "", 1, n - 1), pos + 1
     end
 
-    local valid = { b = true, B = true, s = true, S = true, l = true, L = true, f = true, F = true, d = true, D = true }
+    local num_types = { b = true, B = true, s = true, S = true, l = true, L = true, f = true, F = true, d = true, D = true }
     local function parse_number(str, pos, opts)
         local _, last, num_str = find(str, '^(-?%d+%.?%d*[eE]?[+-]?%d*)', pos)
         local val = tonumber(num_str)
         if not val then error_at(pos, "Malformed number %q.", num_str) end
 
-        if opts.nbt_style and valid[sub(str, pos + 1, pos + 1)] then return val, last + 2 end
+        if opts.nbt_style and num_types[sub(str, last + 1, last + 1)] then return val, last + 2 end
 
         return val, last + 1
     end
@@ -436,9 +502,11 @@ do
         return val, last + 1
     end
 
+    local arr_types = { I = true, L = true, B = true }
     local function decode_impl(str, pos, opts)
         local c = sub(str, pos, pos)
-        if c == '"' then return parse_string(str, pos + 1)
+        if c == '"' then return parse_string(str, pos + 1, '"')
+        elseif c == "'" and opts.nbt_style then return parse_string(str, pos + 1, "\'")
         elseif c == "-" or c >= "0" and c <= "9" then return parse_number(str, pos, opts)
         elseif c == "t" then
             if sub(str, pos + 1, pos + 3) == "rue" then return true, pos + 4 end
@@ -463,7 +531,7 @@ do
 
             while true do
                 local key, value
-                if c == "\"" then key, pos = parse_string(str, pos + 1)
+                if c == "\"" then key, pos = parse_string(str, pos + 1, "\"")
                 elseif opts.nbt_style then key, pos = parse_ident(str, pos)
                 else return expected(pos, c, "object key")
                 end
@@ -494,6 +562,11 @@ do
 
             pos = skip(str, pos + 1)
             c = sub(str, pos, pos)
+
+            if arr_types[c] and sub(str, pos + 1, pos + 1) == ";" and opts.nbt_style then
+                pos = skip(str, pos + 2)
+                c = sub(str, pos, pos)
+            end
 
             if c == "" then return expected(pos, c, "']'") end
             if c == "]" then return empty_json_array, pos + 1 end
@@ -564,18 +637,33 @@ do
     end
 end
 
-function serialize( t )
+--- Convert a Lua object into a textual representation, suitable for
+-- saving in a file or pretty-printing.
+--
+-- @param t The object to serialise
+-- @treturn string The serialised representation
+-- @throws If the object contains a value which cannot be
+-- serialised. This includes functions and tables which appear multiple
+-- times.
+function serialize(t)
     local tTracking = {}
-    return serializeImpl( t, tTracking, "" )
+    return serializeImpl(t, tTracking, "")
 end
 
-function unserialize( s )
-    if type( s ) ~= "string" then
-        error( "bad argument #1 (expected string, got " .. type( s ) .. ")", 2 )
-    end
-    local func = load( "return "..s, "unserialize", "t", {} )
+serialise = serialize -- GB version
+
+--- Converts a serialised string back into a reassembled Lua object.
+--
+-- This is mainly used together with @{textutils.serialize}.
+--
+-- @tparam string s The serialised string to deserialise.
+-- @return[1] The deserialised object
+-- @treturn[2] nil If the object could not be deserialised.
+function unserialize(s)
+    expect(1, s, "string")
+    local func = load("return " .. s, "unserialize", "t", {})
     if func then
-        local ok, result = pcall( func )
+        local ok, result = pcall(func)
         if ok then
             return result
         end
@@ -583,23 +671,45 @@ function unserialize( s )
     return nil
 end
 
-function serializeJSON( t, bNBTStyle )
-    if type( t ) ~= "table" and type( t ) ~= "string" and type( t ) ~= "number" and type( t ) ~= "boolean" then
-        error( "bad argument #1 (expected table, string, number or boolean, got " .. type( t ) .. ")", 2 )
-    end
-    if bNBTStyle ~= nil and type( bNBTStyle ) ~= "boolean" then
-        error( "bad argument #2 (expected boolean, got " .. type( bNBTStyle ) .. ")", 2 )
-    end
+unserialise = unserialize -- GB version
+
+--- Returns a JSON representation of the given data.
+--
+-- This function attempts to guess whether a table is a JSON array or
+-- object. However, empty tables are assumed to be empty objects - use
+-- @{textutils.empty_json_array} to mark an empty array.
+--
+-- This is largely intended for interacting with various functions from the
+-- @{commands} API, though may also be used in making @{http} requests.
+--
+-- @param t The value to serialise. Like @{textutils.serialise}, this should not
+-- contain recursive tables or functions.
+-- @tparam[opt] boolean bNBTStyle Whether to produce NBT-style JSON (non-quoted keys)
+-- instead of standard JSON.
+-- @treturn string The JSON representation of the input.
+-- @throws If the object contains a value which cannot be
+-- serialised. This includes functions and tables which appear multiple
+-- times.
+-- @usage textutils.serializeJSON({ values = { 1, "2", true } })
+function serializeJSON(t, bNBTStyle)
+    expect(1, t, "table", "string", "number", "boolean")
+    expect(2, bNBTStyle, "boolean", "nil")
     local tTracking = {}
-    return serializeJSONImpl( t, tTracking, bNBTStyle or false )
+    return serializeJSONImpl(t, tTracking, bNBTStyle or false)
 end
 
-unserializeJSON = unserialise_json
+serialiseJSON = serializeJSON -- GB version
 
-function urlEncode( str )
-    if type( str ) ~= "string" then
-        error( "bad argument #1 (expected string, got " .. type( str ) .. ")", 2 )
-    end
+unserializeJSON = unserialise_json
+unserialiseJSON = unserialise_json
+
+--- Replaces certain characters in a string to make it safe for use in URLs or POST data.
+--
+-- @tparam string str The string to encode
+-- @treturn string The encoded string.
+-- @usage print("https://example.com/?view=" .. textutils.urlEncode("some text&things"))
+function urlEncode(str)
+    expect(1, str, "string")
     if str then
         str = string.gsub(str, "\n", "\r\n")
         str = string.gsub(str, "([^A-Za-z0-9 %-%_%.])", function(c)
@@ -610,69 +720,82 @@ function urlEncode( str )
             else
                 -- Non-ASCII (encode as UTF-8)
                 return
-                    string.format("%%%02X", 192 + bit32.band( bit32.arshift(n,6), 31 ) ) ..
-                    string.format("%%%02X", 128 + bit32.band( n, 63 ) )
+                    string.format("%%%02X", 192 + bit32.band(bit32.arshift(n, 6), 31)) ..
+                    string.format("%%%02X", 128 + bit32.band(n, 63))
             end
-        end )
+        end)
         str = string.gsub(str, " ", "+")
     end
-    return str    
+    return str
 end
 
 local tEmpty = {}
-function complete( sSearchText, tSearchTable )
-    if type( sSearchText ) ~= "string" then
-        error( "bad argument #1 (expected string, got " .. type( sSearchText ) .. ")", 2 )
-    end
-    if tSearchTable ~= nil and type( tSearchTable ) ~= "table" then
-        error( "bad argument #2 (expected table, got " .. type( tSearchTable ) .. ")", 2 )
-    end
+
+--- Provides a list of possible completions for a partial Lua expression.
+--
+-- If the completed element is a table, suggestions will have `.` appended to
+-- them. Similarly, functions have `(` appended to them.
+--
+-- @tparam string sSearchText The partial expression to complete, such as a
+-- variable name or table index.
+--
+-- @tparam[opt] table tSearchTable The table to find variables in, defaulting to
+-- the global environment (@{_G}). The function also searches the "parent"
+-- environment via the `__index` metatable field.
+--
+-- @treturn { string... } The (possibly empty) list of completions.
+-- @see shell.setCompletionFunction
+-- @see _G.read
+-- @usage textutils.complete( "pa", _ENV )
+function complete(sSearchText, tSearchTable)
+    expect(1, sSearchText, "string")
+    expect(2, tSearchTable, "table", "nil")
 
     if g_tLuaKeywords[sSearchText] then return tEmpty end
     local nStart = 1
-    local nDot = string.find( sSearchText, ".", nStart, true )
+    local nDot = string.find(sSearchText, ".", nStart, true)
     local tTable = tSearchTable or _ENV
     while nDot do
-        local sPart = string.sub( sSearchText, nStart, nDot - 1 )
-        local value = tTable[ sPart ]
-        if type( value ) == "table" then
+        local sPart = string.sub(sSearchText, nStart, nDot - 1)
+        local value = tTable[sPart]
+        if type(value) == "table" then
             tTable = value
             nStart = nDot + 1
-            nDot = string.find( sSearchText, ".", nStart, true )
+            nDot = string.find(sSearchText, ".", nStart, true)
         else
             return tEmpty
         end
     end
-    local nColon = string.find( sSearchText, ":", nStart, true )
+    local nColon = string.find(sSearchText, ":", nStart, true)
     if nColon then
-        local sPart = string.sub( sSearchText, nStart, nColon - 1 )
-        local value = tTable[ sPart ]
-        if type( value ) == "table" then
+        local sPart = string.sub(sSearchText, nStart, nColon - 1)
+        local value = tTable[sPart]
+        if type(value) == "table" then
             tTable = value
             nStart = nColon + 1
         else
             return tEmpty
         end
     end
-    
-    local sPart = string.sub( sSearchText, nStart )
-    local nPartLength = string.len( sPart )
+
+    local sPart = string.sub(sSearchText, nStart)
+    local nPartLength = #sPart
 
     local tResults = {}
     local tSeen = {}
     while tTable do
-        for k,v in pairs( tTable ) do
+        for k, v in pairs(tTable) do
             if not tSeen[k] and type(k) == "string" then
-                if string.find( k, sPart, 1, true ) == 1 then
-                    if not g_tLuaKeywords[k] and string.match( k, "^[%a_][%a%d_]*$" ) then
-                        local sResult = string.sub( k, nPartLength + 1 )
+                if string.find(k, sPart, 1, true) == 1 then
+                    if not g_tLuaKeywords[k] and string.match(k, "^[%a_][%a%d_]*$") then
+                        local sResult = string.sub(k, nPartLength + 1)
                         if nColon then
                             if type(v) == "function" then
-                                table.insert( tResults, sResult .. "(" )
+                                table.insert(tResults, sResult .. "(")
                             elseif type(v) == "table" then
-                                local tMetatable = getmetatable( v )
-                                if tMetatable and ( type( tMetatable.__call ) == "function" or  type( tMetatable.__call ) == "table" ) then
-                                    table.insert( tResults, sResult .. "(" )
+                                local tMetatable = getmetatable(v)
+                                if tMetatable and (type(tMetatable.__call) == "function" or  type(tMetatable.__call) == "table") then
+                                    table.insert(tResults, sResult .. "(")
                                 end
                             end
                         else
@@ -681,27 +804,21 @@ function complete( sSearchText, tSearchTable )
                             elseif type(v) == "table" and next(v) ~= nil then
                                 sResult = sResult .. "."
                             end
-                            table.insert( tResults, sResult )
+                            table.insert(tResults, sResult)
                         end
                     end
                 end
             end
             tSeen[k] = true
         end
-        local tMetatable = getmetatable( tTable )
-        if tMetatable and type( tMetatable.__index ) == "table" then
+        local tMetatable = getmetatable(tTable)
+        if tMetatable and type(tMetatable.__index) == "table" then
             tTable = tMetatable.__index
         else
             tTable = nil
         end
     end
 
-    table.sort( tResults )
+    table.sort(tResults)
     return tResults
 end
-
--- GB versions
-serialise = serialize
-unserialise = unserialize
-serialiseJSON = serializeJSON
-unserialiseJSON = unserialise_json

@@ -19,6 +19,7 @@ os.setAlarm( time )
 os.cancelAlarm( token )
 os.shutdown()
 os.reboot()
+os.about()
 
 Events emitted by the os API:
 "timer" when a timeout started by os.startTimer() completes. Argument is the token returned by os.startTimer().
