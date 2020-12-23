@@ -20,5 +20,8 @@ while true do
             top = math.min(top + p1, 9000)
             win.reposition(1, 2-top)
         end
+    elseif ev == "term_resize" then
+        w, h = term.getSize()
+        win.reposition(1, 2-top, term.getSize(), 9000)
     end
 end

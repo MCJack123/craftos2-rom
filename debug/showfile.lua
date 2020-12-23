@@ -172,7 +172,7 @@ local function showFile(info)
             if file ~= nil then
                 lines = {}
                 local l = file.readLine()
-                while l ~= nil do 
+                while l ~= nil do
                     l = string.gsub(l, "\t", "    ")
                     table.insert(lines, l)
                     l = file.readLine()
@@ -186,12 +186,12 @@ local function showFile(info)
             else 
                 lines = nil
                 viewerWindow.setTextColor(colors.red)
-                viewerWindow.write("Could not open source") 
+                viewerWindow.write("Could not open source")
             end
         else 
             lines = nil
             viewerWindow.setTextColor(colors.red)
-            viewerWindow.write("Could not find source") 
+            viewerWindow.write("Could not find source")
         end
     else 
         lines = nil
@@ -234,7 +234,7 @@ while true do
                 if screen then
                     if scrollPos > 1 then 
                         scrollPos = scrollPos - 1 
-                        renderFile(debugger.getInfo(selectedLine - 1))
+                        renderFile()
                     end
                 else
                     if selectedLine == nil then selectedLine = 1 end
@@ -249,7 +249,7 @@ while true do
                 if screen then
                     if scrollPos < #lines - h + 2 then 
                         scrollPos = scrollPos + 1
-                        renderFile(debugger.getInfo(selectedLine - 1))
+                        renderFile()
                     end
                 else
                     if selectedLine == nil then selectedLine = 0 end
@@ -297,10 +297,10 @@ while true do
             if screen then
                 if p1 == 1 and scrollPos < #lines - h + 2 then 
                     scrollPos = scrollPos + 1
-                    renderFile(debugger.getInfo(selectedLine - 1))
+                    renderFile()
                 elseif p1 == -1 and scrollPos > 1 then 
                     scrollPos = scrollPos - 1 
-                    renderFile(debugger.getInfo(selectedLine - 1))
+                    renderFile()
                 end
             else
                 local _, vwh = stackWindow.getSize()
@@ -312,6 +312,9 @@ while true do
                     stackWindow.reposition(1, 2 - scrollPos)
                 end
             end
+        elseif ev == "term_resize" then
+            w, h = term.getSize()
+            if screen then renderFile() else drawTraceback() end
         elseif ev == "debugger_done" then break end
     end
     if wait then
