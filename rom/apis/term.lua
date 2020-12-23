@@ -40,10 +40,11 @@ term.redirect = function(target)
         error("term is not a recommended redirect target, try term.current() instead", 2)
     end
     if target.setGraphicsMode == nil then target.setGraphicsMode = native.setGraphicsMode end
-	if target.getGraphicsMode == nil then target.getGraphicsMode = native.getGraphicsMode end
-	if target.setPixel == nil then target.setPixel = native.setPixel end
-	if target.getPixel == nil then target.getPixel = native.getPixel end
-	if target.drawPixels == nil then target.drawPixels = native.drawPixels end
+    if target.getGraphicsMode == nil then target.getGraphicsMode = native.getGraphicsMode end
+    if target.setPixel == nil then target.setPixel = native.setPixel end
+    if target.getPixel == nil then target.getPixel = native.getPixel end
+    if target.drawPixels == nil then target.drawPixels = native.drawPixels end
+    if target.getPixels == nil then target.getPixels = native.getPixels end
     for k, v in pairs(native) do
         if type(k) == "string" and type(v) == "function" then
             if type(target[k]) ~= "function" then
