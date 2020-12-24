@@ -198,25 +198,34 @@ function drawBox(startX, startY, endX, endY, nColour)
     else
         nColour = term.getBackgroundColour()
     end
-    local colourHex = colours.toBlit(nColour)
 
-    if startX == endX and startY == endY then
-        drawPixelInternal(startX, startY)
-        return
-    end
+    if term.getGraphicsMode and term.getGraphicsMode() then
+        local c, w, h = term.getBackgroundColor(), endX - startX, endY - startY
+        local tr, mr =
+            setmetatable({}, {__index = function() return c end}),
+            setmetatable({}, {__index = function(_, i) if i == 1 or i == w then return c else return nil end end})
+        term.drawPixels(startX, startY, setmetatable({}, {__index = function(_, i) if i == 1 or i == h then return tr else return mr end end}), w, h)
+    else
+        local colourHex = colours.toBlit(nColour)
 
-    local minX, maxX, minY, maxY = sortCoords(startX, startY, endX, endY)
-    local width = maxX - minX + 1
+        if startX == endX and startY == endY then
+            drawPixelInternal(startX, startY)
+            return
+        end
 
-    for y = minY, maxY do
-        if y == minY or y == maxY then
-            term.setCursorPos(minX, y)
-            term.blit((" "):rep(width), colourHex:rep(width), colourHex:rep(width))
-        else
-            term.setCursorPos(minX, y)
-            term.blit(" ", colourHex, colourHex)
-            term.setCursorPos(maxX, y)
-            term.blit(" ", colourHex, colourHex)
+        local minX, maxX, minY, maxY = sortCoords(startX, startY, endX, endY)
+        local width = maxX - minX + 1
+
+        for y = minY, maxY do
+            if y == minY or y == maxY then
+                term.setCursorPos(minX, y)
+                term.blit((" "):rep(width), colourHex:rep(width), colourHex:rep(width))
+            else
+                term.setCursorPos(minX, y)
+                term.blit(" ", colourHex, colourHex)
+                term.setCursorPos(maxX, y)
+                term.blit(" ", colourHex, colourHex)
+            end
         end
     end
 end
@@ -251,19 +260,26 @@ function drawFilledBox(startX, startY, endX, endY, nColour)
     else
         nColour = term.getBackgroundColour()
     end
-    local colourHex = colours.toBlit(nColour)
 
-    if startX == endX and startY == endY then
-        drawPixelInternal(startX, startY)
-        return
-    end
+    if term.getGraphicsMode and term.getGraphicsMode() then
+        local c = term.getBackgroundColor()
+        local r = setmetatable({}, {__index = function() return c end})
+        term.drawPixels(startX, startY, setmetatable({}, {__index = function() return r end}), endX - startX, endY - startY)
+    else
+        local colourHex = colours.toBlit(nColour)
 
-    local minX, maxX, minY, maxY = sortCoords(startX, startY, endX, endY)
-    local width = maxX - minX + 1
+        if startX == endX and startY == endY then
+            drawPixelInternal(startX, startY)
+            return
+        end
 
-    for y = minY, maxY do
-        term.setCursorPos(minX, y)
-        term.blit((" "):rep(width), colourHex:rep(width), colourHex:rep(width))
+        local minX, maxX, minY, maxY = sortCoords(startX, startY, endX, endY)
+        local width = maxX - minX + 1
+
+        for y = minY, maxY do
+            term.setCursorPos(minX, y)
+            term.blit((" "):rep(width), colourHex:rep(width), colourHex:rep(width))
+        end
     end
 end
 
