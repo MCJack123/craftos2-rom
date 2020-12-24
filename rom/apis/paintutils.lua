@@ -200,9 +200,9 @@ function drawBox(startX, startY, endX, endY, nColour)
     end
 
     if term.getGraphicsMode and term.getGraphicsMode() then
-        local c, w, h = term.getBackgroundColor(), endX - startX, endY - startY
+        local c, w, h = nColour or term.getBackgroundColor(), endX - startX, endY - startY
         local tr, mr =
-            setmetatable({}, {__index = function() return c end}),
+            string.char(term.getGraphicsMode() == 2 and c or select(2, math.frexp(c)) - 1):rep(endX - startX),
             setmetatable({}, {__index = function(_, i) if i == 1 or i == w then return c else return nil end end})
         term.drawPixels(startX, startY, setmetatable({}, {__index = function(_, i) if i == 1 or i == h then return tr else return mr end end}), w, h)
     else
@@ -262,8 +262,8 @@ function drawFilledBox(startX, startY, endX, endY, nColour)
     end
 
     if term.getGraphicsMode and term.getGraphicsMode() then
-        local c = term.getBackgroundColor()
-        local r = setmetatable({}, {__index = function() return c end})
+        local c = nColour or term.getBackgroundColor()
+        local r = string.char(term.getGraphicsMode() == 2 and c or select(2, math.frexp(c)) - 1):rep(endX - startX)
         term.drawPixels(startX, startY, setmetatable({}, {__index = function() return r end}), endX - startX, endY - startY)
     else
         local colourHex = colours.toBlit(nColour)
