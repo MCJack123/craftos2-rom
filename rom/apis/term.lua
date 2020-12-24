@@ -45,6 +45,7 @@ term.redirect = function(target)
     if target.getPixel == nil then target.getPixel = native.getPixel end
     if target.drawPixels == nil then target.drawPixels = native.drawPixels end
     if target.getPixels == nil then target.getPixels = native.getPixels end
+    if target.screenshot == nil then target.screenshot = native.screenshot end
     for k, v in pairs(native) do
         if type(k) == "string" and type(v) == "function" then
             if type(target[k]) ~= "function" then
