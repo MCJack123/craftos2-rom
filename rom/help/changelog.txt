@@ -38,6 +38,7 @@
 * Added support for CLI mode on Windows through PDCurses
 * Added optional width and height options to `term.drawPixels`
 * Added `term.getPixels` to read a region of pixels (LoganDark)
+* Added optional solid color fill argument to `term.drawPixels` (LoganDark)
 * Added some missing HTTP configuration options (besides black/whitelist)
 * Added a panic handler that is more like ComputerCraft's in standards mode
 * Added force-shutdown functionality when a computer refuses to close
