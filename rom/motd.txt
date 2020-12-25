@@ -7,7 +7,7 @@ Use "pastebin put" to upload a program to pastebin.
 Use the "edit" program to create and edit your programs.
 You can use "wget" to download a file from the internet.
 On an advanced computer you can use "fg" or "bg" to run multiple programs at the same time.
-Use an advanced computer to use colours, graphics mode, and the mouse.
+Use an advanced computer to use colors, graphics mode, and the mouse.
 With a speaker you can play sounds.
 Programs that are placed in the "startup" folder in the root of a computer are started on boot.
 Use a modem to connect with other computers.
