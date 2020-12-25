@@ -357,7 +357,7 @@ do
     end
 
     serializeJSONString = function(s)
-        return ('"%s"'):format(s:gsub("[\0-\x1f\"\\]", map):gsub("[\x7f-\xff]", hexify))
+        return ('"%s"'):format(s:gsub("[%z-\x1f\"\\]", map):gsub("[\x7f-\xff]", hexify))
     end
 end
 
