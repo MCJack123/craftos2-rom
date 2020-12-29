@@ -82,7 +82,7 @@ end
 
 -- Some methods shouldn't go through redirects, so we move them to the main
 -- term API.
-for _, method in ipairs { "nativePaletteColor", "nativePaletteColour", "screenshot", "showMouse" } do
+for _, method in ipairs { "nativePaletteColor", "nativePaletteColour", "screenshot", "showMouse", "setFrozen" } do
     term[method] = native[method]
     native[method] = nil
 end
