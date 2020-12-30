@@ -58,6 +58,14 @@ term.redirect = function(target)
     for k, v in pairs(native) do
         if type(k) == "string" and type(v) == "function" then
             if type(target[k]) ~= "function" then
+                if k:sub(-6, -1) == 'Colour' then
+                    local delegate = target[k:sub(1, -7) .. 'Color']
+
+                    target[k] = function(...)
+                        target[delegate](...)
+                    end
+                end
+
                 target[k] = function()
                     error("Redirect object is missing method " .. k .. ".", 2)
                 end
