@@ -39,12 +39,22 @@ term.redirect = function(target)
     if target == term or target == _G.term then
         error("term is not a recommended redirect target, try term.current() instead", 2)
     end
-    if target.setGraphicsMode == nil then target.setGraphicsMode = native.setGraphicsMode end
-    if target.getGraphicsMode == nil then target.getGraphicsMode = native.getGraphicsMode end
-    if target.setPixel == nil then target.setPixel = native.setPixel end
-    if target.getPixel == nil then target.getPixel = native.getPixel end
-    if target.drawPixels == nil then target.drawPixels = native.drawPixels end
-    if target.getPixels == nil then target.getPixels = native.getPixels end
+
+    for _, method in ipairs {
+        "setGraphicsMode",
+        "getGraphicsMode",
+        "setPixel",
+        "getPixel",
+        "drawPixels",
+        "getPixels",
+        "showMouse",
+        "setFrozen"
+    } do
+        if target[method] == nil then
+            target[method] = native[method]
+        end
+    end
+
     for k, v in pairs(native) do
         if type(k) == "string" and type(v) == "function" then
             if type(target[k]) ~= "function" then
@@ -82,7 +92,7 @@ end
 
 -- Some methods shouldn't go through redirects, so we move them to the main
 -- term API.
-for _, method in ipairs { "nativePaletteColor", "nativePaletteColour", "screenshot", "showMouse", "setFrozen" } do
+for _, method in ipairs { "nativePaletteColor", "nativePaletteColour", "screenshot" } do
     term[method] = native[method]
     native[method] = nil
 end
