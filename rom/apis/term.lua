@@ -45,6 +45,8 @@ term.redirect = function(target)
     if target.getPixel == nil then target.getPixel = native.getPixel end
     if target.drawPixels == nil then target.drawPixels = native.drawPixels end
     if target.getPixels == nil then target.getPixels = native.getPixels end
+    if target.showMouse == nil then target.showMouse = native.showMouse end
+    if target.setFrozen == nil then target.setFrozen = native.setFrozen end
     for k, v in pairs(native) do
         if type(k) == "string" and type(v) == "function" then
             if type(target[k]) ~= "function" then
@@ -82,7 +84,7 @@ end
 
 -- Some methods shouldn't go through redirects, so we move them to the main
 -- term API.
-for _, method in ipairs { "nativePaletteColor", "nativePaletteColour", "screenshot", "showMouse", "setFrozen" } do
+for _, method in ipairs { "nativePaletteColor", "nativePaletteColour", "screenshot" } do
     term[method] = native[method]
     native[method] = nil
 end
