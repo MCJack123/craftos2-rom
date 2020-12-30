@@ -40,7 +40,7 @@ term.redirect = function(target)
         error("term is not a recommended redirect target, try term.current() instead", 2)
     end
 
-    for _, method in ipairs({
+    for _, method in ipairs {
         "setGraphicsMode",
         "getGraphicsMode",
         "setPixel",
@@ -49,7 +49,7 @@ term.redirect = function(target)
         "getPixels",
         "showMouse",
         "setFrozen"
-    }) do
+    } do
         if target[method] == nil then
             target[method] = native[method]
         end
