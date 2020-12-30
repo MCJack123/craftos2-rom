@@ -64,10 +64,10 @@ term.redirect = function(target)
                     target[k] = function(...)
                         target[delegate](...)
                     end
-                end
-
-                target[k] = function()
-                    error("Redirect object is missing method " .. k .. ".", 2)
+                else
+                    target[k] = function()
+                        error("Redirect object is missing method " .. k .. ".", 2)
+                    end
                 end
             end
         end
