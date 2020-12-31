@@ -263,8 +263,7 @@ function drawFilledBox(startX, startY, endX, endY, nColour)
 
     if term.getGraphicsMode and term.getGraphicsMode() then
         local c = nColour or term.getBackgroundColor()
-        local r = string.char(term.getGraphicsMode() == 2 and c or select(2, math.frexp(c)) - 1):rep(endX - startX)
-        term.drawPixels(startX, startY, setmetatable({}, {__index = function() return r end}), endX - startX, endY - startY)
+        term.drawPixels(startX, startY, c, endX - startX, endY - startY)
     else
         local colourHex = colours.toBlit(nColour)
 
