@@ -595,6 +595,7 @@ else
     local tCommandHistory = {}
     while not bExit do
         term.redirect(parentTerm)
+        term.setGraphicsMode(0)
         term.setBackgroundColor(bgColour)
         term.setTextColour(promptColour)
         write(shell.dir() .. "> ")
