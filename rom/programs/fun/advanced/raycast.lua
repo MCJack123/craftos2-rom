@@ -101,9 +101,7 @@ local colormap = {
     colors.gray
 }
 
-local width, height = term.getSize();
-width = width * 6
-height = height * 9
+local width, height = term.getSize(true);
 
 _G.raycast_width = width
 _G.raycast_height = height
