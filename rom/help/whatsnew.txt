@@ -1,69 +1,27 @@
-New Features in CraftOS-PC v2.5:
+New Features in CraftOS-PC v2.5.1:
 
-* Reorganized code structure for easier maintenance of the codebase
-  * Code has been divided between APIs, peripherals, renderers, and general functions
-  * Resolved a large number (>1000) of warnings
-  * Reduced usage of `extern` to headers only
-  * Made all non-global variables `static`
-* Rebased ROM on the CC: Tweaked ROM
-  * The ROM is now equivalent to the CC: Tweaked ROM with additional CraftOS-PC features from the old ROM
-  * With this, the CC:T Edition has been discontinued
-    * It wasn't really necessary anyway
-  * This should help improve compatibility in the ROM
-* Updated CC:T version to 1.95.0
-  * 1.94.0
-    * Add getter for window visibility (devomaa)
-    * Use term.blit to draw boxes in paintutils (Lemmmy).
-    * Fix several programs using their original name instead of aliases in usage hints (Lupus590).
-  * 1.95.0
-    * Clear gets an option to reset the palette (Luca0208)
-    * Use term.blit on initial paint render.
-    * Add option to disable setting globals (Lupus590).
-    * Fixed length check on function name in `expect` (MCJack123)
-    * Allow strings or numbers in textutils.*tabulate.
-    * Make fs.combine accept multiple arguments.
-    * Added improved help viewer (MCJack123)
-    * Added numpad enter support (TheWireLord).
-    * Add functions to wrap text (Lupus590)
-* Added new plugin API
-  * API version has now been bumped to 10
-  * New plugin init/deinit functions: `PluginInfo * plugin_init(const PluginFunctions * functions, const path_t& path);` & `void plugin_deinit(PluginInfo * info);`
-  * Capabilities in the old API are now present as function pointers in the `PluginFunctions` structure passed to `plugin_init`
-  * Additional functions are now available as well:
-    * Access to the configuration, including custom settings for plugins
-    * SDL event hooks
-    * Virtual mounts
-    * Running tasks on the main thread
-  * See https://www.craftos-pc.cc/docs/plugins for more info on how to write plugins
-* Added release note viewer
-* Added support for CLI mode on Windows through PDCurses
-* Added optional width and height options to `term.drawPixels`
-* Added `term.getPixels` to read a region of pixels (LoganDark)
-* Added optional solid color fill argument to `term.drawPixels` (LoganDark)
-* Added some missing HTTP configuration options (besides black/whitelist)
-* Added a panic handler that is more like ComputerCraft's in standards mode
-* Added force-shutdown functionality when a computer refuses to close
-* Added error handlers when an uncaught exception occurs
-  * This should not happen, but if it does CraftOS-PC will no longer fully crash
-* Added tracing of the last C Lua function called, hopefully helping memory corruptions be able to be fixed
-* Optimized scroll and clear routines to directly copy memory
-* Fixed `os.setAlarm` implementation to no longer use 100% CPU
-* Fixed unknown config options being deleted
-* Fixed close button and hotkeys not functioning when there are too many events in the queue (#154)
-* Fixed `monitor.setTextScale` not functioning properly with non-6x9 fonts (#150)
-* Fixed `term.getPixel` returning the wrong values in mode 1 (#159)
-* Fixed a race condition while resizing when using the hardware renderer
-* Fixed a race condition in `os.startTimer`
-* Fixed a possible race condition when firing a timer
-* Reduced the number of event timeout timers started when pulling events (#158)
-  * This fixes an issue causing the timer thread to lock up trying to process start/cancel events
-* Fixed some locking issues in terminals
-* Fixed missing range checks in `term.drawPixels`
-* Fixed `term.getPixel` crashing when accessing pixel at edge of screen (LoganDark)
-* Fixed some issues with resizing the debugger
-* Fixed computers hanging when closing the debugger on Linux (#157)
-* Fixed debugger `locals` table sometimes not functioning properly
-* Fixed some CraftOS-PC term functions being redirected (LoganDark)
-* The craftos2-lua library can now be used in programs other than CraftOS-PC
+* Added `term.setFrozen` and `term.getFrozen` to stop rendering the terminal during critical sections (#165, #177)
+* Added ability for `term.getPixels` to return a list of strings (#176)
+* Added optional mode argument to `term.getSize` to return size of graphics mode screen
+* Added Ctrl+F8 (Cmd+F8 on Mac) hotkey to keep current window on top of other applications (#175)
+* Added "attach list" command to list available peripheral types
+* Added extra error message explaining why a peripheral couldn't be attached
+* Added some new MOTDs
+* Margins in standards mode now stretch to the edge of windows if resized
+* Improved performance of pixels in the hardware renderer by using a single streaming texture
+* `fs.find` no longer uses `table.sort` for sorting, instead using C++ `std::list::sort`
+* Replaced instances of `lua_newtable` with `lua_createtable` where possible for performance
+* Show last C function for `std::exception`s (#170)
+* Fixed `websocket.receive()` returning a bunch of junk data at the beginning
+* Fixed `file.close`/`http_handle.close` not blocking access to other handle methods (#168)
+* Fixed WebSockets not being closed on reboot (#169)
+* Fixed `term.drawPixels` crashing with invalid arguments (#171)
+* Fixed `fs.find` sometimes returning duplicate entries
+* Fixed bug allowing mounts to be moved and deleted
+* Fixed cursor color not being reset on reboot
+* Fixed crash when unable to convert text input to CC charset (#181)
+* Fixed wrong cursor coordinates being reported in the margins
+* Fixed WASM building
+* Removed legacy 3ms delay on timers
 
 Type "help changelog" to see the full version history.

@@ -22,3 +22,8 @@ You can change to the alternate cash shell with "set bios.use_cash true".
 Check out the source code at https://github.com/MCJack123/craftos2.
 Is a program not working correctly? Please report it to https://www.craftos-pc.cc/compatibility.
 Did you know there's a ComputerCraft Discord server? Join us at https://discord.computercraft.cc!
+You can take screenshots with F2, and record the screen to a GIF with F3.
+Pressing F12 will copy a screenshot to the clipboard.
+Open new computers by typing "attach <id> computer" in the shell.
+You can view new features in CraftOS-PC at any time with "help whatsnew".
+Did you know you can load regular Lua libraries as plugins?

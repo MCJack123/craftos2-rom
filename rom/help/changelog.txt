@@ -1,3 +1,28 @@
+## v2.5.1 - January 3, 2021
+* Added `term.setFrozen` and `term.getFrozen` to stop rendering the terminal during critical sections (#165, #177)
+* Added ability for `term.getPixels` to return a list of strings (#176)
+* Added optional mode argument to `term.getSize` to return size of graphics mode screen
+* Added Ctrl+F8 (Cmd+F8 on Mac) hotkey to keep current window on top of other applications (#175)
+* Added "attach list" command to list available peripheral types
+* Added extra error message explaining why a peripheral couldn't be attached
+* Added some new MOTDs
+* Margins in standards mode now stretch to the edge of windows if resized
+* Improved performance of pixels in the hardware renderer by using a single streaming texture
+* `fs.find` no longer uses `table.sort` for sorting, instead using C++ `std::list::sort`
+* Replaced instances of `lua_newtable` with `lua_createtable` where possible for performance
+* Show last C function for `std::exception`s (#170)
+* Fixed `websocket.receive()` returning a bunch of junk data at the beginning
+* Fixed `file.close`/`http_handle.close` not blocking access to other handle methods (#168)
+* Fixed WebSockets not being closed on reboot (#169)
+* Fixed `term.drawPixels` crashing with invalid arguments (#171)
+* Fixed `fs.find` sometimes returning duplicate entries
+* Fixed bug allowing mounts to be moved and deleted
+* Fixed cursor color not being reset on reboot
+* Fixed crash when unable to convert text input to CC charset (#181)
+* Fixed wrong cursor coordinates being reported in the margins
+* Fixed WASM building
+* Removed legacy 3ms delay on timers
+
 ## v2.5 - December 25, 2020
 * Reorganized code structure for easier maintenance of the codebase
   * Code has been divided between APIs, peripherals, renderers, and general functions
