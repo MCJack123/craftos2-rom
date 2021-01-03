@@ -624,8 +624,8 @@ if #args < 1 then error("Usage: pngview <image.png>") end
 
 local image = png.load_from_file(shell.resolve(args[1]))
 if image.data == nil then error("data is nil") end
-local w, h = term.getSize()
-if image.width > w * 6 or image.height > h * 9 then error("Image is too big") end
+local w, h = term.getSize(2)
+if image.width > w or image.height > h then error("Image is too big") end
 
 os.queueEvent("nosleep")
 os.pullEvent()
