@@ -201,10 +201,10 @@ function drawBox(startX, startY, endX, endY, nColour)
 
     if term.getGraphicsMode and term.getGraphicsMode() then
         local c, w, h = nColour or term.getBackgroundColor(), endX - startX, endY - startY
-        local tr, mr =
-            string.char(term.getGraphicsMode() == 2 and c or select(2, math.frexp(c)) - 1):rep(endX - startX),
-            setmetatable({}, {__index = function(_, i) if i == 1 or i == w then return c else return nil end end})
-        term.drawPixels(startX, startY, setmetatable({}, {__index = function(_, i) if i == 1 or i == h then return tr else return mr end end}), w, h)
+        term.drawPixels(startX, startY, c, w, 1)
+        term.drawPixels(startX, startY, c, 1, h)
+        term.drawPixels(endX, startY, c, w, 1)
+        term.drawPixels(startX, endY, c, 1, h)
     else
         local colourHex = colours.toBlit(nColour)
 

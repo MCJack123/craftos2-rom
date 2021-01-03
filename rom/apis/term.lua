@@ -48,7 +48,8 @@ term.redirect = function(target)
         "drawPixels",
         "getPixels",
         "showMouse",
-        "setFrozen"
+        "setFrozen",
+        "getFrozen"
     } do
         if target[method] == nil then
             target[method] = native[method]
