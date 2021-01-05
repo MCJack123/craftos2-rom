@@ -1,3 +1,8 @@
+## v2.5.1.1 - January 5, 2021
+* Fixed a bug causing raw mode to crash, which breaks the extension
+* Fixed a memory corruption bug that can happen when resuming coroutines
+* Added link to new Discord server to MOTDs
+
 ## v2.5.1 - January 3, 2021
 * Added `term.setFrozen` and `term.getFrozen` to stop rendering the terminal during critical sections (#165, #177)
 * Added ability for `term.getPixels` to return a list of strings (#176)
