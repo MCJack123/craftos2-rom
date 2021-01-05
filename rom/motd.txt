@@ -27,3 +27,4 @@ Pressing F12 will copy a screenshot to the clipboard.
 Open new computers by typing "attach <id> computer" in the shell.
 You can view new features in CraftOS-PC at any time with "help whatsnew".
 Did you know you can load regular Lua libraries as plugins?
+CraftOS-PC has its own Discord server available at https://www.craftos-pc.cc/discord.
