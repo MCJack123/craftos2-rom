@@ -667,8 +667,8 @@ while bRunning do
                 end
             end
 
-        elseif param == keys.enter then
-            -- Enter
+        elseif param == keys.enter or param == keys.numPadEnter then
+            -- Enter/Numpad Enter
             if not bMenu and not bReadOnly then
                 -- Newline
                 local sLine = tLines[y]
@@ -687,7 +687,7 @@ while bRunning do
 
             end
 
-        elseif param == keys.leftCtrl or param == keys.rightCtrl or param == keys.rightAlt then
+        elseif param == keys.leftCtrl or param == keys.rightCtrl then
             -- Menu toggle
             bMenu = not bMenu
             if bMenu then
@@ -696,7 +696,12 @@ while bRunning do
                 term.setCursorBlink(true)
             end
             redrawMenu()
-
+        elseif param == keys.rightAlt then
+            if bMenu then
+                bMenu = false
+                term.setCursorBlink(true)
+                redrawMenu()
+            end
         end
 
     elseif sEvent == "char" then
