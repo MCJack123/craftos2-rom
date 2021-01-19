@@ -6,7 +6,7 @@ if args[2] ~= nil then
     if args[3] == "readOnly" or args[3] == "true" then ro = true
     elseif args[3] == "false" then ro = false end
     if config.get("showMountPrompt") then print("A prompt will appear asking to confirm mounting. Press Allow to continue mounting.") end
-    mounter.mount(args[1], args[2], ro)
+    if not mounter.mount(args[1], args[2], ro) then printError("Could not mount") end
 elseif args[1] == "--help" then
     term.setTextColor(colors.red)
     print("Usage: mount <name> <path> [readOnly]")
