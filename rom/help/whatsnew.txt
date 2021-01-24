@@ -1,27 +1,53 @@
-New Features in CraftOS-PC v2.5.1:
+New Features in CraftOS-PC v2.5.2:
 
-* Added `term.setFrozen` and `term.getFrozen` to stop rendering the terminal during critical sections (#165, #177)
-* Added ability for `term.getPixels` to return a list of strings (#176)
-* Added optional mode argument to `term.getSize` to return size of graphics mode screen
-* Added Ctrl+F8 (Cmd+F8 on Mac) hotkey to keep current window on top of other applications (#175)
-* Added "attach list" command to list available peripheral types
-* Added extra error message explaining why a peripheral couldn't be attached
-* Added some new MOTDs
-* Margins in standards mode now stretch to the edge of windows if resized
-* Improved performance of pixels in the hardware renderer by using a single streaming texture
-* `fs.find` no longer uses `table.sort` for sorting, instead using C++ `std::list::sort`
-* Replaced instances of `lua_newtable` with `lua_createtable` where possible for performance
-* Show last C function for `std::exception`s (#170)
-* Fixed `websocket.receive()` returning a bunch of junk data at the beginning
-* Fixed `file.close`/`http_handle.close` not blocking access to other handle methods (#168)
-* Fixed WebSockets not being closed on reboot (#169)
-* Fixed `term.drawPixels` crashing with invalid arguments (#171)
-* Fixed `fs.find` sometimes returning duplicate entries
-* Fixed bug allowing mounts to be moved and deleted
-* Fixed cursor color not being reset on reboot
-* Fixed crash when unable to convert text input to CC charset (#181)
-* Fixed wrong cursor coordinates being reported in the margins
-* Fixed WASM building
-* Removed legacy 3ms delay on timers
+* Bumped CC:T version to 1.95.2
+  * Add `isReadOnly` to `fs.attributes` (Lupus590)
+  * Many more programs now support numpad enter (Wojbie)
+  * Hopefully improve edit's behaviour with AltGr on some European keyboards.
+  * Fix the id program crashing on non-disk items (Wojbie).
+* Bumped plugin API structure version to 1
+  * New fields in `Computer`:
+    * `forceCheckTimeout`
+    * `redstoneInputs`
+    * `redstoneOutputs`
+    * `bundledRedstoneInputs`
+    * `bundledRedstoneOutputs`
+  * New fields in `configuration`:
+    * `http_proxy_server`
+    * `http_proxy_port`
+    * `extendMargins`
+    * `snapToSize`
+  * New fields in `Terminal`:
+    * `frozen`
+* Added a proper implementation of the `redstone` API
+* Added ability to mount computers with disk drives using `computer:<id>`
+* Added automatic CCEmuX migration on first run, deprecating the old Java applet
+  * This can be triggered manually with `--migrate`
+* Added `extendMargins` config option to enable margins without standards mode
+* Added `snapToSize` config option to automatically snap the window size to the nearest character size, removing extra margins (on by default)
+* Added proper update verification via `sha256-sums.txt`
+* Added HTTP proxy configuration
+* Plugins now load in alphabetical order as expected
+* Premature BIOS exits now error in standards mode
+* `mouse_scroll` no longer reverses scroll direction if scroll direction is reversed in the OS (#185)
+* Errors now appear if mounting/unmounting fails
+* Increased maximum call stack height to 2000, allowing more nested coroutines/function calls
+* `__len` metamethods can now yield as expected
+* `getNextEvent` now checks the parameter stack's size before creating a new stack
+* Made some minor improvements to `fixpath`
+* Fixed memory corruption in raw mode
+  * This is the REAL issue that v2.5.1.1 was supposed to fix - the fix didn't work on macOS
+* Fixed `key_up` not firing for some keys in raw mode
+* Fixed modulo operator returning unexpected results
+* Fixed `os.startTimer` firing immediately when time < 0.05 in standards mode
+* Fixed `os.epoch("local")` returning UTC time
+* Fixed infinite recursion in some calls of `fs.getFreeSpace`/`fs.getCapacity`
+* Fixed race condition when firing `term_resize`
+* Fixed duplicate `term_resize` events being queued
+* Fixed deadlock when passing invalid arguments to `term.setPixel`
+* Fixed mounting the same path twice
+* Fixed `mounter.unmount` returning failure on success
+* Fixed `showFPS` type being set to integer
+* Online: Hardware rendering is now enabled by default on macOS only to mitigate a scaling bug
 
 Type "help changelog" to see the full version history.

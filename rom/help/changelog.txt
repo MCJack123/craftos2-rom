@@ -1,3 +1,54 @@
+## v2.5.2 - January 23, 2021
+* Bumped CC:T version to 1.95.2
+  * Add `isReadOnly` to `fs.attributes` (Lupus590)
+  * Many more programs now support numpad enter (Wojbie)
+  * Hopefully improve edit's behaviour with AltGr on some European keyboards.
+  * Fix the id program crashing on non-disk items (Wojbie).
+* Bumped plugin API structure version to 1
+  * New fields in `Computer`:
+    * `forceCheckTimeout`
+    * `redstoneInputs`
+    * `redstoneOutputs`
+    * `bundledRedstoneInputs`
+    * `bundledRedstoneOutputs`
+  * New fields in `configuration`:
+    * `http_proxy_server`
+    * `http_proxy_port`
+    * `extendMargins`
+    * `snapToSize`
+  * New fields in `Terminal`:
+    * `frozen`
+* Added a proper implementation of the `redstone` API
+* Added ability to mount computers with disk drives using `computer:<id>`
+* Added automatic CCEmuX migration on first run, deprecating the old Java applet
+  * This can be triggered manually with `--migrate`
+* Added `extendMargins` config option to enable margins without standards mode
+* Added `snapToSize` config option to automatically snap the window size to the nearest character size, removing extra margins (on by default)
+* Added proper update verification via `sha256-sums.txt`
+* Added HTTP proxy configuration
+* Plugins now load in alphabetical order as expected
+* Premature BIOS exits now error in standards mode
+* `mouse_scroll` no longer reverses scroll direction if scroll direction is reversed in the OS (#185)
+* Errors now appear if mounting/unmounting fails
+* Increased maximum call stack height to 2000, allowing more nested coroutines/function calls
+* `__len` metamethods can now yield as expected
+* `getNextEvent` now checks the parameter stack's size before creating a new stack
+* Made some minor improvements to `fixpath`
+* Fixed memory corruption in raw mode
+  * This is the REAL issue that v2.5.1.1 was supposed to fix - the fix didn't work on macOS
+* Fixed `key_up` not firing for some keys in raw mode
+* Fixed modulo operator returning unexpected results
+* Fixed `os.startTimer` firing immediately when time < 0.05 in standards mode
+* Fixed `os.epoch("local")` returning UTC time
+* Fixed infinite recursion in some calls of `fs.getFreeSpace`/`fs.getCapacity`
+* Fixed race condition when firing `term_resize`
+* Fixed duplicate `term_resize` events being queued
+* Fixed deadlock when passing invalid arguments to `term.setPixel`
+* Fixed mounting the same path twice
+* Fixed `mounter.unmount` returning failure on success
+* Fixed `showFPS` type being set to integer
+* Online: Hardware rendering is now enabled by default on macOS only to mitigate a scaling bug
+
 ## v2.5.1.1 - January 5, 2021
 * Fixed a bug causing raw mode to crash, which breaks the extension
 * Fixed a memory corruption bug that can happen when resuming coroutines
