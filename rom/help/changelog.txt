@@ -1,3 +1,45 @@
+## v2.5.3 - February 21, 2021
+* Added automatic crash log uploading behind `snooperEnabled`
+  * A prompt will appear on first boot asking to allow this
+  * See https://www.craftos-pc.cc/docs/privacy for info about how your data is kept secure
+* Added `snooperEnabled` config setting
+  * This is currently only used for crash uploading, but more (very basic) analytics may be added in the future
+* The `debug` API is now enabled by default
+  * This is possible due to the `debug` API no longer requiring hooks
+  * The availability of `debug` resolves a long-standing compatibility issue when run with the default config
+* Bumped structure version to 2
+  * New fields in `configuration`:
+    * `snooperEnabled`
+  * New fields in `PluginFunctions`:
+    * `registerConfigSetting`
+  * New fields in `Terminal`:
+    * `mouseButtonOrder`
+* Added new `registerConfigSetting` capability to allow access to plugin settings from `config` API
+* Added ability to yield from line and count hooks
+* Debug hooks now work as expected when no debugger is attached
+  * This breaks `logErrors` and non-debugger breakpoints, but neither feature is used much
+    * They may be brought back in the future, but they are not working for now
+* Functions passed to `load` can now yield in standards mode only
+  * This is behind standards mode due to the possible performance hit being higher than its usefulness
+* Decreased mixer chunk size to 512
+  * This should help with latency in things like the [sound plugin](https://gist.github.com/MCJack123/34ae1ca1a962504f32b34f2771f92326)
+* Fixed HTTP handles not being closed when going out of scope/being deleted
+* Fixed deadlock/high memory usage when resizing window to 0x0
+* Fixed DPI issues in hardware renderer on Mac when switching between Retina and non-Retina displays
+* Fixed deadlock when maximizing window with `snapToSize` enabled
+* Fixed mouse buttons > 3 being returned as 1
+* Mouse buttons > 3 no longer report in standards mode
+* Fixed the order of mouse buttons reported with mouse_drag when multiple are down at the same time
+* Fixed crash when loading plugin config
+* Fixed plugin config not saving properly
+* Fixed `\` not being treated as a directory separator
+* Fixed `/\.{3,}/` not being treated the same as `.`
+* Fixed `fs.getCapacity` in standards mode
+* Rewrote abort timeout handling to no longer use debug hooks
+* Changed `size_t` size in binary Lua chunks to 4 bytes for compatibility
+* Added `lua_externalerror` to throw errors from another thread
+* Improved performance of internal string split function
+
 ## v2.5.2 - January 23, 2021
 * Bumped CC:T version to 1.95.2
   * Add `isReadOnly` to `fs.attributes` (Lupus590)
