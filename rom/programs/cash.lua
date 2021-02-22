@@ -875,7 +875,6 @@ end
 
 local function execv(tokens)
     local path = tokens[0]
-    tokens[0] = nil
     if path == nil then return end
     if #tokens == 0 and string.find(path, "=") ~= nil then
         local k = string.sub(path, 1, string.find(path, "=") - 1)
@@ -920,7 +919,7 @@ local function execv(tokens)
         end
         local _old = vars._
         vars._ = path
-        run(setmetatable({shell = shell, multishell = multishell, package = pack, require = require}, {__index = shell_env}), path, table.unpack(tokens)) 
+        run(setmetatable({shell = shell, multishell = multishell, package = pack, require = require, arg = tokens}, {__index = shell_env}), path, table.unpack(tokens)) 
         vars._ = _old
     end
     for k,v in pairs(tokens.vars) do _ENV[k] = oldenv[k] end
