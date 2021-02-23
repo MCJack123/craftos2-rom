@@ -726,6 +726,24 @@ if http then
         return ok, err
     end
 
+    http.listen = function( _port, _callback )
+        expect(1, _port, "number")
+        expect(2, _callback, "function")
+        http.addListener( _port )
+        while true do
+            local ev, p1, p2, p3 = os.pullEvent()
+            if ev == "server_stop" then
+                http.removeListener( _port )
+                break
+            elseif ev == "http_request" and p1 == _port then
+                if _callback( p2, p3 ) then 
+                    http.removeListener( _port )
+                    break 
+                end
+            end
+        end
+    end
+
     local nativeCheckURL = http.checkURL
     http.checkURLAsync = nativeCheckURL
     http.checkURL = function(_url)
