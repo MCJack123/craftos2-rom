@@ -394,7 +394,8 @@ function create(parent, nX, nY, nWidth, nHeight, bStartVisible)
     window.setBackgroundColor = setBackgroundColor
     window.setBackgroundColour = setBackgroundColor
 
-    function window.getSize()
+    function window.getSize(mode)
+        if term.getGraphicsMode and term.getGraphicsMode() then return term.native().getSize(mode) end
         return nWidth, nHeight
     end
 
