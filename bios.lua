@@ -1010,7 +1010,7 @@ settings.define("shell.report_plugin_errors", {
 })
 
 settings.define("bios.use_cash", {
-    default = true,
+    default = false,
     description = [[Switch the default shell interpreter to cash, a Bourne-compatible shell. (Beta)]],
     type = "boolean",
 })
