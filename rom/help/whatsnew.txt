@@ -1,44 +1,44 @@
-New Features in CraftOS-PC v2.5.3:
+New Features in CraftOS-PC v2.5.4:
 
-* Added automatic crash log uploading behind `snooperEnabled`
-  * A prompt will appear on first boot asking to allow this
-  * See https://www.craftos-pc.cc/docs/privacy for info about how your data is kept secure
-* Added `snooperEnabled` config setting
-  * This is currently only used for crash uploading, but more (very basic) analytics may be added in the future
-* The `debug` API is now enabled by default
-  * This is possible due to the `debug` API no longer requiring hooks
-  * The availability of `debug` resolves a long-standing compatibility issue when run with the default config
-* Bumped structure version to 2
+* Bumped CC:T version to 1.95.3
+  * Correctly serialise sparse arrays into JSON (livegamer999)
+  * Programs run via edit are now a little better behaved (Wojbie)
+  * Add User-Agent [and Accept-Charset] to a websocket's headers.
+* Bumped structure version to 3
   * New fields in `configuration`:
-    * `snooperEnabled`
+    * `keepOpenOnShutdown`
+  * New fields in `computer_configuration`:
+    * `computerWidth`
+    * `computerHeight
   * New fields in `PluginFunctions`:
-    * `registerConfigSetting`
-  * New fields in `Terminal`:
-    * `mouseButtonOrder`
-* Added new `registerConfigSetting` capability to allow access to plugin settings from `config` API
-* Added ability to yield from line and count hooks
-* Debug hooks now work as expected when no debugger is attached
-  * This breaks `logErrors` and non-debugger breakpoints, but neither feature is used much
-    * They may be brought back in the future, but they are not working for now
-* Functions passed to `load` can now yield in standards mode only
-  * This is behind standards mode due to the possible performance hit being higher than its usefulness
-* Decreased mixer chunk size to 512
-  * This should help with latency in things like the [sound plugin](https://gist.github.com/MCJack123/34ae1ca1a962504f32b34f2771f92326)
-* Fixed HTTP handles not being closed when going out of scope/being deleted
-* Fixed deadlock/high memory usage when resizing window to 0x0
-* Fixed DPI issues in hardware renderer on Mac when switching between Retina and non-Retina displays
-* Fixed deadlock when maximizing window with `snapToSize` enabled
-* Fixed mouse buttons > 3 being returned as 1
-* Mouse buttons > 3 no longer report in standards mode
-* Fixed the order of mouse buttons reported with mouse_drag when multiple are down at the same time
-* Fixed crash when loading plugin config
-* Fixed plugin config not saving properly
-* Fixed `\` not being treated as a directory separator
-* Fixed `/\.{3,}/` not being treated the same as `.`
-* Fixed `fs.getCapacity` in standards mode
-* Rewrote abort timeout handling to no longer use debug hooks
-* Changed `size_t` size in binary Lua chunks to 4 bytes for compatibility
-* Added `lua_externalerror` to throw errors from another thread
-* Improved performance of internal string split function
+    * `attachPeripheral`
+    * `detachPeripheral`
+* Added `keepOpenOnShutdown` setting to keep computers open after shutdown
+  * Use the X button to close the window (or your OS's respective key combo)
+  * Use Ctrl+R to start the computer again
+* Added per-computer default size options
+* Added two arguments when attaching monitors to specify their size
+* Added `debug.upvalue{id,join}` from Lua 5.3
+* Added the ability to set host ports for WebSocket servers
+* Added support for KMSDRM backends on Linux
+* Disabled WebSocket servers in vanilla mode
+* Adding duplicate virtual mounts now returns `false` without adding it again
+* Moved `romReadOnly` to hidden options
+* Fixed macOS installation instructions for Homebrew
+* Fixed a race conditions with modems causing a crash
+* Fixed abort timeout occasionally firing when running in a quickly yielding loop
+* Fixed WebSockets not being closed soon after close is called
+* Fixed race condition on timer add/remove
+* Fixed some random crashes on an odd memory error
+* Fixed WebSocket binary messages not being implemented correctly
+* Fixed cursor not being reset on shutdown
+* Fixed URL checks being missing from `http.get`
+* Fixed read past EOF in `file.read(n)` on text handles
+* Fixed crash when passing bad argument #1 to `table.foreach`
+* Fixed `arg` table being missing when running programs with cash
+* Fixed missing `http.listen` function
+* Fixed `window.getSize` not working with the new arguments
+* Fixed cash being enabled by default
+* Fixed shell failing to run in vanilla mode
 
 Type "help changelog" to see the full version history.
