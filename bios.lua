@@ -7,11 +7,23 @@ local expect
 
 do
     local h = fs.open("rom/modules/main/cc/expect.lua", "r")
-    local f, err = loadstring(h.readAll(), "@expect.lua")
+    local f, err = load(h.readAll(), "@expect.lua")
     h.close()
 
     if not f then error(err) end
     expect = f().expect
+end
+
+-- Historically load/loadstring would handle the chunk name as if it has
+-- been prefixed with "=". We emulate that behaviour here.
+local function prefix(chunkname)
+    if type(chunkname) ~= "string" then return chunkname end
+    local head = chunkname:sub(1, 1)
+    if head == "=" or head == "@" then
+        return chunkname
+    else
+        return "=" .. chunkname
+    end
 end
 
 if _VERSION == "Lua 5.1" then
@@ -20,18 +32,6 @@ if _VERSION == "Lua 5.1" then
     local nativeload = load
     local nativeloadstring = loadstring
     local nativesetfenv = setfenv
-
-    -- Historically load/loadstring would handle the chunk name as if it has
-    -- been prefixed with "=". We emulate that behaviour here.
-    local function prefix(chunkname)
-        if type(chunkname) ~= "string" then return chunkname end
-        local head = chunkname:sub(1, 1)
-        if head == "=" or head == "@" then
-            return chunkname
-        else
-            return "=" .. chunkname
-        end
-    end
 
     function load(x, name, mode, env)
         expect(1, x, "function", "string")
@@ -94,6 +94,66 @@ if _VERSION == "Lua 5.1" then
             blogic_rshift = bit32.rshift,
         }
     end
+elseif not _CC_DISABLE_LUA51_FEATURES then
+    -- Restore old Lua 5.1 functions for compatibility
+    -- setfenv/getfenv replacements from https://leafo.net/guides/setfenv-in-lua52-and-above.html
+    function setfenv(fn, env)
+        if not debug then error("could not set environment", 2) end
+        local i = 1
+        while true do
+            local name = debug.getupvalue(fn, i)
+            if name == "_ENV" then
+                debug.upvaluejoin(fn, i, (function()
+                    return env
+                end), 1)
+                break
+            elseif not name then
+                break
+            end
+
+            i = i + 1
+        end
+
+        return fn
+    end
+
+    function getfenv(fn)
+        local i = 1
+        while true do
+            local name, val = debug.getupvalue(fn, i)
+            if name == "_ENV" then
+                return val
+            elseif not name then
+                break
+            end
+            i = i + 1
+        end
+    end
+
+    function table.maxn(tab)
+        local num = 0
+        for k in pairs(tab) do
+            if type(k) == "number" and k > num then
+                num = k
+            end
+        end
+        return num
+    end
+
+    math.log10 = function(x) return math.log(x, 10) end
+    loadstring = function(string, chunkname) return load(string, prefix(chunkname)) end
+    unpack = table.unpack
+
+    -- Inject a stub for the old bit library
+    _G.bit = {
+        bnot = bit32.bnot,
+        band = bit32.band,
+        bor = bit32.bor,
+        bxor = bit32.bxor,
+        brshift = bit32.arshift,
+        blshift = bit32.lshift,
+        blogic_rshift = bit32.rshift,
+    }
 end
 
 -- Install lua parts of the os api
