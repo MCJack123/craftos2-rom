@@ -176,10 +176,10 @@ for y = 0, (height - 2), 2 * g do
 
         if y > 125/170 * height and (c == colors.red or c == colors.blue) then c = colors.black end
 
-        term.setPixel(width - x, height - y, c)
-        term.setPixel(width - x, height - (y + 1), l)
-        term.setPixel(width - (x + 1), height - y, m)
-        term.setPixel(width - (x + 1), height - (y + 1), c)
+        term.setPixel(width - x - 1, height - y - 1, c)
+        term.setPixel(width - x - 1, height - y - 2, l)
+        term.setPixel(width - x - 2, height - y - 1, m)
+        term.setPixel(width - x - 2, height - y - 2, c)
     end
 end
 

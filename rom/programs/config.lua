@@ -9,6 +9,7 @@ if args[1] == "list" then
 elseif args[1] == "get" and args[2] ~= nil then
     local setting = config.get(args[2])
     if setting == nil then error("Unknown setting " .. args[2])
+    elseif type(setting) == "table" then print(textutils.serialize(setting))
     else print(tostring(setting)) end
 elseif args[1] == "set" and args[3] ~= nil then
     local type = config.getType(args[2])

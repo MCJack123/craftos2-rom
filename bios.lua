@@ -271,6 +271,18 @@ function printError(...)
     end
 end
 
+function printWarning(...)
+    local oldColour
+    if term.isColour() then
+        oldColour = term.getTextColour()
+        term.setTextColour(colors.yellow)
+    end
+    print(...)
+    if term.isColour() then
+        term.setTextColour(oldColour)
+    end
+end
+
 function read(_sReplaceChar, _tHistory, _fnComplete, _sDefault)
     expect(1, _sReplaceChar, "string", "nil")
     expect(2, _tHistory, "table", "nil")
