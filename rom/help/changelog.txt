@@ -29,7 +29,7 @@
     * `keepOpenOnShutdown`
   * New fields in `computer_configuration`:
     * `computerWidth`
-    * `computerHeight
+    * `computerHeight`
   * New fields in `PluginFunctions`:
     * `attachPeripheral`
     * `detachPeripheral`
