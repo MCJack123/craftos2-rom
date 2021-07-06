@@ -28,8 +28,7 @@ local expect = require "cc.expect"
 local expect, field = expect.expect, expect.field
 
 local type, getmetatable, setmetatable, colours, str_write, tostring = type, getmetatable, setmetatable, colours, write, tostring
-local debug_info = type(debug) == "table" and type(debug.getinfo) == "function" and debug.getinfo
-local debug_local = type(debug) == "table" and type(debug.getlocal) == "function" and debug.getlocal
+local debug_info, debug_local = debug.getinfo, debug.getlocal
 
 --- @{table.insert} alternative, but with the length stored inline.
 local function append(out, value)
@@ -45,17 +44,19 @@ end
 -- @type Doc
 local Doc = { }
 
+local function mk_doc(tbl) return setmetatable(tbl, Doc) end
+
 --- An empty document.
-local empty = setmetatable({ tag = "nil" }, Doc)
+local empty = mk_doc({ tag = "nil" })
 
 --- A document with a single space in it.
-local space = setmetatable({ tag = "text", text = " " }, Doc)
+local space = mk_doc({ tag = "text", text = " " })
 
 --- A line break. When collapsed with @{group}, this will be replaced with @{empty}.
-local line = setmetatable({ tag = "line", flat = empty }, Doc)
+local line = mk_doc({ tag = "line", flat = empty })
 
 --- A line break. When collapsed with @{group}, this will be replaced with @{space}.
-local space_line = setmetatable({ tag = "line", flat = space }, Doc)
+local space_line = mk_doc({ tag = "line", flat = space })
 
 local text_cache = { [""] = empty, [" "] = space, ["\n"] = space_line }
 

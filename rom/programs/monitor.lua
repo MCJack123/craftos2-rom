@@ -1,12 +1,31 @@
 local function printUsage()
     local programName = arg[0] or fs.getName(shell.getRunningProgram())
-    print("Usage: " .. programName .. " <name> <program> <arguments>")
+    print("Usage:")
+    print("  " .. programName .. " <name> <program> <arguments>")
+    print("  " .. programName .. " scale <name> <scale>")
     return
 end
 
 local tArgs = { ... }
-if #tArgs < 2 then
+if #tArgs < 2 or tArgs[1] == "scale" and #tArgs < 3 then
     printUsage()
+    return
+end
+
+if tArgs[1] == "scale" then
+    local sName = tArgs[2]
+    if peripheral.getType(sName) ~= "monitor" then
+        print("No monitor named " .. sName)
+        return
+    end
+
+    local nRes = tonumber(tArgs[3])
+    if nRes == nil or nRes < 0.5 or nRes > 5 then
+        print("Invalid scale: " .. tArgs[3])
+        return
+    end
+
+    peripheral.call(sName, "setTextScale", nRes)
     return
 end
 
@@ -17,16 +36,6 @@ if peripheral.getType(sName) ~= "monitor" then
 end
 
 local sProgram = tArgs[2]
-
-if sProgram == "resolution" then
-    local nRes = tonumber(tArgs[3])
-    if nRes == nil or nRes < 0.5 or nRes > 5 then
-        print("Invalid resolution")
-        return
-    end
-    peripheral.call(sName, "setTextScale", nRes)
-    return
-end
 
 local sPath = shell.resolveProgram(sProgram)
 if sPath == nil then
