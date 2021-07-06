@@ -295,7 +295,7 @@ local function serialize_impl(t, tracking, indent, opts)
                     else
                         sEntry = open_key .. serialize_impl(k, tracking, sub_indent, opts) .. close_key .. serialize_impl(v, tracking, sub_indent, opts) .. comma
                     end
-                    sEntry = open_key .. serialize_impl(k, tracking, sub_indent, opts) .. close_key .. serialize_impl(v, tracking, sub_indent, opts) .. comma
+                    result = result .. sub_indent .. sEntry
                 end
             end
             result = result .. indent .. "}"
