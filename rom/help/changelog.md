@@ -1,7 +1,8 @@
-## v2.6 - ?
+## v2.6 - July 11, 2021
 * CraftOS-PC is now available on Android and iOS
-  * Apps are available on the iOS App Store and Google Play Store
+  * Apps are available on the iOS App Store (Play Store in the future; please download the APK manually)
   * Supports same feature set as desktop CraftOS-PC
+    * Monitors and multi-computer support is missing, but will be added in a future version
   * Pinch in to open keyboard, out to close keyboard
   * Extra mobile-centric features:
     * `mobile` API with `openKeyboard(open: boolean)` and `isKeyboardOpen()` functions
@@ -62,6 +63,7 @@
 * Changed cursor blink speed to 0.4s to match CC's behavior
 * Rewrote main thread task queuer to be more efficient
 * Setting `abortTimeout` to 0 now disables abort timeouts
+* The close button no longer needs to be clicked twice to exit when `keepOpenOnShutdown` is enabled
 * Fixed "400 Bad Request" error on HTTP requests when the path is empty
 * Fixed crash when a bad URL is passed to HTTP functions
 * Fixed an issue causing encoded slashes in URLs being decoded prematurely (#199)
@@ -74,15 +76,18 @@
 * Fixed `os.epoch "local"` not accounting for Daylight Savings Time
 * Fixed files being truncated in text mode on Windows when a `\x0A` character is found (#204)
 * Software rendering now reuses the same surface to reduce memory pressure
+* Fixed an issue causing inconsistent speeds when recording to GIF
 * Fixed blit only allowing gray colors on grayscale terminals
 * Fixed monitors in raw mode sending close events to the wrong window ID
 * Fixed some issues with setting monitor scale
 * Fixed mouse event debouncing on monitors
 * Fixed monitors not reporting a second `monitor_touch` event when clicked twice at the same point
 * Fixed `mouse_move` leave event on monitors not sending the side
+* Fixed a bug causing `mouse_move` events to stop being sent after a while
 * Fixed behavior of `term.blit` when passing an invalid character to color strings
 * Fixed raw client mouse events not being sent properly
 * Fixed an issue causing crashes when creating certain peripherals
+* Fixed a possible crash when the BIOS cannot be found (#208)
 * `__lt` metamethods can now yield from inside `table.sort`
 * Fixed a possible memory leak in `table.sort`
 * Fixed an issue causing `__lt` metamethods that yield to return the wrong result from `<=`
