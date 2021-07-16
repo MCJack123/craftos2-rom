@@ -271,6 +271,7 @@ function printError(...)
     end
 end
 
+--[[ Lua 5.4!!!
 function printWarning(...)
     local oldColour
     if term.isColour() then
@@ -282,6 +283,7 @@ function printWarning(...)
         term.setTextColour(oldColour)
     end
 end
+--]]
 
 function read(_sReplaceChar, _tHistory, _fnComplete, _sDefault)
     expect(1, _sReplaceChar, "string", "nil")
