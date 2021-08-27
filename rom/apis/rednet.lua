@@ -388,7 +388,6 @@ function run()
                     tReceivedMessages[tMessage.nMessageID] = true
                     tReceivedMessageTimeouts[os.startTimer(30)] = tMessage.nMessageID
                     os.queueEvent("rednet_message", nReplyChannel, tMessage.message, tMessage.sProtocol)
-                    end
                 end
             end
 
