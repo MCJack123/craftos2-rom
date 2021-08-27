@@ -28,3 +28,4 @@ Open new computers by typing "attach <id> computer" in the shell.
 You can view new features in CraftOS-PC at any time with "help whatsnew".
 Did you know you can load regular Lua libraries as plugins?
 CraftOS-PC has its own Discord server available at https://www.craftos-pc.cc/discord.
+You can drag and drop files onto an open computer to upload them.
