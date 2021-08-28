@@ -34,8 +34,8 @@ local function parse_markdown(text)
     -- Some patterns to match headers and bullets on the start of lines.
     -- The `%f[^\n\0]` is some wonderful logic to match the start of a line /or/
     -- the start of the document.
-    local heading = "%f[^\n\0](#+ +)([^\n]*)"
-    local bullet = "%f[^\n\0]( *)[.*]( +)"
+    local heading = "%f[^\n%z](#+ +)([^\n]*)"
+    local bullet = "%f[^\n%z]( *)[.*]( +)"
     local code = "`([^`]+)`"
 
     local new_text, fg, bg = "", "", ""
