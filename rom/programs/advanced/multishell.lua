@@ -393,6 +393,18 @@ while #tProcesses > 0 do
                 redrawMenu()
             end
         end
+        
+    elseif sEvent == "_CCPC_mobile_keyboard_open" and settings.get("shell.mobile_resize_with_keyboard") then
+        -- Resize event
+        w, h = parentTerm.getSize(), tEventData[2]
+        resizeWindows()
+        redrawMenu()
+    
+    elseif sEvent == "_CCPC_mobile_keyboard_close" and settings.get("shell.mobile_resize_with_keyboard") then
+        -- Resize event
+        w, h = parentTerm.getSize()
+        resizeWindows()
+        redrawMenu()
 
     else
         -- Other event
