@@ -1085,6 +1085,11 @@ settings.define("shell.report_plugin_errors", {
     description = "Show errors on startup if a plugin(s) failed to load.",
     type = "boolean",
 })
+settings.define("shell.mobile_resize_with_keyboard", {
+    default = true,
+    description = "Automatically resize the shell when the keyboard is opened or closed.",
+    type = "boolean",
+})
 
 settings.define("bios.use_cash", {
     default = false,
