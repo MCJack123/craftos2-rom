@@ -55,7 +55,7 @@ end
 
 local function completeConfigPart3(shell, text, previous)
     if previous[2] == "set" then
-        if config.getType(previous[3]) == 0 then return completion.choice(shell, text, previous, {"true", "false"})
+        if config.getType(previous[3]) == "boolean" then return completion.choice(shell, text, previous, {"true", "false"})
         elseif previous[3] == "mount_mode" then return completion.choice(shell, text, previous, {"none", "ro", "ro_strict", "rw"}) end
     end
 end

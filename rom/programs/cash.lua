@@ -1316,14 +1316,14 @@ local function readCommand()
         end
         redrawStr()
     end
-    if ly >= ({term.getSize()})[2] then 
-        term.scroll(1) 
+    if ly >= ({term.getSize()})[2] then
+        term.scroll(1)
         ly = ly - 1
     end
     term.setCursorPos(1, ly + 1)
     term.setCursorBlink(false)
-    if str ~= "" then 
-        table.insert(history, str) 
+    if str ~= "" and str ~= history[#history] then
+        table.insert(history, str)
         historyfile.writeLine(str)
         historyfile.flush()
     end

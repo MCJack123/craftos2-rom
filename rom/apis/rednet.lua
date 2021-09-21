@@ -15,6 +15,7 @@
 -- determine where given messages should be sent in the first place.
 --
 -- @module rednet
+-- @since 1.2
 
 local expect = dofile("rom/modules/main/cc/expect.lua").expect
 
@@ -25,8 +26,8 @@ CHANNEL_BROADCAST = 65535
 CHANNEL_REPEAT = 65533
 
 local tReceivedMessages = {}
-local tReceivedMessageTimeouts = {}
 local tHostnames = {}
+local nClearTimer
 
 --[[- Opens a modem with the given @{peripheral} name, allowing it to send and
 receive messages over rednet.
@@ -80,6 +81,7 @@ end
 -- @tparam[opt] string modem Which modem to check. If not given, all connected
 -- modems will be checked.
 -- @treturn boolean If the given modem is open.
+-- @since 1.31
 function isOpen(modem)
     expect(1, modem, "string", "nil")
     if modem then
@@ -114,6 +116,8 @@ particular protocol.
 @treturn boolean If this message was successfully sent (i.e. if rednet is
 currently @{rednet.open|open}). Note, this does not guarantee the message was
 actually _received_.
+@changed 1.6 Added protocol parameter.
+@changed 1.82.0 Now returns whether the message was successfully sent.
 @see rednet.receive
 @usage Send a message to computer #2.
 
@@ -126,8 +130,8 @@ function send(nRecipient, message, sProtocol)
     -- We could do other things to guarantee uniqueness, but we really don't need to
     -- Store it to ensure we don't get our own messages back
     local nMessageID = math.random(1, 2147483647)
-    tReceivedMessages[nMessageID] = true
-    tReceivedMessageTimeouts[os.startTimer(30)] = nMessageID
+    tReceivedMessages[nMessageID] = os.clock() + 9.5
+    if not nClearTimer then nClearTimer = os.startTimer(10) end
 
     -- Create the message
     local nReplyChannel = os.getComputerID()
@@ -166,6 +170,7 @@ end
 -- using @{rednet.receive} one can filter to only receive messages sent under a
 -- particular protocol.
 -- @see rednet.receive
+-- @changed 1.6 Added protocol parameter.
 function broadcast(message, sProtocol)
     expect(2, sProtocol, "string", "nil")
     send(CHANNEL_BROADCAST, message, sProtocol)
@@ -185,6 +190,7 @@ received.
 @treturn[2] nil If the timeout elapsed and no message was received.
 @see rednet.broadcast
 @see rednet.send
+@changed 1.6 Added protocol filter parameter.
 @usage Receive a rednet message.
 
     local id, message = rednet.receive()
@@ -262,6 +268,7 @@ end
 -- @throws If trying to register a hostname which is reserved, or currently in use.
 -- @see rednet.unhost
 -- @see rednet.lookup
+-- @since 1.6
 function host(sProtocol, sHostname)
     expect(1, sProtocol, "string")
     expect(2, sHostname, "string")
@@ -280,6 +287,7 @@ end
 -- respond to @{rednet.lookup} requests.
 --
 -- @tparam string sProtocol The protocol to unregister your self from.
+-- @since 1.6
 function unhost(sProtocol)
     expect(1, sProtocol, "string")
     tHostnames[sProtocol] = nil
@@ -299,6 +307,7 @@ end
 -- protocol, or @{nil} if none exist.
 -- @treturn[2] number|nil The computer ID with the provided hostname and protocol,
 -- or @{nil} if none exists.
+-- @since 1.6
 function lookup(sProtocol, sHostname)
     expect(1, sProtocol, "string")
     expect(2, sHostname, "string", "nil")
@@ -385,8 +394,8 @@ function run()
                 if type(tMessage) == "table" and type(tMessage.nMessageID) == "number"
                     and tMessage.nMessageID == tMessage.nMessageID and not tReceivedMessages[tMessage.nMessageID]
                 then
-                    tReceivedMessages[tMessage.nMessageID] = true
-                    tReceivedMessageTimeouts[os.startTimer(30)] = tMessage.nMessageID
+                    tReceivedMessages[tMessage.nMessageID] = os.clock() + 9.5
+                    if not nClearTimer then nClearTimer = os.startTimer(10) end
                     os.queueEvent("rednet_message", nReplyChannel, tMessage.message, tMessage.sProtocol)
                 end
             end
@@ -405,14 +414,15 @@ function run()
                 end
             end
 
-        elseif sEvent == "timer" then
+        elseif sEvent == "timer" and p1 == nClearTimer then
             -- Got a timer event, use it to clear the event queue
-            local nTimer = p1
-            local nMessage = tReceivedMessageTimeouts[nTimer]
-            if nMessage then
-                tReceivedMessageTimeouts[nTimer] = nil
-                tReceivedMessages[nMessage] = nil
+            nClearTimer = nil
+            local nNow, bHasMore = os.clock(), nil
+            for nMessageID, nDeadline in pairs(tReceivedMessages) do
+                if nDeadline >= nNow then tReceivedMessages[nMessageID] = nil
+                else bHasMore = true end
             end
+            nClearTimer = bHasMore and os.startTimer(10)
         end
     end
 end
