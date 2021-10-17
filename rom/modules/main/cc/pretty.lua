@@ -80,7 +80,7 @@ end
 --     local pretty = require "cc.pretty"
 --     pretty.print(pretty.text("Hello!", colours.blue))
 local function text(text, colour)
-    expect(1, text, "string")
+    expect(1, text, "string", "UTFString")
     expect(2, colour, "number", "nil")
 
     local cached = text_cache[text]
@@ -395,8 +395,8 @@ end
 
 local function pretty_impl(obj, options, tracking)
     local obj_type = type(obj)
-    if obj_type == "string" then
-        local formatted = ("%q"):format(obj):gsub("\\\n", "\\n")
+    if obj_type == "string" or UTFString.isUTFString(obj) then
+        local formatted = (UTFString"%q"):format(obj):gsub("\\\n", "\\n")
         return text(formatted, colours.red)
     elseif obj_type == "number" then
         return text(tostring(obj), colours.magenta)

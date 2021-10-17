@@ -183,7 +183,7 @@ function sleep(nTime)
 end
 
 function write(sText)
-    expect(1, sText, "string", "number")
+    expect(1, sText, "string", "number", "UTFString")
 
     local w, h = term.getSize()
     local x, y = term.getCursorPos()
@@ -201,26 +201,26 @@ function write(sText)
     end
 
     -- Print the line with proper word wrapping
-    sText = tostring(sText)
+    if type(sText) == "number" then sText = tostring(sText) end
     while #sText > 0 do
-        local whitespace = string.match(sText, "^[ \t]+")
+        local whitespace = sText:match("^[ \t]+")
         if whitespace then
             -- Print whitespace
             term.write(whitespace)
             x, y = term.getCursorPos()
-            sText = string.sub(sText, #whitespace + 1)
+            sText = sText:sub(#whitespace + 1)
         end
 
-        local newline = string.match(sText, "^\n")
+        local newline = sText:match("^\n")
         if newline then
             -- Print newlines
             newLine()
-            sText = string.sub(sText, 2)
+            sText = sText:sub(2)
         end
 
-        local text = string.match(sText, "^[^ \t\n]+")
+        local text = sText:match("^[^ \t\n]+")
         if text then
-            sText = string.sub(sText, #text + 1)
+            sText = sText:sub(#text + 1)
             if #text > w then
                 -- Print a multiline word
                 while #text > 0 do
@@ -228,7 +228,7 @@ function write(sText)
                         newLine()
                     end
                     term.write(text)
-                    text = string.sub(text, w - x + 2)
+                    text = text:sub(w - x + 2)
                     x, y = term.getCursorPos()
                 end
             else
@@ -249,7 +249,8 @@ function print(...)
     local nLinesPrinted = 0
     local nLimit = select("#", ...)
     for n = 1, nLimit do
-        local s = tostring(select(n, ...))
+        local v = select(n, ...)
+        local s = UTFString.isUTFString(v) and v or tostring(v)
         if n < nLimit then
             s = s .. "\t"
         end

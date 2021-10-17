@@ -15,7 +15,7 @@ if fs.exists(sPath) and fs.isDir(sPath) then
 end
 
 -- Create .lua files by default
-if not fs.exists(sPath) and not string.find(sPath, "%.") then
+if not fs.exists(sPath) and not sPath:find("%.") then
     local sExtension = settings.get("edit.default_extension")
     if sExtension ~= "" and type(sExtension) == "string" then
         sPath = sPath .. "." .. sExtension
@@ -99,13 +99,13 @@ end
 local function load(_sPath)
     tLines = {}
     if fs.exists(_sPath) then
-        local file = io.open(_sPath, "r")
-        local sLine = file:read()
+        local file = fs.open(_sPath, "ru")
+        local sLine = file.readLine()
         while sLine do
             table.insert(tLines, sLine)
-            sLine = file:read()
+            sLine = file.readLine()
         end
-        file:close()
+        file.close()
     end
 
     if #tLines == 0 then
@@ -165,7 +165,7 @@ local tKeywords = {
 }
 
 local function tryWrite(sLine, regex, colour)
-    local match = string.match(sLine, regex)
+    local match = sLine:match(regex)
     if match then
         if type(colour) == "number" then
             term.setTextColour(colour)
@@ -174,7 +174,7 @@ local function tryWrite(sLine, regex, colour)
         end
         term.write(match)
         term.setTextColour(textColour)
-        return string.sub(sLine, #match + 1)
+        return sLine:sub(#match + 1)
     end
     return nil
 end
@@ -205,9 +205,9 @@ local nCompletion
 local tCompleteEnv = _ENV
 local function complete(sLine)
     if settings.get("edit.autocomplete") then
-        local nStartPos = string.find(sLine, "[a-zA-Z0-9_%.:]+$")
+        local nStartPos = sLine:find("[a-zA-Z0-9_%.:]+$")
         if nStartPos then
-            sLine = string.sub(sLine, nStartPos)
+            sLine = sLine:sub(nStartPos)
         end
         if #sLine > 0 then
             return textutils.complete(sLine, tCompleteEnv)
@@ -570,7 +570,7 @@ while bRunning do
                 else
                     -- Indent line
                     local sLine = tLines[y]
-                    tLines[y] = string.sub(sLine, 1, x - 1) .. "    " .. string.sub(sLine, x)
+                    tLines[y] = sLine:sub(1, x - 1) .. "    " .. sLine:sub(x)
                     setCursor(x + 4, y)
                 end
             end
@@ -671,7 +671,7 @@ while bRunning do
                 local nLimit = #tLines[y] + 1
                 if x < nLimit then
                     local sLine = tLines[y]
-                    tLines[y] = string.sub(sLine, 1, x - 1) .. string.sub(sLine, x + 1)
+                    tLines[y] = sLine:sub(1, x - 1) .. sLine:sub(x + 1)
                     recomplete()
                     redrawLine(y)
                 elseif y < #tLines then
@@ -688,11 +688,11 @@ while bRunning do
                 if x > 1 then
                     -- Remove character
                     local sLine = tLines[y]
-                    if x > 4 and string.sub(sLine, x - 4, x - 1) == "    " and not string.sub(sLine, 1, x - 1):find("%S") then
-                        tLines[y] = string.sub(sLine, 1, x - 5) .. string.sub(sLine, x)
+                    if x > 4 and sLine:sub(x - 4, x - 1) == "    " and not sLine:sub(1, x - 1):find("%S") then
+                        tLines[y] = sLine:sub(1, x - 5) .. sLine:sub(x)
                         setCursor(x - 4, y)
                     else
-                        tLines[y] = string.sub(sLine, 1, x - 2) .. string.sub(sLine, x)
+                        tLines[y] = sLine:sub(1, x - 2) .. sLine:sub(x)
                         setCursor(x - 1, y)
                     end
                 elseif y > 1 then
@@ -710,12 +710,12 @@ while bRunning do
             if not bMenu and not bReadOnly then
                 -- Newline
                 local sLine = tLines[y]
-                local _, spaces = string.find(sLine, "^[ ]+")
+                local _, spaces = sLine:find("^[ ]+")
                 if not spaces then
                     spaces = 0
                 end
-                tLines[y] = string.sub(sLine, 1, x - 1)
-                table.insert(tLines, y + 1, string.rep(' ', spaces) .. string.sub(sLine, x))
+                tLines[y] = sLine:sub(1, x - 1)
+                table.insert(tLines, y + 1, (' '):rep(spaces) .. sLine:sub(x))
                 setCursor(spaces + 1, y + 1)
                 redrawText()
 
@@ -746,13 +746,13 @@ while bRunning do
         if not bMenu and not bReadOnly then
             -- Input text
             local sLine = tLines[y]
-            tLines[y] = string.sub(sLine, 1, x - 1) .. param .. string.sub(sLine, x)
+            tLines[y] = sLine:sub(1, x - 1) .. param .. sLine:sub(x)
             setCursor(x + 1, y)
 
         elseif bMenu then
             -- Select menu items
             for n, sMenuItem in ipairs(tMenuItems) do
-                if string.lower(string.sub(sMenuItem, 1, 1)) == string.lower(param) then
+                if sMenuItem:sub(1, 1):lower() == param:lower() then
                     doMenuItem(n)
                     break
                 end
@@ -769,7 +769,7 @@ while bRunning do
             end
             -- Input text
             local sLine = tLines[y]
-            tLines[y] = string.sub(sLine, 1, x - 1) .. param .. string.sub(sLine, x)
+            tLines[y] = sLine:sub(1, x - 1) .. param .. sLine:sub(x)
             setCursor(x + #param , y)
         end
 

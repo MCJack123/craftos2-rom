@@ -46,7 +46,7 @@ end
 local function expect(index, value, ...)
     local t = native_type(value)
     for i = 1, native_select("#", ...) do
-        if t == native_select(i, ...) then return value end
+        if t == native_select(i, ...) or (native_select(i, ...) == "UTFString" and UTFString.isUTFString(value)) then return value end
     end
 
     -- If we can determine the function name with a high level of confidence, try to include it.
