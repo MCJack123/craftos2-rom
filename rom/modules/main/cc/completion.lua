@@ -35,7 +35,7 @@ end
 --     local animals = { "dog", "cat", "lion", "unicorn" }
 --     read(nil, nil, function(text) return completion.choice(text, animals) end)
 local function choice(text, choices, add_space)
-    expect(1, text, "string")
+    expect(1, text, "string", "UTFString")
     expect(2, choices, "table")
     expect(3, add_space, "boolean", "nil")
     return choice_impl(text, choices, add_space)
@@ -50,7 +50,7 @@ end
 --     local completion = require "cc.completion"
 --     read(nil, nil, completion.peripheral)
 local function peripheral_(text, add_space)
-    expect(1, text, "string")
+    expect(1, text, "string", "UTFString")
     expect(2, add_space, "boolean", "nil")
     return choice_impl(text, peripheral.getNames(), add_space)
 end
@@ -66,7 +66,7 @@ local sides = redstone.getSides()
 --     local completion = require "cc.completion"
 --     read(nil, nil, completion.side)
 local function side(text, add_space)
-    expect(1, text, "string")
+    expect(1, text, "string", "UTFString")
     expect(2, add_space, "boolean", "nil")
     return choice_impl(text, sides, add_space)
 end
@@ -80,7 +80,7 @@ end
 --     local completion = require "cc.completion"
 --     read(nil, nil, completion.setting)
 local function setting(text, add_space)
-    expect(1, text, "string")
+    expect(1, text, "string", "UTFString")
     expect(2, add_space, "boolean", "nil")
     return choice_impl(text, settings.getNames(), add_space)
 end
@@ -96,7 +96,7 @@ local command_list
 --     local completion = require "cc.completion"
 --     read(nil, nil, completion.command)
 local function command(text, add_space)
-    expect(1, text, "string")
+    expect(1, text, "string", "UTFString")
     expect(2, add_space, "boolean", "nil")
     if command_list == nil then
         command_list = commands and commands.list() or {}

@@ -286,24 +286,26 @@ function printWarning(...)
 end
 --]]
 
-function read(_sReplaceChar, _tHistory, _fnComplete, _sDefault)
-    expect(1, _sReplaceChar, "string", "nil")
+function read(_sReplaceChar, _tHistory, _fnComplete, _sDefault, _bUnicode)
+    expect(1, _sReplaceChar, "string", "UTFString", "nil")
     expect(2, _tHistory, "table", "nil")
     expect(3, _fnComplete, "function", "nil")
-    expect(4, _sDefault, "string", "nil")
+    expect(4, _sDefault, "string", "UTFString", "nil")
+
+    local function S(str) if _bUnicode then return UTFString(str) else return str end end
 
     term.setCursorBlink(true)
 
     local sLine
-    if type(_sDefault) == "string" then
-        sLine = _sDefault
+    if _sDefault then
+        sLine = S(_sDefault)
     else
-        sLine = ""
+        sLine = S""
     end
     local nHistoryPos
     local nPos, nScroll = #sLine, 0
     if _sReplaceChar then
-        _sReplaceChar = string.sub(_sReplaceChar, 1, 1)
+        _sReplaceChar = _sReplaceChar:sub(1, 1)
     end
 
     local tCompletions
@@ -342,11 +344,11 @@ function read(_sReplaceChar, _tHistory, _fnComplete, _sDefault)
 
         local _, cy = term.getCursorPos()
         term.setCursorPos(sx, cy)
-        local sReplace = _bClear and " " or _sReplaceChar
+        local sReplace = _bClear and S" " or _sReplaceChar
         if sReplace then
-            term.write(string.rep(sReplace, math.max(#sLine - nScroll, 0)))
+            term.write(sReplace:rep(math.max(#sLine - nScroll, 0)))
         else
-            term.write(string.sub(sLine, nScroll + 1))
+            term.write(sLine:sub(nScroll + 1))
         end
 
         if nCompletion then
@@ -359,7 +361,7 @@ function read(_sReplaceChar, _tHistory, _fnComplete, _sDefault)
                 term.setBackgroundColor(colors.gray)
             end
             if sReplace then
-                term.write(string.rep(sReplace, #sCompletion))
+                term.write(sReplace:rep(#sCompletion))
             else
                 term.write(sCompletion)
             end
@@ -396,19 +398,11 @@ function read(_sReplaceChar, _tHistory, _fnComplete, _sDefault)
     end
     while true do
         local sEvent, param, param1, param2 = os.pullEvent()
-        if sEvent == "char" then
-            -- Typed key
-            clear()
-            sLine = string.sub(sLine, 1, nPos) .. param .. string.sub(sLine, nPos + 1)
-            nPos = nPos + 1
-            recomplete()
-            redraw()
-
-        elseif sEvent == "paste" then
+        if sEvent == "char" or sEvent == "paste" then
             -- Pasted text
             clear()
-            sLine = string.sub(sLine, 1, nPos) .. param .. string.sub(sLine, nPos + 1)
-            nPos = nPos + #param
+            sLine = sLine:sub(1, nPos) .. (_bUnicode and param1 or param) .. sLine:sub(nPos + 1)
+            nPos = nPos + #(_bUnicode and param1 or param)
             recomplete()
             redraw()
 
@@ -498,7 +492,7 @@ function read(_sReplaceChar, _tHistory, _fnComplete, _sDefault)
                 -- Backspace
                 if nPos > 0 then
                     clear()
-                    sLine = string.sub(sLine, 1, nPos - 1) .. string.sub(sLine, nPos + 1)
+                    sLine = sLine:sub(1, nPos - 1) .. sLine:sub(nPos + 1)
                     nPos = nPos - 1
                     if nScroll > 0 then nScroll = nScroll - 1 end
                     recomplete()
@@ -518,7 +512,7 @@ function read(_sReplaceChar, _tHistory, _fnComplete, _sDefault)
                 -- Delete
                 if nPos < #sLine then
                     clear()
-                    sLine = string.sub(sLine, 1, nPos) .. string.sub(sLine, nPos + 2)
+                    sLine = sLine:sub(1, nPos) .. sLine:sub(nPos + 2)
                     recomplete()
                     redraw()
                 end
@@ -857,8 +851,8 @@ end
 -- Install the lua part of the FS api
 local tEmpty = {}
 function fs.complete(sPath, sLocation, bIncludeFiles, bIncludeDirs)
-    expect(1, sPath, "string")
-    expect(2, sLocation, "string")
+    expect(1, sPath, "string", "UTFString")
+    expect(2, sLocation, "string", "UTFString")
     expect(3, bIncludeFiles, "boolean", "nil")
     expect(4, bIncludeDirs, "boolean", "nil")
 
@@ -866,20 +860,20 @@ function fs.complete(sPath, sLocation, bIncludeFiles, bIncludeDirs)
     bIncludeDirs = bIncludeDirs ~= false
     local sDir = sLocation
     local nStart = 1
-    local nSlash = string.find(sPath, "[/\\]", nStart)
+    local nSlash = sPath:find("[/\\]", nStart)
     if nSlash == 1 then
         sDir = ""
         nStart = 2
     end
     local sName
     while not sName do
-        local nSlash = string.find(sPath, "[/\\]", nStart)
+        local nSlash = sPath:find("[/\\]", nStart)
         if nSlash then
-            local sPart = string.sub(sPath, nStart, nSlash - 1)
+            local sPart = sPath:sub(nStart, nSlash - 1)
             sDir = fs.combine(sDir, sPart)
             nStart = nSlash + 1
         else
-            sName = string.sub(sPath, nStart)
+            sName = sPath:sub(nStart)
         end
     end
 
@@ -898,9 +892,9 @@ function fs.complete(sPath, sLocation, bIncludeFiles, bIncludeDirs)
         local tFiles = fs.list(sDir)
         for n = 1, #tFiles do
             local sFile = tFiles[n]
-            if #sFile >= #sName and string.sub(sFile, 1, #sName) == sName then
+            if #sFile >= #sName and sFile:sub(1, #sName) == sName then
                 local bIsDir = fs.isDir(fs.combine(sDir, sFile))
-                local sResult = string.sub(sFile, #sName + 1)
+                local sResult = sFile:sub(#sName + 1)
                 if bIsDir then
                     table.insert(tResults, sResult .. "/")
                     if bIncludeDirs and #sResult > 0 then
@@ -919,7 +913,7 @@ function fs.complete(sPath, sLocation, bIncludeFiles, bIncludeDirs)
 end
 
 function fs.isDriveRoot(sPath)
-    expect(1, sPath, "string")
+    expect(1, sPath, "string", "UTFString")
     -- Force the root directory to be a mount.
     return fs.getDir(sPath) == ".." or fs.getDrive(sPath) ~= fs.getDrive(fs.getDir(sPath))
 end
@@ -928,7 +922,7 @@ end
 local bAPIError = false
 local tApis = fs.list("rom/apis")
 for _, sFile in ipairs(tApis) do
-    if string.sub(sFile, 1, 1) ~= "." then
+    if sFile:sub(1, 1) ~= "." then
         local sPath = fs.combine("rom/apis", sFile)
         if not fs.isDir(sPath) then
             if not os.loadAPI(sPath) then
@@ -942,7 +936,7 @@ if turtle and fs.isDir("rom/apis/turtle") then
     -- Load turtle APIs
     local tApis = fs.list("rom/apis/turtle")
     for _, sFile in ipairs(tApis) do
-        if string.sub(sFile, 1, 1) ~= "." then
+        if sFile:sub(1, 1) ~= "." then
             local sPath = fs.combine("rom/apis/turtle", sFile)
             if not fs.isDir(sPath) then
                 if not os.loadAPI(sPath) then
@@ -957,7 +951,7 @@ if pocket and fs.isDir("rom/apis/pocket") then
     -- Load pocket APIs
     local tApis = fs.list("rom/apis/pocket")
     for _, sFile in ipairs(tApis) do
-        if string.sub(sFile, 1, 1) ~= "." then
+        if sFile:sub(1, 1) ~= "." then
             local sPath = fs.combine("rom/apis/pocket", sFile)
             if not fs.isDir(sPath) then
                 if not os.loadAPI(sPath) then
@@ -979,7 +973,7 @@ if commands and fs.isDir("rom/apis/command") then
                     return value
                 end
                 if type(key) == "string" then
-                    local value = rawget(table, string.lower(key))
+                    local value = rawget(table, key:lower())
                     if value ~= nil then
                         return value
                     end
@@ -1105,8 +1099,8 @@ if term.isColour() then
     })
 end
 if _CC_DEFAULT_SETTINGS then
-    for sPair in string.gmatch(_CC_DEFAULT_SETTINGS, "[^,]+") do
-        local sName, sValue = string.match(sPair, "([^=]*)=(.*)")
+    for sPair in _CC_DEFAULT_SETTINGS:gmatch("[^,]+") do
+        local sName, sValue = sPair:match("([^=]*)=(.*)")
         if sName and sValue then
             local value
             if sValue == "true" then

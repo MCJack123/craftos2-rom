@@ -49,11 +49,16 @@ local OpusOS = kernel and kernel.hook
 
 if table.maxn == nil then table.maxn = function(t) local i = 1 while t[i] ~= nil do i = i + 1 end return i - 1 end end
 
-local function trim(s) return string.match(s, '^()%s*$') and '' or string.match(s, '^%s*(.*%S)') end
+local function trim(s) return s:match('^()%s*$') and '' or s:match('^%s*(.*%S)') end
+local function concat(t, sep)
+    local s = t[1] or ""
+    for i = 2, #t do s = s .. (sep or "") .. t[i] end
+    return s
+end
 
 HOME = "/"
 SHELL = topshell and topshell.getRunningProgram() or "/usr/bin/cash"
-PATH = topshell and string.gsub(topshell.path(), "%.:", "") or "/rom/programs:/rom/programs/fun:/rom/programs/rednet"
+PATH = topshell and topshell.path():gsub("%.:", "") or "/rom/programs:/rom/programs/fun:/rom/programs/rednet"
 USER = CCKernel2 and users.getShortName(users.getuid()) or "root"
 EDITOR = "edit"
 OLDPWD = topshell and topshell.dir() or "/"
@@ -72,8 +77,8 @@ local vars = {
     SECONDS = function() return math.floor((os.epoch() - start_time) / 1000) end,
     HOSTNAME = os.getComputerLabel(),
     TERMINATE_QUIT = "no",
-    ["*"] = table.concat(args, " "),
-    ["@"] = function() return table.concat(args, " ") end,
+    ["*"] = concat(args, " "),
+    ["@"] = function() return concat(args, " ") end,
     ["#"] = #args,
     ["?"] = 0,
     ["0"] = topshell and topshell.getRunningProgram() or "cash.lua",
@@ -126,13 +131,13 @@ builtins = {
     command = function(...) no_funcs = true; shell.run(...); no_funcs = false; return vars["?"] end,
     complete = function() end, -- TODO
     eval = function(...) shell.run(...); return vars["?"] end,
-    exec = function(...) execCommand = table.concat({...}, ' '); shell.exit() end,
+    exec = function(...) execCommand = concat({...}, ' '); shell.exit() end,
     exit = shell.exit,
     export = function(...)
         local vars = {...}
         if #vars == 0 or vars[1] == "-p" then for k,v in pairs(_ENV) do if type(v) == "string" or type(v) == "number" then print("export " .. k .. "=" .. v) end end else
             for k,v in ipairs(vars) do
-                local kk, vv = string.match(v, "(.+)=(.+)")
+                local kk, vv = v:match("(.+)=(.+)")
                 if not (kk == nil or vv == nil) and (_ENV[kk] == nil or type(_ENV[kk]) == "string" or type(_ENV[kk]) == "number") then _ENV[kk] = vv end
             end
         end
@@ -145,7 +150,7 @@ builtins = {
             return
         end
         local lines = {}
-        for k,v in ipairs(history) do print(" " .. k .. string.rep(" ", math.floor(math.log10(#history)) - math.floor(math.log10(k)) + 2) .. v) end
+        for k,v in ipairs(history) do print(" " .. k .. (" "):rep(math.floor(math.log10(#history)) - math.floor(math.log10(k)) + 2) .. v) end
         --textutils.tabulate(table.unpack(lines))
     end,
     jobs = function(...)
@@ -187,8 +192,8 @@ builtins = {
         local lvars = {...}
         if #lvars == 0 then for k,v in pairs(vars) do print(k .. "=" .. v) end else
             for k,v in ipairs(lvars) do
-                if string.find(v, "=") then
-                    local kk, vv = string.match(v, "(.+)=(.+)")
+                if v:find("=") then
+                    local kk, vv = v:match("(.+)=(.+)")
                     vars[kk] = vv
                 end
             end
@@ -198,7 +203,7 @@ builtins = {
         local vars = {...}
         if #vars == 0 or vars[1] == "-p" then for k,v in pairs(aliases) do print("alias " .. k .. "=" .. v) end else
             for k,v in ipairs(vars) do
-                local kk, vv = string.match(v, "(.+)=(.+)")
+                local kk, vv = v:match("(.+)=(.+)")
                 aliases[kk] = vv
             end
         end
@@ -215,7 +220,7 @@ builtins = {
             table.remove(args, 1)
             n = function(v) return not v end
         end
-        if string.sub(args[1], 1, 1) == "-" then
+        if args[1]:sub(1, 1) == "-" then
             if args[2] == nil then return n(true)
             elseif args[1] == "-d" then return n(fs.exists(shell.resolve(args[2])) and fs.isDir(shell.resolve(args[2])))
             elseif args[1] == "-e" then return n(fs.exists(shell.resolve(args[2])))
@@ -227,7 +232,7 @@ builtins = {
             elseif args[1] == "-x" then return n(true)
             elseif args[1] == "-z" then return n(#args[2] == 0)
             else return n(false) end
-        elseif args[3] and string.sub(args[2], 1, 1) == "-" then
+        elseif args[3] and args[2]:sub(1, 1) == "-" then
             if args[2] == "-eq" then return n(tonumber(args[1]) == tonumber(args[3]))
             elseif args[2] == "-ne" then return n(tonumber(args[1]) ~= tonumber(args[3]))
             elseif args[2] == "-lt" then return n(tonumber(args[1]) < tonumber(args[3]))
@@ -257,7 +262,7 @@ builtins = {
                 table.remove(args, 1)
                 shell.run(shell.resolve(...), table.unpack(args)) 
             else
-                local s = table.concat({...}, " ")
+                local s = concat({...}, " ")
                 local tEnv = setmetatable({shell = shell, multishell = multishell, package = pack, require = require, _echo = function(...) return ... end}, {__index = _ENV})
                 local nForcePrint = 0
                 local func, e = load( s, "lua", "t", tEnv )
@@ -307,7 +312,7 @@ builtins = {
     end,
     cat = function(...)
         for k,v in ipairs({...}) do
-            local file = fs.open(v, "r")
+            local file = fs.open(v, "ru")
             if file ~= nil then
                 print(file.readAll())
                 file.close()
@@ -473,10 +478,10 @@ pack.loaders = {
         end
     end,
     function( name )
-        local fname = string.gsub(name, "%.", "/")
+        local fname = name:gsub("%.", "/")
         local sError = ""
-        for pattern in string.gmatch(pack.path, "[^;]+") do
-            local sPath = string.gsub(pattern, "%?", fname)
+        for pattern in pack.path:gmatch("[^;]+") do
+            local sPath = pattern:gsub("%?", fname)
             if sPath:sub(1,1) ~= "/" then
                 sPath = fs.combine(fs.getDir(vars._), sPath)
             end
@@ -562,19 +567,19 @@ function shell.setPath(path)
 end
 
 function shell.resolve(localPath)
-    if string.sub(localPath, 1, 1) == "/" then return fs.combine(localPath, "")
+    if localPath:sub(1, 1) == "/" then return fs.combine(localPath, "")
     else return fs.combine(PWD, localPath) end
 end
 
 function shell.resolveProgram(name)
     if builtins[name] ~= nil then return name end
     if aliases[name] ~= nil then name = aliases[name] end
-    for path in string.gmatch(PATH, "[^:]+") do
+    for path in PATH:gmatch("[^:]+") do
         if fs.exists(fs.combine(shell.resolve(path), name)) and not fs.isDir(fs.combine(shell.resolve(path), name)) then return fs.combine(shell.resolve(path), name)
         elseif fs.exists(fs.combine(shell.resolve(path), name .. ".lua")) and not fs.isDir(fs.combine(shell.resolve(path), name .. ".lua")) then return fs.combine(shell.resolve(path), name .. ".lua") end
     end
-    if fs.exists(shell.resolve(name)) and not fs.isDir(shell.resolve(name)) then return shell.resolve(name), string.find(name, "/") == nil end
-    if fs.exists(shell.resolve(name .. ".lua")) and not fs.isDir(shell.resolve(name .. ".lua")) then return shell.resolve(name .. ".lua"), string.find(name, "/") == nil end
+    if fs.exists(shell.resolve(name)) and not fs.isDir(shell.resolve(name)) then return shell.resolve(name), name:find("/") == nil end
+    if fs.exists(shell.resolve(name .. ".lua")) and not fs.isDir(shell.resolve(name .. ".lua")) then return shell.resolve(name .. ".lua"), name:find("/") == nil end
     return nil
 end
 
@@ -597,7 +602,7 @@ end
 
 function shell.programs(showHidden)
     local retval = {}
-    for path in string.gmatch(PATH, "[^:]+") do combineArray(retval, fs.find(fs.combine(shell.resolve(path), "*"))) end
+    for path in PATH:gmatch("[^:]+") do combineArray(retval, fs.find(fs.combine(shell.resolve(path), "*"))) end
     combineArray(retval, fs.find(fs.combine(PWD, "*")), "./")
     return retval
 end
@@ -611,11 +616,11 @@ function shell.complete(prefix)
 end
 
 function shell.completeProgram(prefix)
-    if string.find(prefix, "/") then
+    if prefix:find("/") then
         return fs.complete(prefix, PWD, true, false)
     else
         local retval = {}
-        for path in string.gmatch(PATH, "[^:]+") do combineArray(retval, fs.complete(prefix, path, true, false)) end
+        for path in PATH:gmatch("[^:]+") do combineArray(retval, fs.complete(prefix, path, true, false)) end
         return retval
     end
 end
@@ -663,24 +668,24 @@ function shell.setEnvironment(e)
 end
 
 local function expandVar(var)
-    if string.sub(var, 1, 1) ~= "$" then return nil end
-    if string.sub(var, 2, 2) == "{" then
-        local varname = string.sub(string.match(var, "%b{}"), 2, -2)
+    if var:sub(1, 1) ~= "$" then return nil end
+    if var:sub(2, 2) == "{" then
+        local varname = var:match("%b{}"):sub(2, -2)
         local retval = _ENV[varname] or vars[varname]
         if type(retval) == "function" then return retval(), #varname + 2 else return retval or "", #varname + 2 end
-    elseif string.sub(var, 2, 3) == "((" then
-        local expr = string.gsub(string.sub(string.match(string.sub(var, 3), "%b()"), 2, -2), "%$", "")
+    elseif var:sub(2, 3) == "((" then
+        local expr = var:sub(3):match("%b()"):sub(2, -2):gsub("%$", "")
         local fn = loadstring("return " .. expr)
         local varenv = setmetatable({}, {__index = _ENV})
         for k,v in pairs(vars) do varenv[k] = v end
         setfenv(fn, varenv)
         return tostring(fn()), #expr + 4
-    elseif tonumber(string.sub(var, 2, 2)) then
-        local varname = tonumber(string.match(string.sub(var, 2, 2), "[0-9]+"))
+    elseif tonumber(var:sub(2, 2)) then
+        local varname = tonumber(var:sub(2, 2):match("[0-9]+"))
         if varname == 0 then return vars["0"], 1 else return args[varname] or "", math.floor(math.log10(varname)) + 1 end
     else
         local varname = ""
-        for c in string.gmatch(string.sub(var, 2), ".") do
+        for c in var:sub(2):gmatch(".") do
             if c == " " then return "", #varname end
             varname = varname .. c
             if _ENV[varname] or vars[varname] then
@@ -698,7 +703,7 @@ local function splitSemicolons(cmdline)
     local j = 1
     local retval = {""}
     local lastc, lastc2
-    for c in string.gmatch(cmdline, ".") do
+    for c in cmdline:gmatch(".") do
         if lastc == '&' and c ~= '&' and lastc2 ~= '&' and not quoted and not escape then
             j=j+1
             retval[j] = ""
@@ -735,9 +740,9 @@ local function tokenize(cmdline, noexpand)
     end
     if noexpand then expstr = cmdline else
         while i <= #cmdline do
-            local c = string.sub(cmdline, i, i)
+            local c = cmdline:sub(i, i)
             if c == '$' and not escape and not singleQuote then
-                local s, n = expandVar(string.sub(cmdline, i))
+                local s, n = expandVar(cmdline:sub(i))
                 s = tostr(s)
                 expstr = expstr .. s
                 i = i + n
@@ -756,7 +761,7 @@ local function tokenize(cmdline, noexpand)
     local quoted = false
     escape = false
     local lastc
-    for c in string.gmatch(expstr, ".") do
+    for c in expstr:gmatch(".") do
         if (c == '"' or c == '\'') and not escape then quoted = not quoted
         elseif c == ' ' and not quoted and not escape then
             if #retval[j][i] > 0 then
@@ -768,12 +773,12 @@ local function tokenize(cmdline, noexpand)
             i=0
             retval[j] = {[0] = ""}
         elseif lastc == '&' and c == '&' and not quoted and not escape then
-            retval[j][i] = string.sub(retval[j][i], 1, -2)
+            retval[j][i] = retval[j][i]:sub(1, -2)
             j=j+1
             i=0
             retval[j] = {[0] = "", last = 0}
         elseif lastc == '|' and c == '|' and not quoted and not escape then
-            retval[j][i] = string.sub(retval[j][i], 1, -2)
+            retval[j][i] = retval[j][i]:sub(1, -2)
             j=j+1
             i=0
             retval[j] = {[0] = "", last = 1}
@@ -787,11 +792,11 @@ local function tokenize(cmdline, noexpand)
     for k,v in ipairs(retval) do if v[0] ~= "" then
         local path, islocal = shell.resolveProgram(v[0])
         path = path or v[0]
-        if not (islocal and string.find(v[0], "/") == nil) then v[0] = path end
+        if not (islocal and v[0]:find("/") == nil) then v[0] = path end
         v.vars = {}
-        while v[0] and string.find(v[0], "=") do
-            local l = string.sub(v[0], 1, string.find(v[0], "=") - 1)
-            v.vars[l] = string.sub(v[0], string.find(v[0], "=") + 1)
+        while v[0] and v[0]:find("=") do
+            local l = v[0]:sub(1, v[0]:find("=") - 1)
+            v.vars[l] = v[0]:sub(v[0]:find("=") + 1)
             v.vars[l] = tonumber(v.vars[l]) or v.vars[l]
             v[0] = nil
             for i = 1, table.maxn(v) do v[i-1] = v[i]; v[i] = nil end
@@ -821,10 +826,10 @@ local function getPrompt()
     for k,v in pairs({
         ["\\d"] = dayToString(os.day()),
         ["\\e"] = string.char(0x1b),
-        ["\\h"] = string.sub(os.getComputerLabel() or "localhost", 1, string.find(os.getComputerLabel() or "localhost", "%.")),
+        ["\\h"] = (os.getComputerLabel() or "localhost"):sub(1, (os.getComputerLabel() or "localhost"):find("%.")),
         ["\\H"] = os.getComputerLabel() or "localhost",
         ["\\n"] = "\n",
-        ["\\s"] = string.gsub(fs.getName(vars["0"]), ".lua", ""),
+        ["\\s"] = fs.getName(vars["0"]):gsub(".lua", ""),
         ["\\t"] = textutils.formatTime(os.time(), true),
         ["\\T"] = textutils.formatTime(os.time(), false),
         ["\\u"] = USER,
@@ -837,7 +842,7 @@ local function getPrompt()
         ["\\([0-7][0-7][0-7])"] = function(n) return string.char(tonumber(n, 8)) end,
         ["\\\\"] = "\\",
         ["\\%[.+\\%]"] = ""
-    }) do retval = string.gsub(retval, k, v) end
+    }) do retval = retval:gsub(k, v) end
     return retval
 end
 
@@ -876,9 +881,9 @@ end
 local function execv(tokens)
     local path = tokens[0]
     if path == nil then return end
-    if #tokens == 0 and string.find(path, "=") ~= nil then
-        local k = string.sub(path, 1, string.find(path, "=") - 1)
-        vars[k] = string.sub(path, string.find(path, "=") + 1)
+    if #tokens == 0 and path:find("=") ~= nil then
+        local k = path:sub(1, path:find("=") - 1)
+        vars[k] = path:sub(path:find("=") + 1)
         vars[k] = tonumber(vars[k]) or vars[k]
         return
     end
@@ -911,9 +916,9 @@ local function execv(tokens)
             local file = fs.open(path, "r")
             local firstLine = file.readLine()
             file.close()
-            if firstLine ~= nil and string.sub(firstLine, 1, 2) == "#!" then
+            if firstLine ~= nil and firstLine:sub(1, 2) == "#!" then
                 table.insert(tokens, 1, path)
-                path = string.sub(firstLine, 3)
+                path = firstLine:sub(3)
                 if not fs.exists(path) and fs.exists(path .. ".lua") then path = path .. ".lua" end
             end
         end
@@ -931,7 +936,7 @@ run_tokens = function(tokens, isAsync)
         if CCKernel2 then pid = kernel.fork("cash", function() run_tokens(tokens, true) end)
         else coro = coroutine.create(function() run_tokens(tokens, true) end) end
         local id = #jobs + 1
-        jobs[id] = {cmd = tokens[1][0] .. " " .. table.concat(tokens[1], " "), coro = coro, pid = pid, isfg = false, start = true}
+        jobs[id] = {cmd = tokens[1][0] .. " " .. concat(tokens[1], " "), coro = coro, pid = pid, isfg = false, start = true}
         print("[" .. (id) .. "] " .. (pid or ""))
     else
         for k,tok in ipairs(tokens) do 
@@ -952,49 +957,49 @@ local run_tokens_async = function(tokens)
     if CCKernel2 then pid = kernel.fork("cash", function() run_tokens(tokens, true) end)
     else coro = coroutine.create(function() run_tokens(tokens, true) end) end
     local id = #jobs + 1
-    jobs[id] = {cmd = tokens[1][0] and (tokens[1][0] .. " " .. table.concat(tokens[1], " ")) or "cash", coro = coro, pid = pid, isfg = not tokens.async, start = true}
+    jobs[id] = {cmd = tokens[1][0] and (tokens[1][0] .. " " .. concat(tokens[1], " ")) or "cash", coro = coro, pid = pid, isfg = not tokens.async, start = true}
     if tokens.async then print("[" .. (id) .. "] " .. (pid or "")) end
 end
 
 function shell.run(...)
-    local cmd = table.concat({...}, " ")
-    if cmd == "" or string.sub(cmd, 1, 1) == "#" then return end
+    local cmd = concat({...}, " ")
+    if cmd == "" or cmd:sub(1, 1) == "#" then return end
     if function_name ~= nil then
-        if string.find(cmd, "}") then function_name = nil
+        if cmd:find("}") then function_name = nil
         else table.insert(functions[function_name], cmd) end
         return true
     elseif while_statement > 0 then
         local tokens = splitSemicolons(cmd)
         for k,line in ipairs(tokens) do 
-            line = string.sub(line, #string.match(line, "^ *") + 1)
-            if line == "do" or line == "done" or string.find(line, "^do ") or string.find(line, "^done ") then run_tokens(tokenize(line)) end
+            line = line:sub(#line:match("^ *") + 1)
+            if line == "do" or line == "done" or line:find("^do ") or line:find("^done ") then run_tokens(tokenize(line)) end
             if while_statement > 0 then table.insert(while_table[1].lines, line) end
         end
         return true
     end
     local lines = splitSemicolons(cmd)
-    for k,v in ipairs(lines) do run_tokens(tokenize(v, string.sub(v, 1, 6) == "while ")) end
+    for k,v in ipairs(lines) do run_tokens(tokenize(v, v:sub(1, 6) == "while ")) end
     return vars["?"] == 0
 end
 
 function shell.runAsync(...)
-    local cmd = table.concat({...}, " ")
-    if cmd == "" or string.sub(cmd, 1, 1) == "#" then return end
+    local cmd = concat({...}, " ")
+    if cmd == "" or cmd:sub(1, 1) == "#" then return end
     if function_name ~= nil then
-        if string.find(cmd, "}") then function_name = nil
+        if cmd:find("}") then function_name = nil
         else table.insert(functions[function_name], cmd) end
         return true
     elseif while_statement > 0 then
         local tokens = splitSemicolons(cmd)
         for k,line in ipairs(tokens) do 
-            line = string.sub(line, #string.match(line, "^ *") + 1)
-            if line == "do" or line == "done" or string.find(line, "^do ") or string.find(line, "^done ") then run_tokens(tokenize(line)) end
+            line = line:sub(#line:match("^ *") + 1)
+            if line == "do" or line == "done" or line:find("^do ") or line:find("^done ") then run_tokens(tokenize(line)) end
             if while_statement > 0 then table.insert(while_table[1].lines, line) end
         end
         return true
     end
     local lines = splitSemicolons(cmd)
-    for k,v in ipairs(lines) do run_tokens_async(tokenize(v, string.sub(v, 1, 6) == "while ")) end
+    for k,v in ipairs(lines) do run_tokens_async(tokenize(v, v:sub(1, 6) == "while ")) end
     return vars["?"] == 0
 end
 
@@ -1004,35 +1009,35 @@ function multishell.launch(environment, path, ...)
     if CCKernel2 then pid = kernel.fork(path, function() execv(tok) end)
     else coro = coroutine.create(function() execv(tok) end) end
     local id = #jobs + 1
-    jobs[id] = {cmd = path .. " " .. table.concat({...}, " "), coro = coro, pid = pid, isfg = false}
+    jobs[id] = {cmd = path .. " " .. concat({...}, " "), coro = coro, pid = pid, isfg = false}
     return id
 end
 
 function shell.openTab(...)
-    local cmd = table.concat({...}, " ")
-    if cmd == "" or string.sub(cmd, 1, 1) == "#" then return end
+    local cmd = concat({...}, " ")
+    if cmd == "" or cmd:sub(1, 1) == "#" then return end
     if function_name ~= nil then
-        if string.find(cmd, "}") then function_name = nil
+        if cmd:find("}") then function_name = nil
         else table.insert(functions[function_name], cmd) end
         return true
     elseif while_statement > 0 then
         local tokens = splitSemicolons(cmd)
         for k,line in ipairs(tokens) do 
-            line = string.sub(line, #string.match(line, "^ *") + 1)
-            if line == "do" or line == "done" or string.find(line, "^do ") or string.find(line, "^done ") then run_tokens(tokenize(line)) end
+            line = line:sub(#line:match("^ *") + 1)
+            if line == "do" or line == "done" or line:find("^do ") or line:find("^done ") then run_tokens(tokenize(line)) end
             if while_statement > 0 then table.insert(while_table[1].lines, line) end
         end
         return true
     end
     local lines = splitSemicolons(cmd)
     for k,v in ipairs(lines) do 
-        local tokens = tokenize(v, string.sub(v, 1, 6) == "while ")
+        local tokens = tokenize(v, v:sub(1, 6) == "while ")
         for k,tok in ipairs(tokens) do if tok[0] ~= "" then 
             local coro, pid
             if CCKernel2 then pid = kernel.fork(tok[0], function() execv(tok) end)
             else coro = coroutine.create(function() execv(tok) end) end
             local id = #jobs + 1
-            jobs[id] = {cmd = tok[0] .. " " .. table.concat(tok, " "), coro = coro, pid = pid, isfg = false}
+            jobs[id] = {cmd = tok[0] .. " " .. concat(tok, " "), coro = coro, pid = pid, isfg = false}
             print("[" .. (id) .. "] " .. (pid or ""))
         end end
     end
@@ -1082,7 +1087,7 @@ else
         file:close()
     end
     if fs.exists(".cash_history") then
-        local file = io.open(".cash_history", "r")
+        local file = io.open(".cash_history", "ru")
         for line in file:lines() do table.insert(history, line) end
         file:close()
         historyfile = fs.open(".cash_history", "a")
@@ -1094,12 +1099,12 @@ local function ansiWrite(str)
     local bold = false
     local function getnum(d) 
         if seq == "[" then return d or 1
-        elseif string.find(seq, ";") then return 
-            tonumber(string.sub(seq, 2, string.find(seq, ";") - 1)), 
-            tonumber(string.sub(seq, string.find(seq, ";") + 1)) 
-        else return tonumber(string.sub(seq, 2)) end 
+        elseif seq:find(";") then return 
+            tonumber(seq:sub(2, seq:find(";") - 1)), 
+            tonumber(seq:sub(seq:find(";") + 1)) 
+        else return tonumber(seq:sub(2)) end 
     end
-    for c in string.gmatch(str, ".") do
+    for c in str:gmatch(".") do
         if seq == "\27" then
             if c == "c" then
                 term.setBackgroundColor(colors.black)
@@ -1107,7 +1112,7 @@ local function ansiWrite(str)
                 term.setCursorBlink(true)
             elseif c == "[" then seq = "["
             else seq = nil end
-        elseif seq ~= nil and string.sub(seq, 1, 1) == "[" then
+        elseif seq ~= nil and seq:sub(1, 1) == "[" then
             if tonumber(c) ~= nil or c == ';' then seq = seq .. c else
                 if c == "A" then term.setCursorPos(term.getCursorPos(), select(2, term.getCursorPos()) - getnum())
                 elseif c == "B" then term.setCursorPos(term.getCursorPos(), select(2, term.getCursorPos()) + getnum())
@@ -1163,7 +1168,7 @@ local function readCommand()
     if term.getGraphicsMode and term.getGraphicsMode() then term.setGraphicsMode(false) end
     local prompt = getPrompt()
     ansiWrite(prompt)
-    local str = ""
+    local str = UTFString""
     local ox, oy = term.getCursorPos()
     local coff = 0
     local histpos = table.maxn(history) + 1
@@ -1174,7 +1179,7 @@ local function readCommand()
         term.setCursorPos(ox, oy)
         local x, y
         local i = 0
-        for c in string.gmatch(str, ".") do
+        for c in str:gmatch(".") do
             if term.getCursorPos() == term.getSize() then
                 if select(2, term.getCursorPos()) == select(2, term.getSize()) then
                     term.scroll(1)
@@ -1222,7 +1227,7 @@ local function readCommand()
                 coff = coff + 1
                 waitTab = false
             elseif ev[2] == keys.backspace and coff > 0 then
-                str = string.sub(str, 1, coff - 1) .. string.sub(str, coff + 1)
+                str = str:sub(1, coff - 1) .. str:sub(coff + 1)
                 coff = coff - 1
                 waitTab = false
             elseif ev[2] == keys.tab and coff == #str then
@@ -1235,7 +1240,7 @@ local function readCommand()
                     if res and #res > 0 then
                         local longest = res[1]
                         local function getLongest(a, b)
-                            for i = 1, math.min(#a, #b) do if string.sub(a, i, i) ~= string.sub(b, i, i) then return string.sub(a, 1, i-1) end end
+                            for i = 1, math.min(#a, #b) do if a:sub(i, i) ~= b:sub(i, i) then return a:sub(1, i-1) end end
                             return a 
                         end
                         for k,v in ipairs(res) do longest = getLongest(longest, v) end
@@ -1258,20 +1263,20 @@ local function readCommand()
                     if res and #res > 0 then
                         local longest = res[1]
                         local function getLongest(a, b)
-                            for i = 1, math.min(#a, #b) do if string.sub(a, i, i) ~= string.sub(b, i, i) then return string.sub(a, 1, i-1) end end
+                            for i = 1, math.min(#a, #b) do if a:sub(i, i) ~= b:sub(i, i) then return a:sub(1, i-1) end end
                             return a 
                         end
                         for k,v in ipairs(res) do longest = getLongest(longest, v) end
                         if longest == "" then
                             if not waitTab then waitTab = true else
-                                for k,v in ipairs(res) do res[k] = string.gsub(fs.getName(tokens[0]), "%.lua", "") .. v end
+                                for k,v in ipairs(res) do res[k] = fs.getName(tokens[0]):gsub("%.lua", "") .. v end
                                 print("")
                                 textutils.pagedTabulate(res)
                                 ansiWrite(getPrompt())
                                 ox, oy = term.getCursorPos()
                             end
                         else
-                            str = str .. string.gsub(longest, "%.lua", "")
+                            str = str .. longest:gsub("%.lua", "")
                             coff = #str
                             waitTab = false
                         end
@@ -1281,7 +1286,7 @@ local function readCommand()
                     if res and #res > 0 then
                         local longest = res[1]
                         local function getLongest(a, b)
-                            for i = 1, math.min(#a, #b) do if string.sub(a, i, i) ~= string.sub(b, i, i) then return string.sub(a, 1, i-1) end end
+                            for i = 1, math.min(#a, #b) do if a:sub(i, i) ~= b:sub(i, i) then return a:sub(1, i-1) end end
                             return a 
                         end
                         for k,v in ipairs(res) do longest = getLongest(longest, v) end
@@ -1301,13 +1306,9 @@ local function readCommand()
                     end
                 end
             end
-        elseif ev[1] == "char" then
-            str = string.sub(str, 1, coff) .. ev[2] .. string.sub(str, coff + 1)
-            coff = coff + 1
-            waitTab = false
-        elseif ev[1] == "paste" then
-            str = string.sub(str, 1, coff) .. ev[2] .. string.sub(str, coff + 1)
-            coff = coff + #ev[2]
+        elseif ev[1] == "char" or ev[1] == "paste" then
+            str = str:sub(1, coff) .. ev[3] .. str:sub(coff + 1)
+            coff = coff + #ev[3]
             waitTab = false
         elseif ev[1] == "terminate" then
             if vars.TERMINATE_QUIT == "yes" or vars.terminate_quit == 1 then running = false end

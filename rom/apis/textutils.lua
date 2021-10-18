@@ -287,7 +287,7 @@ local function serialize_impl(t, tracking, indent, opts)
             for k, v in pairs(t) do
                 if not seen_keys[k] then
                     local sEntry
-                    if type(k) == "string" and not g_tLuaKeywords[k] and string.match(k, "^[%a_][%a%d_]*$") then
+                    if type(k) == "string" and not g_tLuaKeywords[k] and k:match("^[%a_][%a%d_]*$") then
                         sEntry = k .. equal .. serialize_impl(v, tracking, sub_indent, opts) .. comma
                     else
                         sEntry = open_key .. serialize_impl(k, tracking, sub_indent, opts) .. close_key .. serialize_impl(v, tracking, sub_indent, opts) .. comma
@@ -306,6 +306,9 @@ local function serialize_impl(t, tracking, indent, opts)
 
     elseif sType == "number" or sType == "boolean" or sType == "nil" then
         return tostring(t)
+
+    elseif UTFString.isUTFString(t) then
+        return "UTFString" .. UTFString.format("%q", t)
 
     else
         error("Cannot serialize type " .. sType, 0)
@@ -360,8 +363,8 @@ do
         if map[c] == nil then map[c] = hexify(c) end
     end
 
-    serializeJSONString = function(s)
-        return ('"%s"'):format(s:gsub("[%z\1-\x1f\"\\]", map):gsub("[\x7f-\xff]", hexify))
+    serializeJSONString = function(s, f)
+        return f:format(s:gsub("[%z\1-\x1f\"\\]", map):gsub("[\x7f-\xff]", hexify))
     end
 end
 
@@ -387,12 +390,12 @@ local function serializeJSONImpl(t, tTracking, bNBTStyle)
             local nArraySize = 0
             local largestArrayIndex = 0
             for k, v in pairs(t) do
-                if type(k) == "string" then
+                if type(k) == "string" or UTFString.isUTFString(k) then
                     local sEntry
                     if bNBTStyle then
                         sEntry = tostring(k) .. ":" .. serializeJSONImpl(v, tTracking, bNBTStyle)
                     else
-                        sEntry = serializeJSONString(k) .. ":" .. serializeJSONImpl(v, tTracking, bNBTStyle)
+                        sEntry = serializeJSONString(k, UTFString.isUTFString(k) and UTFString'"%s"' or '"%s"') .. ":" .. serializeJSONImpl(v, tTracking, bNBTStyle)
                     end
                     if nObjectSize == 0 then
                         sObjectResult = sObjectResult .. sEntry
@@ -428,10 +431,13 @@ local function serializeJSONImpl(t, tTracking, bNBTStyle)
         end
 
     elseif sType == "string" then
-        return serializeJSONString(t)
+        return serializeJSONString(t, '"%s"')
 
     elseif sType == "number" or sType == "boolean" then
         return tostring(t)
+
+    elseif UTFString.isUTFString(t) then
+        return serializeJSONString(t, UTFString'"%s"')
 
     else
         error("Cannot serialize type " .. sType, 0)
@@ -621,8 +627,9 @@ do
     -- @treturn[2] nil If the object could not be deserialised.
     -- @treturn string A message describing why the JSON string is invalid.
     unserialise_json = function(s, options)
-        expect(1, s, "string")
+        expect(1, s, "string", "UTFString")
         expect(2, options, "table", "nil")
+        if UTFString.isUTFString(s) then s = s:utf8() end
 
         if options then
             field(options, "nbt_style", "boolean", "nil")
@@ -692,8 +699,9 @@ serialise = serialize -- GB version
 -- @return[1] The deserialised object
 -- @treturn[2] nil If the object could not be deserialised.
 function unserialize(s)
-    expect(1, s, "string")
-    local func = load("return " .. s, "unserialize", "t", {})
+    expect(1, s, "string", "UTFString")
+    if UTFString.isUTFString(s) then s = s:utf8() end
+    local func = load("return " .. s, "unserialize", "t", {UTFString = UTFString.new})
     if func then
         local ok, result = pcall(func)
         if ok then
@@ -724,7 +732,7 @@ unserialise = unserialize -- GB version
 -- times.
 -- @usage textutils.serializeJSON({ values = { 1, "2", true } })
 function serializeJSON(t, bNBTStyle)
-    expect(1, t, "table", "string", "number", "boolean")
+    expect(1, t, "table", "string", "number", "boolean", "UTFString")
     expect(2, bNBTStyle, "boolean", "nil")
     local tTracking = {}
     return serializeJSONImpl(t, tTracking, bNBTStyle or false)
@@ -741,24 +749,17 @@ unserialiseJSON = unserialise_json
 -- @treturn string The encoded string.
 -- @usage print("https://example.com/?view=" .. textutils.urlEncode("some text&things"))
 function urlEncode(str)
-    expect(1, str, "string")
-    if str then
-        str = string.gsub(str, "\n", "\r\n")
-        str = string.gsub(str, "([^A-Za-z0-9 %-%_%.])", function(c)
-            local n = string.byte(c)
-            if n < 128 then
-                -- ASCII
-                return string.format("%%%02X", n)
-            else
-                -- Non-ASCII (encode as UTF-8)
-                return
-                    string.format("%%%02X", 192 + bit32.band(bit32.arshift(n, 6), 31)) ..
-                    string.format("%%%02X", 128 + bit32.band(n, 63))
-            end
-        end)
-        str = string.gsub(str, " ", "+")
-    end
-    return str
+    expect(1, str, "string", "UTFString")
+    return str:gsub("\n", "\r\n"):gsub("([^A-Za-z0-9 %-%_%.])", function(c)
+        local n = c:byte()
+        if n < 128 then
+            -- ASCII
+            return string.format("%%%02X", n)
+        else
+            -- Non-ASCII (encode as UTF-8)
+            return UTFString.char(n):utf8():gsub(".", function(b) return ("%%%02X"):format(b) end)
+        end
+    end):gsub(" ", "+")
 end
 
 local tEmpty = {}
@@ -780,27 +781,29 @@ local tEmpty = {}
 -- @see _G.read
 -- @usage textutils.complete( "pa", _ENV )
 function complete(sSearchText, tSearchTable)
-    expect(1, sSearchText, "string")
+    expect(1, sSearchText, "string", "UTFString")
     expect(2, tSearchTable, "table", "nil")
 
     if g_tLuaKeywords[sSearchText] then return tEmpty end
     local nStart = 1
-    local nDot = string.find(sSearchText, ".", nStart, true)
+    local nDot = sSearchText:find(".", nStart, true)
     local tTable = tSearchTable or _ENV
     while nDot do
-        local sPart = string.sub(sSearchText, nStart, nDot - 1)
+        local sPart = sSearchText:sub(nStart, nDot - 1)
+        if UTFString.isUTFString(sPart) then sPart = sPart:tostring() end
         local value = tTable[sPart]
         if type(value) == "table" then
             tTable = value
             nStart = nDot + 1
-            nDot = string.find(sSearchText, ".", nStart, true)
+            nDot = sSearchText:find(".", nStart, true)
         else
             return tEmpty
         end
     end
-    local nColon = string.find(sSearchText, ":", nStart, true)
+    local nColon = sSearchText:find(":", nStart, true)
     if nColon then
-        local sPart = string.sub(sSearchText, nStart, nColon - 1)
+        local sPart = sSearchText:sub(nStart, nColon - 1)
+        if UTFString.isUTFString(sPart) then sPart = sPart:tostring() end
         local value = tTable[sPart]
         if type(value) == "table" then
             tTable = value
@@ -810,7 +813,8 @@ function complete(sSearchText, tSearchTable)
         end
     end
 
-    local sPart = string.sub(sSearchText, nStart)
+    local sPart = sSearchText:sub(nStart)
+    if UTFString.isUTFString(sPart) then sPart = sPart:tostring() end
     local nPartLength = #sPart
 
     local tResults = {}
@@ -818,9 +822,9 @@ function complete(sSearchText, tSearchTable)
     while tTable do
         for k, v in pairs(tTable) do
             if not tSeen[k] and type(k) == "string" then
-                if string.find(k, sPart, 1, true) == 1 then
-                    if not g_tLuaKeywords[k] and string.match(k, "^[%a_][%a%d_]*$") then
-                        local sResult = string.sub(k, nPartLength + 1)
+                if k:find(sPart, 1, true) == 1 then
+                    if not g_tLuaKeywords[k] and k:match("^[%a_][%a%d_]*$") then
+                        local sResult = k:sub(nPartLength + 1)
                         if nColon then
                             if type(v) == "function" then
                                 table.insert(tResults, sResult .. "(")

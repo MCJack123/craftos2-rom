@@ -60,9 +60,9 @@ end
 --
 --     shell.execute("paint", "my-image")
 function shell.execute(command, ...)
-    expect(1, command, "string")
+    expect(1, command, "string", "UTFString")
     for i = 1, select('#', ...) do
-        expect(i + 1, select(i, ...), "string")
+        expect(i + 1, select(i, ...), "string", "UTFString")
     end
 
     local sPath = shell.resolveProgram(command)
@@ -100,15 +100,21 @@ function shell.execute(command, ...)
     end
 end
 
+local function concat(t, sep)
+    local s = t[1] or ""
+    for i = 2, #t do s = s .. (sep or "") .. t[i] end
+    return s
+end
+
 local function tokenise(...)
-    local sLine = table.concat({ ... }, " ")
+    local sLine = concat({ ... }, " ")
     local tWords = {}
     local bQuoted = false
-    for match in string.gmatch(sLine .. "\"", "(.-)\"") do
+    for match in (sLine .. "\""):gmatch("(.-)\"") do
         if bQuoted then
             table.insert(tWords, match)
         else
-            for m in string.gmatch(match, "[^ \t]+") do
+            for m in match:gmatch("[^ \t]+") do
                 table.insert(tWords, m)
             end
         end
@@ -167,7 +173,7 @@ end
 --
 --     shell.setDir("rom")
 function shell.setDir(dir)
-    expect(1, dir, "string")
+    expect(1, dir, "string", "UTFString")
     if not fs.isDir(dir) then
         error("Not a directory", 2)
     end
@@ -194,7 +200,7 @@ end
 --
 -- @tparam string path The new program path.
 function shell.setPath(path)
-    expect(1, path, "string")
+    expect(1, path, "string", "UTFString")
     sPath = path
 end
 
@@ -211,8 +217,8 @@ end
 --     print(shell.resolve("startup.lua"))
 --     -- => rom/startup.lua
 function shell.resolve(path)
-    expect(1, path, "string")
-    local sStartChar = string.sub(path, 1, 1)
+    expect(1, path, "string", "UTFString")
+    local sStartChar = path:sub(1, 1)
     if sStartChar == "/" or sStartChar == "\\" then
         return fs.combine("", path)
     else
@@ -222,10 +228,10 @@ end
 
 local function pathWithExtension(_sPath, _sExt)
     local nLen = #sPath
-    local sEndChar = string.sub(_sPath, nLen, nLen)
+    local sEndChar = _sPath:sub(nLen, nLen)
     -- Remove any trailing slashes so we can add an extension to the path safely
     if sEndChar == "/" or sEndChar == "\\" then
-        _sPath = string.sub(_sPath, 1, nLen - 1)
+        _sPath = _sPath:sub(1, nLen - 1)
     end
     return _sPath .. "." .. _sExt
 end
@@ -240,10 +246,10 @@ end
 --      shell.resolveProgram("hello")
 --      -- => rom/programs/fun/hello.lua
 function shell.resolveProgram(command)
-    expect(1, command, "string")
+    expect(1, command, "string", "UTFString")
     -- Substitute aliases firsts
-    if tAliases[command] ~= nil then
-        command = tAliases[command]
+    if tAliases[UTFString.isUTFString(command) and command:tostring() or command] ~= nil then
+        command = tAliases[UTFString.isUTFString(command) and command:tostring() or command]
     end
 
     -- If the path is a global path, use it directly
@@ -261,7 +267,7 @@ function shell.resolveProgram(command)
     end
 
      -- Otherwise, look on the path variable
-    for sPath in string.gmatch(sPath, "[^:]+") do
+    for sPath in sPath:gmatch("[^:]+") do
         sPath = fs.combine(shell.resolve(sPath), command)
         if fs.exists(sPath) and not fs.isDir(sPath) then
             return sPath
@@ -289,14 +295,14 @@ function shell.programs(include_hidden)
     local tItems = {}
 
     -- Add programs from the path
-    for sPath in string.gmatch(sPath, "[^:]+") do
+    for sPath in sPath:gmatch("[^:]+") do
         sPath = shell.resolve(sPath)
         if fs.isDir(sPath) then
             local tList = fs.list(sPath)
             for n = 1, #tList do
                 local sFile = tList[n]
                 if not fs.isDir(fs.combine(sPath, sFile)) and
-                   (include_hidden or string.sub(sFile, 1, 1) ~= ".") then
+                   (include_hidden or sFile:sub(1, 1) ~= ".") then
                     if #sFile > 4 and sFile:sub(-4) == ".lua" then
                         sFile = sFile:sub(1, -5)
                     end
@@ -326,8 +332,8 @@ local function completeProgram(sLine)
 
         -- Add aliases
         for sAlias in pairs(tAliases) do
-            if #sAlias > #sLine and string.sub(sAlias, 1, #sLine) == sLine then
-                local sResult = string.sub(sAlias, #sLine + 1)
+            if #sAlias > #sLine and sAlias:sub(1, #sLine) == sLine then
+                local sResult = sAlias:sub(#sLine + 1)
                 if not tSeen[sResult] then
                     table.insert(tResults, sResult)
                     tSeen[sResult] = true
@@ -349,8 +355,8 @@ local function completeProgram(sLine)
         local tPrograms = shell.programs()
         for n = 1, #tPrograms do
             local sProgram = tPrograms[n]
-            if #sProgram > #sLine and string.sub(sProgram, 1, #sLine) == sLine then
-                local sResult = string.sub(sProgram, #sLine + 1)
+            if #sProgram > #sLine and sProgram:sub(1, #sLine) == sLine then
+                local sResult = sProgram:sub(#sLine + 1)
                 if not tSeen[sResult] then
                     table.insert(tResults, sResult)
                     tSeen[sResult] = true
@@ -388,11 +394,11 @@ end
 -- @see shell.setCompletionFunction
 -- @see shell.getCompletionInfo
 function shell.complete(sLine)
-    expect(1, sLine, "string")
+    expect(1, sLine, "string", "UTFString")
     if #sLine > 0 then
         local tWords = tokenise(sLine)
         local nIndex = #tWords
-        if string.sub(sLine, #sLine, #sLine) == " " then
+        if sLine:sub(#sLine, #sLine) == " " then
             nIndex = nIndex + 1
         end
         if nIndex == 1 then
@@ -430,7 +436,7 @@ end
 -- @treturn { string } A list of possible completions.
 -- @see cc.shell.completion.program
 function shell.completeProgram(program)
-    expect(1, program, "string")
+    expect(1, program, "string", "UTFString")
     return completeProgram(program)
 end
 
@@ -463,7 +469,7 @@ end
 -- @see shell.complete
 -- @see _G.read For more information about completion.
 function shell.setCompletionFunction(program, complete)
-    expect(1, program, "string")
+    expect(1, program, "string", "UTFString")
     expect(2, complete, "function")
     tCompletionInfo[program] = {
         fnComplete = complete,
@@ -499,8 +505,9 @@ end
 --
 --     shell.setAlias("vim", "edit")
 function shell.setAlias(command, program)
-    expect(1, command, "string")
-    expect(2, program, "string")
+    expect(1, command, "string", "UTFString")
+    expect(2, program, "string", "UTFString")
+    if UTFString.isUTFString(command) then command = command:tostring() end
     tAliases[command] = program
 end
 
@@ -508,7 +515,8 @@ end
 --
 -- @tparam string command The alias name to remove.
 function shell.clearAlias(command)
-    expect(1, command, "string")
+    expect(1, command, "string", "UTFString")
+    if UTFString.isUTFString(command) then command = command:tostring() end
     tAliases[command] = nil
 end
 
@@ -604,9 +612,9 @@ else
 
         local sLine
         if settings.get("shell.autocomplete") then
-            sLine = read(nil, tCommandHistory, shell.complete)
+            sLine = read(nil, tCommandHistory, shell.complete, nil, true)
         else
-            sLine = read(nil, tCommandHistory)
+            sLine = read(nil, tCommandHistory, nil, nil, true)
         end
         if sLine:match("%S") and tCommandHistory[#tCommandHistory] ~= sLine then
             table.insert(tCommandHistory, sLine)
