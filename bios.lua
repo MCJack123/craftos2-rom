@@ -843,9 +843,9 @@ if http then
         if not ok then return ok, err end
 
         while true do
-            local event, url, param = os.pullEvent( )
+            local event, url, param, wsid = os.pullEvent( )
             if event == "websocket_success" and url == _url then
-                return param
+                return param, wsid
             elseif event == "websocket_failure" and url == _url then
                 return false, param
             end

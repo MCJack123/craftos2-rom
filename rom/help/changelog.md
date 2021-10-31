@@ -20,6 +20,7 @@
   * Added support for computer, debugger, and monitor peripherals
   * Change windows using the arrows in the navigation bar
   * Automatic shell resizing makes sure you can see what you type
+  * Arrow key gestures now work on Android as well as iOS
   * Added new launch screen (iOS)
   * The new UI is only available in beta builds at the moment due to bugginess
     * iOS: https://testflight.apple.com/join/SiuXlijR
@@ -27,8 +28,14 @@
 * Improved WebSocket server functionality
   * Servers can now be properly opened by calling `http.websocket` with a port argument
   * Multiple clients to the same server now get unique identifiers as userdata values
-* Improved quality of CCEmuX plugin
+  * Added `websocket_server_closed` event to notify when an opened WebSocket server is no longer accepting connections
+* Replaced Windows nightly builds with CI build artifacts
+  * Windows builds will be available within minutes of the latest commit being pushed
+  * Nightly builds for Windows will no longer be posted on the website
+  * Go to https://github.com/MCJack123/craftos2/actions for the latest build
 * CLI mode now uses Unicode characters for non-ASCII characters
+  * Drawing characters are approximated using Braille characters; this may not show up well on a real terminal
+* Improved quality of CCEmuX plugin
 * WebSocket text messages are now sent in UTF-8
 * Improved Rednet deduplication efficiency (part of CC:T 1.99.0)
 * cash no longer saves duplicate history entries
