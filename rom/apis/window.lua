@@ -26,6 +26,7 @@
 -- terminal display as its parent, and only one of which is visible at a time.
 --
 -- @module window
+-- @since 1.6
 
 local expect = dofile("rom/modules/main/cc/expect.lua").expect
 
@@ -248,6 +249,8 @@ function create(parent, nX, nY, nWidth, nHeight, bStartVisible)
         if #sTextColor ~= #sText or #sBackgroundColor ~= #sText then
             error("Arguments must be the same length", 2)
         end
+        sTextColor = sTextColor:lower()
+        sBackgroundColor = sBackgroundColor:lower()
         internalBlit(sText, sTextColor, sBackgroundColor)
     end
 

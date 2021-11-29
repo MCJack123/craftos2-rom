@@ -4,6 +4,7 @@
 -- @module cc.completion
 -- @see cc.shell.completion For additional helpers to use with
 -- @{shell.setCompletionFunction}.
+-- @since 1.85.0
 
 local expect = require "cc.expect".expect
 
@@ -46,7 +47,7 @@ end
 -- @tparam string text The input string to complete.
 -- @tparam[opt] boolean add_space Whether to add a space after the completed name.
 -- @treturn { string... } A list of suffixes of matching peripherals.
--- @usage <!-- -->
+-- @usage
 --     local completion = require "cc.completion"
 --     read(nil, nil, completion.peripheral)
 local function peripheral_(text, add_space)
@@ -62,7 +63,7 @@ local sides = redstone.getSides()
 -- @tparam string text The input string to complete.
 -- @tparam[opt] boolean add_space Whether to add a space after the completed side.
 -- @treturn { string... } A list of suffixes of matching sides.
--- @usage <!-- -->
+-- @usage
 --     local completion = require "cc.completion"
 --     read(nil, nil, completion.side)
 local function side(text, add_space)
@@ -76,7 +77,7 @@ end
 -- @tparam string text The input string to complete.
 -- @tparam[opt] boolean add_space Whether to add a space after the completed settings.
 -- @treturn { string... } A list of suffixes of matching settings.
--- @usage <!-- -->
+-- @usage
 --     local completion = require "cc.completion"
 --     read(nil, nil, completion.setting)
 local function setting(text, add_space)
@@ -92,7 +93,7 @@ local command_list
 -- @tparam string text The input string to complete.
 -- @tparam[opt] boolean add_space Whether to add a space after the completed command.
 -- @treturn { string... } A list of suffixes of matching commands.
--- @usage <!-- -->
+-- @usage
 --     local completion = require "cc.completion"
 --     read(nil, nil, completion.command)
 local function command(text, add_space)

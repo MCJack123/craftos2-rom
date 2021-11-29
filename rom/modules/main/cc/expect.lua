@@ -2,6 +2,8 @@
 function arguments are well-formed and of the correct type.
 
 @module cc.expect
+@since 1.84.0
+@changed 1.96.0 The module can now be called directly as a function, which wraps around `expect.expect`.
 @usage Define a basic function and check it has the correct arguments.
 
     local expect = require "cc.expect"
@@ -87,7 +89,7 @@ local function field(tbl, index, ...)
 end
 
 local function is_nan(num)
-    return num ~= num
+  return num ~= num
 end
 
 --- Expect a number to be within a specific range.
@@ -97,19 +99,20 @@ end
 -- @tparam number max The maximum value, if nil then `math.huge` is used.
 -- @return The given `value`.
 -- @throws If the value is outside of the allowed range.
+-- @since 1.96.0
 local function range(num, min, max)
-    expect(1, num, "number")
-    min = expect(2, min, "number", "nil") or -math.huge
-    max = expect(3, max, "number", "nil") or math.huge
-    if min > max then
-        error("min must be less than or equal to max)", 2)
-    end
+  expect(1, num, "number")
+  min = expect(2, min, "number", "nil") or -math.huge
+  max = expect(3, max, "number", "nil") or math.huge
+  if min > max then
+      error("min must be less than or equal to max)", 2)
+  end
 
-    if is_nan(num) or num < min or num > max then
-        error(("number outside of range (expected %s to be within %s and %s)"):format(num, min, max), 3)
-    end
+  if is_nan(num) or num < min or num > max then
+      error(("number outside of range (expected %s to be within %s and %s)"):format(num, min, max), 3)
+  end
 
-    return num
+  return num
 end
 
 return setmetatable({

@@ -15,6 +15,8 @@ else
         print("Merry X-mas!")
     elseif date.month == 10 and date.day == 31 then
         print("OOoooOOOoooo! Spooky!")
+    elseif date.month == 4 and date.day == 28 then
+        print("Ed Balls")
     elseif date.month == 9 and date.day == 8 then
         print("Happy birthday, CraftOS-PC!")
     else
