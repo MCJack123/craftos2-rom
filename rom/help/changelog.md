@@ -23,6 +23,7 @@
 * Fixed `fs.copy` stopping at EOF bytes on Windows (#226)
 * Fixed hardware renderer not showing anything on screen (#227)
 * Fixed crash when using `detach` on a debugger
+* Fixed crash when an error occurs in `drive.insertDisk` on Windows
 * Fixed coroutine metatable getting overwritten by coroutine.create
 * Fixed `keepOpenOnShutdown` using 100% CPU
 * Fixed Ctrl+R not working with `keepOpenOnShutdown` after two successive reboots
