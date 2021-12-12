@@ -355,6 +355,7 @@ builtins = {
             return -1
         end
         while_statement = while_statement + 1
+        shell.run(...)
     end,
     done = function()
         if while_statement < 1 then
