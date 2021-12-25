@@ -9,7 +9,9 @@ elseif _CCPC_UPDATED_VERSION then
     print("CraftOS-PC has been updated to " .. _HOST:match("CraftOS%-PC [%a]* ?(v[%d%.]+)") .. ". To see the new changes, type \"help whatsnew\".")
 else
     local date = os.date("*t")
-    if date.month == 1 and date.day == 1 then
+    if date.year == 2021 then
+        print("Thank you SquidDev!")
+    elseif date.month == 1 and date.day == 1 then
         print("Happy new year!")
     elseif date.month == 12 and date.day == 24 then
         print("Merry X-mas!")
