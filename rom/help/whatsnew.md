@@ -1,37 +1,29 @@
-New Features in CraftOS-PC v2.6.3:
+New Features in CraftOS-PC v2.6.4:
 
-* Updated CC:T version to 1.99.1
-  * Peripherals can now have multiple types. `peripheral.getType` now returns multiple values, and `peripheral.hasType` checks if a peripheral has a specific type.
-  * Add feature introduction/changed version information to the documentation. (MCJack123)
-  * Rednet can now handle computer IDs larger than 65535. (Ale32bit)
-  * Optimise peripheral calls in `rednet.run`. (xAnavrins)
-  * Add `cc.pretty.pretty_print` helper function (Lupus590).
-  * Fix `textutils.serialize` not serialising infinity and nan values. (Wojbie)
-  * Add `package.searchpath` to the `cc.require` API. (MCJack123)
-* Bumped structure version to 7
-  * New fields in `Computer`:
-    * `shouldDeleteDebugger`
-  * New fields in `peripheral`:
-    * `getTypes`
-* Added ability to set printer ink color
-* Added support for hexadecimal floating-point numbers
-* Unwritable data directories now throw an error
-* Default peripherals now throw an error when calling a method that doesn't exist
-* Terminal frozen status is now reset after rebooting
-* X11 and Wayland libraries are no longer required when building for Linux
-* `\0` characters in a string are now treated as a space by `load`
-* Fixed websocket.receive not functioning properly
-* Fixed `fs.copy` stopping at EOF bytes on Windows (#226)
-* Fixed hardware renderer not showing anything on screen (#227)
-* Fixed crash when using `detach` on a debugger
-* Fixed crash when an error occurs in `drive.insertDisk` on Windows
-* Fixed coroutine metatable getting overwritten by coroutine.create
-* Fixed `keepOpenOnShutdown` using 100% CPU
-* Fixed Ctrl+R not working with `keepOpenOnShutdown` after two successive reboots
-* Fixed `getCursorBlink` being missing from monitors
-* Fixed monitor events not working properly in raw mode
-* Fixed a possible race condition when shutting down on exit
-* Fixed race condition in timer erasure
-* Fixed various other small race conditions
+* Updated CC:T version to 1.100.0
+  * Speakers can now play arbitrary PCM audio.
+  * Add support for encoding and decoding DFPWM streams, with the cc.audio.dfpwm module.
+  * Fix the "repeat" program not repeating broadcast rednet messages.
+* Added `useDFPWM` config setting to toggle use of DFPWM playback emulation
+* Added `speaker.setPosition(x, y, z)` to emulate positioning of speaker audio
+* Standards mode now controls the behavior of the new `speaker.playAudio`
+  * When disabled, all audio is added to a queue with no latency, and `speaker.playAudio` never fails
+  * When enabled:
+    * `speaker_audio_empty` is queued when the audio is 0.5 seconds before it's expected to finish, emulating latency
+    * `speaker.playAudio` returns `false` if there is more than 0.5 seconds of audio in the buffer
+    * `useDFPWM` is forced to `true`
+* Renamed `speaker.stopSounds` to `speaker.stop`
+  * `stopSounds` still exists for backwards compatibility, but is deprecated
+* `speaker.playLocalMusic` is now deprecated in favor of `speaker.playAudio`
+  * It is recommended you load the audio files yourself instead of relying on the system to decode it
+* CraftOS-PC Online is now working better (#222)
+  * CraftOS-PC Online now supports Safari on iOS 15.2+/macOS 12.2+
+  * There is currently a huge memory leak bug in some browsers that can cause the page to crash on low-memory systems
+  * Hopefully CraftOS-PC Online will be fully working in the near future
+* Fixed some string comparisons not working as expected
+* Fixed incorrect documentation on mobile gestures (#230)
+* Fixed keyboard on iOS being dismissed when closing the app (#231)
+* Fixed screen glitches when opening a new terminal after changing `useHDFont` (SkyTheCodeMaster)
+* Fixed some issues with textutils.serializeJSON
 
 Type "help changelog" to see the full version history.
