@@ -1,4 +1,4 @@
-multishell.setTitle(multishell.getCurrent(), "Console")
+multishell.setTitle(multishell.getCurrent(), "Console  ")
 local w, h = term.getSize()
 local win = window.create(term.current(), 1, 1, w, 9000)
 local top = 1
@@ -16,8 +16,9 @@ while true do
         end
     elseif ev == "mouse_scroll" then
         if (p1 == -1 and top > 1) or (p1 == 1 and top < 9000 - h) then
-            scrolling = top + h - 1 ~= bottom
             top = math.min(top + p1, 9000)
+            scrolling = top + h - 1 ~= bottom
+            multishell.setTitle(multishell.getCurrent(), scrolling and "Console \7" or "Console  ")
             win.reposition(1, 2-top)
         end
     elseif ev == "term_resize" then
