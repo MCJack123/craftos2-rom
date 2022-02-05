@@ -1,29 +1,27 @@
-New Features in CraftOS-PC v2.6.4:
+New Features in CraftOS-PC v2.6.5:
 
-* Updated CC:T version to 1.100.0
-  * Speakers can now play arbitrary PCM audio.
-  * Add support for encoding and decoding DFPWM streams, with the cc.audio.dfpwm module.
-  * Fix the "repeat" program not repeating broadcast rednet messages.
-* Added `useDFPWM` config setting to toggle use of DFPWM playback emulation
-* Added `speaker.setPosition(x, y, z)` to emulate positioning of speaker audio
-* Standards mode now controls the behavior of the new `speaker.playAudio`
-  * When disabled, all audio is added to a queue with no latency, and `speaker.playAudio` never fails
-  * When enabled:
-    * `speaker_audio_empty` is queued when the audio is 0.5 seconds before it's expected to finish, emulating latency
-    * `speaker.playAudio` returns `false` if there is more than 0.5 seconds of audio in the buffer
-    * `useDFPWM` is forced to `true`
-* Renamed `speaker.stopSounds` to `speaker.stop`
-  * `stopSounds` still exists for backwards compatibility, but is deprecated
-* `speaker.playLocalMusic` is now deprecated in favor of `speaker.playAudio`
-  * It is recommended you load the audio files yourself instead of relying on the system to decode it
-* CraftOS-PC Online is now working better (#222)
-  * CraftOS-PC Online now supports Safari on iOS 15.2+/macOS 12.2+
-  * There is currently a huge memory leak bug in some browsers that can cause the page to crash on low-memory systems
-  * Hopefully CraftOS-PC Online will be fully working in the near future
-* Fixed some string comparisons not working as expected
-* Fixed incorrect documentation on mobile gestures (#230)
-* Fixed keyboard on iOS being dismissed when closing the app (#231)
-* Fixed screen glitches when opening a new terminal after changing `useHDFont` (SkyTheCodeMaster)
-* Fixed some issues with textutils.serializeJSON
+* Bumped CC:T version to 1.100.1
+* Bumped structure version to 8
+  * Functions are now pre-declared to ensure type compatibility
+  * New macro `DLLEXPORT`
+  * New class `TerminalFactory`
+  * New fields in `configuration`:
+    * `useDFPWM`
+  * New fields in `PluginFunctions`:
+    * `registerTerminalFactory`
+    * `commandLineArgs`
+    * `setListenerMode`
+    * `pumpTaskQueue`
+  * New fields in `Terminal`:
+    * `factory`
+* Fixed an issue causing an invalid string to be returned as the parameter for `speaker_audio_empty`
+* `speaker.playAudio` now always returns `false` to tell programs to wait for `speaker_audio_empty` as expected
+* Added caching to rope resolution to avoid concatenating the same rope multiple times
+* Modified `string.rep` to work more like Cobalt
+* Fixed hang when using CLI mode
+* Fixed possible race condition in `mouse_move`
+* Fixed an issue preventing the debugger console from scrolling
+* Added an indicator showing whether the debugger console is no longer auto-scrolling
+* Disabled loading of original `package` and `io` libraries to reduce possible vulnerabilities
 
 Type "help changelog" to see the full version history.
