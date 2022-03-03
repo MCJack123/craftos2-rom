@@ -215,8 +215,8 @@ function drawBox(startX, startY, endX, endY, nColour)
         local c, w, h = nColour or term.getBackgroundColor(), endX - startX, endY - startY
         term.drawPixels(startX, startY, c, w, 1)
         term.drawPixels(startX, startY, c, 1, h)
-        term.drawPixels(endX, startY, c, w, 1)
-        term.drawPixels(startX, endY, c, 1, h)
+        term.drawPixels(endX, startY+1, c, 1, h)
+        term.drawPixels(startX+1, endY, c, w, 1)
     else
         local colourHex = colours.toBlit(nColour)
 
