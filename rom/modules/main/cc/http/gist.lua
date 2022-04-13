@@ -63,6 +63,7 @@ end
 -- User API - this can be loaded with require "cc.http.gist"
 
 -- ID can be either just the gist ID or a gist ID followed by a slash and a file name
+-- (This also includes Gist URLs)
 -- * If a file name is specified, retrieves that file
 -- * Otherwise, if there's only one file, retrieves that file
 -- * Otherwise, if there's a file named 'init.lua', retrieves 'init.lua'
@@ -80,6 +81,7 @@ function gist.get(id, progress)
     expect(2, progress, "function", "nil")
     progress = progress or emptyfn
     local file
+    if id:find("https?://") then id = id:gsub("https?://[^/]+/", ""):gsub("^[^/]*[^/%x]+[^/]*/", "") end
     if id:find("/") ~= nil then id, file = id:match("^([0-9A-Fa-f:]+)/(.+)$") end
     if id == nil or not id:match("^[0-9A-Fa-f][0-9A-Fa-f:]+[0-9A-Fa-f]$") then error("bad argument #1 to 'get' (invalid ID)", 2) end
     if id:find(":") ~= nil then id = id:gsub(":", "/") end
@@ -148,6 +150,7 @@ function gist.getAll(id, progress)
     expect(1, id, "string")
     expect(2, progress, "function", "nil")
     progress = progress or emptyfn
+    if id:find("https?://") then id = id:gsub("https?://[^/]+/", ""):gsub("^[^/]*[^/%x]+[^/]*/", "") end
     if id:find("/") ~= nil then id = id:match("^([0-9A-Fa-f:]+)/.*$") end
     if id == nil or not id:match("^[0-9A-Fa-f][0-9A-Fa-f:]+[0-9A-Fa-f]$") then error("bad argument #1 to 'getAll' (invalid ID)", 2) end
     if id:find(":") ~= nil then id = id:gsub(":", "/") end
@@ -185,6 +188,7 @@ function gist.info(id, progress)
     expect(1, id, "string")
     expect(2, progress, "function", "nil")
     progress = progress or emptyfn
+    if id:find("https?://") then id = id:gsub("https?://[^/]+/", ""):gsub("^[^/]*[^/%x]+[^/]*/", "") end
     if id:find("/") ~= nil then id = id:match("^([0-9A-Fa-f:]+)/.*$") end
     if id == nil or not id:match("^[0-9A-Fa-f][0-9A-Fa-f:]+[0-9A-Fa-f]$") then error("bad argument #1 to 'info' (invalid ID)", 2) end
     if id:find(":") ~= nil then id = id:gsub(":", "/") end
@@ -230,6 +234,7 @@ function gist.put(files, description, id, interactive)
     expect(2, description, "string", id == nil and "nil" or nil)
     expect(4, interactive, "boolean", "nil")
     if id then
+        if id:find("https?://") then id = id:gsub("https?://[^/]+/", ""):gsub("^[^/]*[^/%x]+[^/]*/", "") end
         if id:find("/") ~= nil then id = id:match("^([0-9A-Fa-f:]+)/.*$") end
         if id == nil or not id:match("^[0-9A-Fa-f][0-9A-Fa-f:]+[0-9A-Fa-f]$") then error("bad argument #3 to 'put' (invalid ID)", 2) end
         if id:find(":") ~= nil then id = id:gsub(":", "/") end
@@ -264,6 +269,7 @@ end
 function gist.delete(id, interactive)
     expect(1, id, "string")
     expect(2, interactive, "boolean", "nil")
+    if id:find("https?://") then id = id:gsub("https?://[^/]+/", ""):gsub("^[^/]*[^/%x]+[^/]*/", "") end
     if id:find("/") ~= nil or id:find(":") ~= nil then id = id:match("^([0-9A-Fa-f]+)") end
     if id == nil or not id:match("^[0-9A-Fa-f][0-9A-Fa-f:]+[0-9A-Fa-f]$") then error("bad argument #1 to 'delete' (invalid ID)", 2) end
     local headers = {}
