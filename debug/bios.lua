@@ -819,15 +819,16 @@ if debugger then
     function debugger.waitForBreak()
         nativeWaitForBreak()
         local ev = os.pullEventRaw()
-        while ev ~= "debugger_break" do 
+        while ev ~= "debugger_break" do
             ev = os.pullEventRaw()
-            if ev == "terminate" then 
-                debugger.step() 
+            if ev == "terminate" then
+                debugger.step()
                 debugger.unblock()
-            end 
+            end
         end
         debugger.confirmBreak()
     end
+    debugger.waitForBreakAsync = nativeWaitForBreak
 end
 
 -- Load APIs
