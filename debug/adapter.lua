@@ -1,5 +1,6 @@
 print("The debug adapter is running. Please do not close this window.")
 term.setCursorBlink(false)
+debugger.continue()
 
 local ok, err = pcall(function()
 
@@ -16,6 +17,14 @@ local function sendMessage(message, headers)
     debugger.sendDAPData(packet)
 end
 
+local function copy(t)
+    if type(t) == "table" then
+        local r = {}
+        for k, v in pairs(t) do r[k] = copy(v) end
+        return r
+    else return t end
+end
+
 local responseWait = {}
 local initConfig = {}
 local pause = false
@@ -26,6 +35,7 @@ local reasonMap = {
     ["debug.debug() called"] = "breakpoint",
     ["Pause"] = "pause",
     ["Breakpoint"] = "breakpoint",
+    ["Function breakpoint"] = "function breakpoint",
     ["Error"] = "exception",
     ["Resume"] = "exception",
     ["Yield"] = "exception",
@@ -39,8 +49,8 @@ function commands.initialize(args)
     return {
         supportsConfigurationDoneRequest = true,
         supportsFunctionBreakpoints = true,
-        supportsConditionalBreakpoints = true,
-        supportsHitConditionalBreakpoints = true,
+        supportsConditionalBreakpoints = false, -- TODO
+        supportsHitConditionalBreakpoints = false, -- TODO
         supportsEvaluateForHovers = true,
         exceptionBreakpointFilters = {
             {
@@ -83,8 +93,8 @@ function commands.initialize(args)
         supportTerminateDebuggee = true,
         supportSuspendDebuggee = true,
         supportsDelayedStackTraceLoading = true,
-        supportsLoadedSourcesRequest = true,
-        supportsLogPoints = true,
+        supportsLoadedSourcesRequest = false,
+        supportsLogPoints = false, -- TODO
         supportsTerminateThreadsRequest = false,
         supportsSetExpression = true,
         supportsTerminateRequest = true,
@@ -117,7 +127,10 @@ function commands.launch(args)
     debugger.continue()
     print("Continuing")
     debugger.waitForBreakAsync()
-    pause = false
+end
+
+function commands.attach()
+    debugger.waitForBreakAsync()
 end
 
 function commands.restart(args)
@@ -131,7 +144,6 @@ function commands.restart(args)
     debugger.run("coroutine.resume(coroutine.create(os.reboot))")
     debugger.continue()
     debugger.waitForBreakAsync()
-    pause = false
 end
 
 function commands.disconnect(args)
@@ -145,7 +157,6 @@ function commands.disconnect(args)
         debugger.run("coroutine.resume(coroutine.create(os.shutdown))")
         debugger.continue()
         debugger.waitForBreakAsync()
-        pause = false
     elseif args.suspendDebuggee then
         if not debugger.status() then
             debugger.step()
@@ -169,25 +180,32 @@ function commands.terminate(args)
     debugger.run("coroutine.resume(coroutine.create(os.shutdown))")
     debugger.continue()
     debugger.waitForBreakAsync()
-    pause = false
 end
 
--- TODO: conditions
 function commands.setBreakpoints(args)
-    if not args.breakpoints or not args.source.adapterData.path then return {breakpoints = textutils.empty_json_array} end
+    if not args.source.adapterData then args.source.adapterData = {path = fs.combine(debugger.getInternalPath(args.source.path))} end
+    if not args.breakpoints or (args.source.adapterData and not args.source.adapterData.path) then return {breakpoints = textutils.empty_json_array} end
     local bp = debugger.listBreakpoints()
-    for i, v in ipairs(bp) do if v.file == args.source.adapterData.path then debugger.unsetBreakpoint(i) end end
+    for i, v in ipairs(bp) do if fs.combine(v.file:sub(2)) == args.source.adapterData.path then debugger.unsetBreakpoint(i) end end
     local retval = {}
     for _, v in ipairs(args.breakpoints) do
         local id = debugger.setBreakpoint(args.source.adapterData.path, v.line)
-        retval[#retval+1] = {id = id, verified = true, source = args.source, line = v.line}
+        retval[#retval+1] = {id = id, verified = true, source = copy(args.source), line = v.line}
     end
+    if #retval == 0 then retval = textutils.empty_json_array end
     return {breakpoints = retval}
 end
 
 function commands.setFunctionBreakpoints(args)
-    -- TODO
-    return {breakpoints = textutils.empty_json_array}
+    local bp = debugger.listBreakpoints()
+    for i, v in ipairs(bp) do if v.line == -1 then debugger.unsetBreakpoint(i) end end
+    local retval = {}
+    for _, v in ipairs(args.breakpoints) do
+        local id = debugger.setFunctionBreakpoint(v.name)
+        retval[#retval+1] = {id = id, verified = true}
+    end
+    if #retval == 0 then retval = textutils.empty_json_array end
+    return {breakpoints = retval}
 end
 
 function commands.setExceptionBreakpoints(args)
@@ -201,6 +219,7 @@ function commands.setExceptionBreakpoints(args)
         debugger.catch(v)
         retval[#retval+1] = {verified = true}
     end
+    if #retval == 0 then retval = textutils.empty_json_array end
     return {breakpoints = retval}
 end
 
@@ -399,6 +418,7 @@ function commands.source(args, message)
         sendMessage {type = "response", request_seq = message.seq, success = false, command = message.command, error = "Not paused"}
         return false
     end
+    if not args.source.adapterData then args.source.adapterData = {path = fs.combine(debugger.getInternalPath(args.source.path))} end
     if args.source.adapterData.path then
         local file, err = fs.open(args.source.adapterData.path, "r")
         if not file then
@@ -418,11 +438,6 @@ end
 
 function commands.threads(args)
     return {threads = {{id = 1, name = "Computer"}}}
-end
-
-function commands.loadedSources(args)
-    -- TODO
-    return {sources = textutils.empty_json_array}
 end
 
 function commands.evaluate(args, message)
@@ -682,14 +697,6 @@ local opmodes = {
     ,opmode(0, 1, OpArgU, OpArgN, iABC)
 }
 
-local function copy(t)
-    if type(t) == "table" then
-        local r = {}
-        for k, v in pairs(t) do r[k] = copy(v) end
-        return r
-    else return t end
-end
-
 local function PrintCode(f, src)
     local list = {}
     local pc = 1
@@ -814,7 +821,8 @@ parallel.waitForAny(function()
         end
     end
 end, function()
-    debugger.waitForBreakAsync()
+    --debugger.waitForBreakAsync()
+    sleep(0.25) -- clear queue
     while true do
         coroutine.yield("debugger_break")
         debugger.confirmBreak()
@@ -833,6 +841,9 @@ end, function()
                     -- TODO: hitBreakpointIds
                 }
             }
+        else
+            sleep(0.25)
+            pause = false
         end
     end
 end, function()
