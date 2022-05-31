@@ -1,4 +1,4 @@
-if debugger.useDAP() then
+if debugger.useDAP and debugger.useDAP() then
     shell.run("debug/adapter.lua")
 else
     shell.openTab("debug/showfile.lua")
