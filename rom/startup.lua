@@ -231,7 +231,23 @@ if _CCPC_STARTUP_SCRIPT then
     if fn then
         local args = {}
         if _CCPC_STARTUP_ARGS then for n in _CCPC_STARTUP_ARGS:gmatch("[^ ]+") do table.insert(args, n) end end
+        local oldpath
+        if shell then
+            local dir = shell.dir()
+            if dir:sub(1, 1) ~= "/" then dir = "/" .. dir end
+            if dir:sub(-1) ~= "/" then dir = dir .. "/" end
+
+            local strip_path = "?;?.lua;?/init.lua;"
+            local path = package.path
+            if path:sub(1, #strip_path) == strip_path then
+                path = path:sub(#strip_path + 1)
+            end
+
+            oldpath = package.path
+            package.path = dir .. "?;" .. dir .. "?.lua;" .. dir .. "?/init.lua;" .. path
+        end
         fn(table.unpack(args))
+        if oldpath then package.path = oldpath end
     else printError("Could not load startup script: " .. err) end
 end
 
