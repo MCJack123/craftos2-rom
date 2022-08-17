@@ -1,0 +1,73 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+    branches:
+      - master
+
+jobs:
+  release-ubuntu:
+    runs-on: ubuntu-18.04
+    environment: production
+    steps:
+    - uses: actions/checkout@v1
+    - name: Download resources
+      run: git clone https://github.com/MCJack123/craftos2-release-resources $GITHUB_WORKSPACE/craftos2-release-resources
+    - name: Install dependencies
+      env:
+        GPG_SIGNING_KEY: ${{ secrets.GPG_SIGNING_KEY }}
+      run: |
+        sudo add-apt-repository -y ppa:jackmacwindows/ppa
+        sudo apt install -y devscripts dput lintian debhelper zsh unzip dh-exec craftos-pc-data
+        echo "$GPG_SIGNING_KEY" > signing.asc
+        gpg --import signing.asc
+        rm signing.asc
+    - name: Set up build directory
+      env:
+        RELEASE_BODY: ${{ github.event.release.body }}
+        RELEASE_TAR_URL: ${{ github.event.release.tarball_url }}
+      run: |
+        VERSION=$(echo $GITHUB_REF | grep -o '[0-9\.]*')
+        curl -Lo ../craftos-pc-data_$VERSION.orig.tar.gz $RELEASE_TAR_URL
+        cp -Rp $GITHUB_WORKSPACE/craftos2-release-resources/ubuntu/debian_craftos-pc-data debian
+        echo "craftos-pc-data ($VERSION-bionic1) bionic; urgency=medium" > debian/changelog
+        echo "    " >> debian/changelog
+        echo "$RELEASE_BODY" | sed 's/^/    /' >> debian/changelog
+        echo "    " >> debian/changelog
+        echo " -- JackMacWindows <jackmacwindowslinux@gmail.com>  $(date "+%a, %d %b %Y %T %z")" >> debian/changelog
+        echo "" >> debian/changelog
+        gunzip -c /usr/share/doc/craftos-pc-data/changelog.Debian.gz >> debian/changelog
+        rm -r craftos2-release-resources
+    - name: Build package
+      run: zsh debian/buildall.sh
+
+  release-arch:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+    - name: Download resources
+      run: git clone https://github.com/MCJack123/craftos2-release-resources $GITHUB_WORKSPACE/craftos2-release-resources
+    - name: Set up environment
+      env:
+        AUR_SSH_KEY: ${{ secrets.AUR_SSH_KEY }}
+      run: |
+        mkdir ~/.ssh
+        echo "$AUR_SSH_KEY" > ~/.ssh/aur
+        echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDgQDY289yNsiosJ7Q3SSpSDd27TCzodId0SifsDuryyLSpDpLW6ZvwBZaItnPbEluXx2RsIxw9IdP6HdObHIj7Wvhn3EoAHuVP0EFJpbDnWqw4lZ5UkYHp58vmjSdcv8xJYsCzgvWOG1ZORCQW0GpAQzR8uLSXO6iWd6nAmPSqT8TYMS9Dra9Lf+xl69ctxrGaCbhq1/s6189wEdUEkfNxV7IhMcAyaOmZVieEl/aEko2/Ko+mzBjDvIJ+aKhfHBShpqOA1bf3cwyePuVl8sXqheLQB01Ky+0WdS95D1FMmkIYa9XHO17M12KGl0V6J+UFg5olnEPAstwqsj/ZXeuRruG31vdpeWZ57Bekzji0Q5J1RA1JBG+nVWLT6k4XOY3RwCfPRASyrAcc5iciAb0EaMfuXEBgegyiwdPh8iHIk4rt2PboSGdxeguN0hIsb3OKJW9/l7xToLBzMqvC46EE0Hef/4+NNzhkvUtOYC5RORkJYtmF10fTRD5pWFvhxKU= aur@aur.archlinux.org" > ~/.ssh/aur.pub
+        printf "Host aur.archlinux.org\n  IdentityFile ~/.ssh/aur\n  User aur\n" > ~/.ssh/config
+        ssh-keyscan -t rsa aur.archlinux.org > ~/.ssh/known_hosts
+        chmod 600 ~/.ssh/aur ~/.ssh/known_hosts
+        git config --global user.name MCJack123
+        git config --global user.email jackmacwindowslinux@gmail.com
+        sudo apt install -y lua5.3
+    - name: Upload package
+      run: |
+        VERSION=$(echo $GITHUB_REF | grep -o '[0-9\.]*')
+        git clone ssh://aur@aur.archlinux.org/craftos-pc-data.git
+        cd craftos-pc-data
+        lua $GITHUB_WORKSPACE/craftos2-release-resources/arch/write-rom-pkgbuild.lua $VERSION $(curl -sL https://github.com/MCJack123/craftos2-rom/archive/$GITHUB_REF.tar.gz | shasum -a 256 | awk '{print $1;}')
+        cat PKGBUILD .SRCINFO
+        git add PKGBUILD .SRCINFO
+        git commit -a -m "$GITHUB_REF"
+        git push
