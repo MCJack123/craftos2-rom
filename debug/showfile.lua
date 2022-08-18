@@ -179,7 +179,7 @@ local function showFile(info)
                 end
                 file.close()
                 if info.currentline < h / 2 then scrollPos = 1
-                elseif info.currentline > #lines - (h / 2) then scollPos = #lines - h
+                elseif info.currentline > #lines - (h / 2) then scrollPos = #lines - h
                 else scrollPos = info.currentline - math.floor(h / 2) end
                 infoCache = info
                 renderFile()
