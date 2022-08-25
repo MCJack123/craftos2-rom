@@ -11,6 +11,9 @@
 * Rewrote filesystem code to use C++17 filesystem library
 * Added ability to resize monitors programmatically, including by block size (#261)
 * Added mounter sandboxing/path restriction (#104)
+  * Use the `mounter_whitelist` and `mounter_blacklist` config options to set paths that are allowed and blocked
+  * The deepest match of both lists takes priority
+  * `mounter_no_ask` can be used to disable mount prompts for specific paths
 * Added `istailcall` field to `debug.getinfo`
 * CLI mode now uses the Symbols for Legacy Computing block for bitmap characters (requires a font supporting Unicode 13)
 * Adjusted configuration loading code to avoid crashes from invalid files
@@ -21,12 +24,15 @@
 * Fixed require not working in --script/--exec
 * Fixed a crash from invalid WebSocket data
 * Fixed an HTTP issue causing the `Host` header to be set incorrectly when connecting to `localhost`
+* Fixed a crash if a computer is closed before an HTTP request finishes
 * Fixed a rendering issue when using a custom font with the hardware renderer
 * Fixed `string.format("%q")` not accepting non-string arguments (#251)
 * Fixed an issue causing raw mode to hang and use 100% CPU while exiting
 * Fixed a typo in the `setGraphicsMode` argument checking code
+* Fixed an issue causing the debugger to error after a reboot
 * Fixed a crash when using `debug.getinfo(f, ">")`
 * Fixed an overflow in `os.epoch` when using a 32-bit architecture
+* Linux: Fixed occasional crashes from X11 while resizing, moving, etc.
 * CCEmuX plugin: Improved error message when `emu open` fails
 
 ## v2.6.6 - May 5, 2022
