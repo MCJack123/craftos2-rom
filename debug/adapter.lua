@@ -126,6 +126,7 @@ function commands.launch(args)
     debugger.run("coroutine.resume(coroutine.create(os.reboot))")
     debugger.continue()
     print("Continuing")
+    sleep(0.5)
     debugger.waitForBreakAsync()
 end
 
@@ -143,6 +144,7 @@ function commands.restart(args)
     if launchCommand then debugger.setStartupCode("shell.run('" .. launchCommand .. "')") end
     debugger.run("coroutine.resume(coroutine.create(os.reboot))")
     debugger.continue()
+    sleep(0.5)
     debugger.waitForBreakAsync()
 end
 
@@ -156,6 +158,7 @@ function commands.disconnect(args)
         end
         debugger.run("coroutine.resume(coroutine.create(os.shutdown))")
         debugger.continue()
+        sleep(0.5)
         debugger.waitForBreakAsync()
     elseif args.suspendDebuggee then
         if not debugger.status() then
@@ -179,6 +182,7 @@ function commands.terminate(args)
     end
     debugger.run("coroutine.resume(coroutine.create(os.shutdown))")
     debugger.continue()
+    sleep(0.5)
     debugger.waitForBreakAsync()
 end
 
