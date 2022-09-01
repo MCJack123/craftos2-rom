@@ -1,3 +1,12 @@
+## v2.7.1 - September 1, 2022
+* Fixed an issue causing `fs.getFreeSpace` and `fs.getCapacity` to return invalid values on Windows
+* Fixed an issue causing `fs.attributes` to report read-only status incorrectly on Windows
+* (Re-)Fixed a bug causing `\27` characters in files to mark end-of-files on Windows (#226)
+* Fixed `fs.getName` returning the wrong result in some cases
+* Fixed a crash when HTTP `handle.readLine()` returns an empty string (#270)
+* Fixed an issue causing the debug adapter to fail to work over stdio, causing `launch` requests to fail
+* Keystrokes now automatically reset modifier keys on mobile platforms
+
 ## v2.7 - August 25, 2022
 * Bumped CC:T version to 1.100.9
   * Added basic WAV support to speaker.lua
