@@ -346,7 +346,6 @@ function create(parent, nX, nY, nWidth, nHeight, bStartVisible)
 
     function window.setPaletteColour(colour, r, g, b)
         if type(colour) ~= "number" then expect(1, colour, "number") end
-        if term.getGraphicsMode and term.getGraphicsMode() then return term.native().setPaletteColor(colour, r, g, b) end
 
         if tHex[colour] == nil then
             error("Invalid color (got " .. colour .. ")" , 2)
@@ -376,7 +375,6 @@ function create(parent, nX, nY, nWidth, nHeight, bStartVisible)
 
     function window.getPaletteColour(colour)
         if type(colour) ~= "number" then expect(1, colour, "number") end
-        if term.getGraphicsMode and term.getGraphicsMode() then return term.native().getPaletteColor(colour) end
         if tHex[colour] == nil then
             error("Invalid color (got " .. colour .. ")" , 2)
         end
@@ -584,6 +582,20 @@ function create(parent, nX, nY, nWidth, nHeight, bStartVisible)
         end
         if bVisible then
             window.redraw()
+        end
+    end
+    
+    function window.setGraphicsMode(mode)
+        local oldmode = parent.getGraphicsMode()
+        parent.setGraphicsMode(mode)
+        if oldMode ~= 2 and mode == 2 then
+            local newPalette = {}
+            for i = 0, 15 do newPalette[i] = tPalette[2^i] end
+            tPalette = newPalette
+        elseif oldMode == 2 and mode ~= 2 then
+            local newPalette = {}
+            for i = 0, 15 do newPalette[2^i] = tPalette[i] end
+            tPalette = newPalette
         end
     end
 
