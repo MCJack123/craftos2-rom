@@ -26,6 +26,7 @@ application.
 
 @see guide!speaker_audio Gives a more general introduction to audio processing and the speaker.
 @see speaker.playAudio To play the decoded audio data.
+@since 1.100.0
 @usage Reads "data/example.dfpwm" in chunks, decodes them and then doubles the speed of the audio. The resulting audio
 is then re-encoded and saved to "speedy.dfpwm". This processed audio can then be played with the `speaker` program.
 

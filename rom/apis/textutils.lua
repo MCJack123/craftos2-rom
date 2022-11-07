@@ -211,6 +211,8 @@ local function tabulateCommon(bPaged, ...)
         end
         print()
     end
+
+    local previous_colour = term.getTextColour()
     for _, t in ipairs(tAll) do
         if type(t) == "table" then
             if #t > 0 then
@@ -220,6 +222,7 @@ local function tabulateCommon(bPaged, ...)
             term.setTextColor(t)
         end
     end
+    term.setTextColor(previous_colour)
 end
 
 --[[- Prints tables in a structured form.
@@ -259,7 +262,7 @@ input should the whole output not fit on the display.
     local rows = {}
     for i = 1, 30 do rows[i] = {("Row #%d"):format(i), math.random(1, 400)} end
 
-    textutils.tabulate(colors.orange, {"Column", "Value"}, colors.lightBlue, table.unpack(rows))
+    textutils.pagedTabulate(colors.orange, {"Column", "Value"}, colors.lightBlue, table.unpack(rows))
 ]]
 function pagedTabulate(...)
     return tabulateCommon(true, ...)
@@ -685,6 +688,7 @@ do
     @treturn[2] nil If the object could not be deserialised.
     @treturn string A message describing why the JSON string is invalid.
     @since 1.87.0
+    @changed 1.100.6 Added `parse_empty_array` option
     @see textutils.json_null Use to serialize a JSON `null` value.
     @see textutils.empty_json_array Use to serialize a JSON empty array.
     @usage Unserialise a basic JSON object
@@ -749,9 +753,9 @@ suitable for pretty printing.
 @usage Demonstrates some of the other options
 
     local tbl = { 1, 2, 3 }
-    print(textutils.serialize({ tbl, tbl }, { allow_repetitions = true }))
+    print(textutils.serialise({ tbl, tbl }, { allow_repetitions = true }))
 
-    print(textutils.serialize(tbl, { compact = true }))
+    print(textutils.serialise(tbl, { compact = true }))
 ]]
 function serialize(t, opts)
     local tTracking = {}
@@ -770,7 +774,7 @@ serialise = serialize -- GB version
 
 --- Converts a serialised string back into a reassembled Lua object.
 --
--- This is mainly used together with @{textutils.serialize}.
+-- This is mainly used together with @{textutils.serialise}.
 --
 -- @tparam string s The serialised string to deserialise.
 -- @return[1] The deserialised object
@@ -807,8 +811,10 @@ unserialise = unserialize -- GB version
 -- @throws If the object contains a value which cannot be
 -- serialised. This includes functions and tables which appear multiple
 -- times.
--- @usage textutils.serializeJSON({ values = { 1, "2", true } })
+-- @usage textutils.serialiseJSON({ values = { 1, "2", true } })
 -- @since 1.7
+-- @see textutils.json_null Use to serialise a JSON `null` value.
+-- @see textutils.empty_json_array Use to serialise a JSON empty array.
 function serializeJSON(t, bNBTStyle)
     expect(1, t, "table", "string", "number", "boolean")
     expect(2, bNBTStyle, "boolean", "nil")

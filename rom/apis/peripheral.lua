@@ -107,7 +107,7 @@ function getNames()
         local side = sides[n]
         if native.isPresent(side) then
             table.insert(results, side)
-            if native.hasType(side, "modem") and not native.call(side, "isWireless") then
+            if native.hasType(side, "peripheral_hub") then
                 local remote = native.call(side, "getNamesRemote")
                 for _, name in ipairs(remote) do
                     table.insert(results, name)
@@ -132,9 +132,7 @@ function isPresent(name)
 
     for n = 1, #sides do
         local side = sides[n]
-        if native.hasType(side, "modem") and not native.call(side, "isWireless") and
-            native.call(side, "isPresentRemote", name)
-        then
+        if native.hasType(side, "peripheral_hub") and native.call(side, "isPresentRemote", name) then
             return true
         end
     end
@@ -160,9 +158,7 @@ function getType(peripheral)
         end
         for n = 1, #sides do
             local side = sides[n]
-            if native.hasType(side, "modem") and not native.call(side, "isWireless") and
-                native.call(side, "isPresentRemote", peripheral)
-            then
+            if native.hasType(side, "peripheral_hub") and native.call(side, "isPresentRemote", peripheral) then
                 return native.call(side, "getTypeRemote", peripheral)
             end
         end
@@ -193,9 +189,7 @@ function hasType(peripheral, peripheral_type)
         end
         for n = 1, #sides do
             local side = sides[n]
-            if native.hasType(side, "modem") and not native.call(side, "isWireless") and
-                native.call(side, "isPresentRemote", peripheral)
-            then
+            if native.hasType(side, "peripheral_hub") and native.call(side, "isPresentRemote", peripheral) then
                 return native.call(side, "hasTypeRemote", peripheral, peripheral_type)
             end
         end
@@ -221,9 +215,7 @@ function getMethods(name)
     end
     for n = 1, #sides do
         local side = sides[n]
-        if native.hasType(side, "modem") and not native.call(side, "isWireless") and
-            native.call(side, "isPresentRemote", name)
-        then
+        if native.hasType(side, "peripheral_hub") and native.call(side, "isPresentRemote", name) then
             return native.call(side, "getMethodsRemote", name)
         end
     end
@@ -263,9 +255,7 @@ function call(name, method, ...)
 
     for n = 1, #sides do
         local side = sides[n]
-        if native.hasType(side, "modem") and not native.call(side, "isWireless") and
-            native.call(side, "isPresentRemote", name)
-        then
+        if native.hasType(side, "peripheral_hub") and native.call(side, "isPresentRemote", name) then
             return native.call(side, "callRemote", name, method, ...)
         end
     end

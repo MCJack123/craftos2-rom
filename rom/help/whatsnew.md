@@ -1,39 +1,25 @@
-New Features in CraftOS-PC v2.7:
+New Features in CraftOS-PC v2.7.2:
 
-* Bumped CC:T version to 1.100.9
-  * Added basic WAV support to speaker.lua
-* Added debug adapter for Visual Studio Code
-  * This makes it possible to use VS Code's debugger interface with CraftOS-PC
-  * Install the [CraftOS-PC extension](https://marketplace.visualstudio.com/items?itemName=jackmacwindows.craftos-pc) to use the debugger
-* Added basic generic peripheral emulation
-  * New peripheral types: `chest`/`minecraft:chest` (`inventory`), `tank` (`fluid_storage`), `energy` (`energy_storage`)
-  * `tank` and `energy` may also have custom types set on them (for emulating compatible blocks from other mods)
-  * See the full documentation for more info
-* Rewrote filesystem code to use C++17 filesystem library
-* Added ability to resize monitors programmatically, including by block size (#261)
-* Added mounter sandboxing/path restriction (#104)
-  * Use the `mounter_whitelist` and `mounter_blacklist` config options to set paths that are allowed and blocked
-  * The deepest match of both lists takes priority
-  * `mounter_no_ask` can be used to disable mount prompts for specific paths
-* Added `istailcall` field to `debug.getinfo`
-* CLI mode now uses the Symbols for Legacy Computing block for bitmap characters (requires a font supporting Unicode 13)
-* Adjusted configuration loading code to avoid crashes from invalid files
-* Upgraded Windows project to Visual Studio 2022
-* Fixed an issue on macOS causing HTTPS connections to fail
-* Fixed constant crashes when launching the Android app
-* Fixed "not enough memory" error when calling `string.rep` with a negative length
-* Fixed require not working in --script/--exec
-* Fixed a crash from invalid WebSocket data
-* Fixed an HTTP issue causing the `Host` header to be set incorrectly when connecting to `localhost`
-* Fixed a crash if a computer is closed before an HTTP request finishes
-* Fixed a rendering issue when using a custom font with the hardware renderer
-* Fixed `string.format("%q")` not accepting non-string arguments (#251)
-* Fixed an issue causing raw mode to hang and use 100% CPU while exiting
-* Fixed a typo in the `setGraphicsMode` argument checking code
-* Fixed an issue causing the debugger to error after a reboot
-* Fixed a crash when using `debug.getinfo(f, ">")`
-* Fixed an overflow in `os.epoch` when using a 32-bit architecture
-* Linux: Fixed occasional crashes from X11 while resizing, moving, etc.
-* CCEmuX plugin: Improved error message when `emu open` fails
+* Updated CC:T version to 1.101.1
+  * File drag-and-drop now queues a file_transfer event on the computer. The built-in shell or the import program must now be running to upload files.
+  * The peripheral now searches for remote peripherals using any peripheral with the peripheral_hub type, not just wired modems.
+  * Add include_hidden option to fs.complete, which can be used to prevent hidden files showing up in autocomplete results. (IvoLeal72)
+  * Add shell.autocomplete_hidden setting. (IvoLeal72)
+  * Prevent edit's "Run" command scrolling the terminal output on smaller screens.
+  * Mention WAV support in speaker help (MCJack123).
+  * Add http programs to the path, even when http is not enabled.
+  * Fix example in textutils.pagedTabulate docs (IvoLeal72).
+  * Fix help program treating the terminal one line longer than it was.
+* Fixed a syntax error in the CCEmuX plugin's `emu` program (#271)
+* Fixed a bug causing copies out of virtual mounts to fail (#272)
+* Adjusted some behavior of ropes to hopefully make them faster & use less memory
+  * Further fixes are in progress to fully optimize memory usage
+* Fixed issues when reading from a bad file handle
+* Fixed crashing when some filesystem functions fail
+  * This was causing autocompletion on `config` to fail on Windows (#273), as well as crashing when using `fs.getSize` on a folder (#281)
+* Fixed failure to launch on Apple Silicon Macs due to incorrectly named libraries (#287)
+* Fixed missing `chest.getItemLimit` method (#291)
+* Adjusted some logic in WebSocket handles to fix some potential issues
+* Fixed window palettes being broken in graphics mode
 
 Type "help changelog" to see the full version history.
