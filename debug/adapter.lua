@@ -186,9 +186,19 @@ function commands.terminate(args)
     debugger.waitForBreakAsync()
 end
 
-function commands.setBreakpoints(args)
-    if not args.source.adapterData then args.source.adapterData = {path = fs.combine(debugger.getInternalPath(args.source.path))} end
-    if not args.breakpoints or (args.source.adapterData and not args.source.adapterData.path) then return {breakpoints = textutils.empty_json_array} end
+function commands.setBreakpoints(args, message)
+    if not args.source.adapterData then
+        local path = debugger.getInternalPath(args.source.path)
+        args.source.adapterData = {path = path and fs.combine(path)}
+    end
+    if not args.breakpoints or (args.source.adapterData and not args.source.adapterData.path) then
+        local retval = {}
+        for i, v in ipairs(args.breakpoints) do
+            retval[#retval+1] = {id = i, verified = false, line = v.line}
+        end
+        if #retval == 0 then retval = textutils.empty_json_array end
+        return {breakpoints = retval}
+    end
     local bp = debugger.listBreakpoints()
     for i, v in ipairs(bp) do if fs.combine(v.file:sub(2)) == args.source.adapterData.path then debugger.unsetBreakpoint(i) end end
     local retval = {}
@@ -285,7 +295,7 @@ function commands.stackTrace(args)
             id = i,
             name = info.name,
             source = source,
-            line = info.currentline ~= -1 and (info.currentline and info.currentline + 1) or 0,
+            line = info.currentline ~= -1 and (info.currentline and info.currentline + 1) or ((info.what == "Lua" or info.what == "main") and 1 or -1),
             column = 0,
             instructionPointerReference = info.instruction >= 0 and tostring(i * 0x100000000 + info.instruction) or nil,
         }
@@ -422,7 +432,10 @@ function commands.source(args, message)
         sendMessage {type = "response", request_seq = message.seq, success = false, command = message.command, error = "Not paused"}
         return false
     end
-    if not args.source.adapterData then args.source.adapterData = {path = fs.combine(debugger.getInternalPath(args.source.path))} end
+    if not args.source.adapterData then
+        local path = debugger.getInternalPath(args.source.path)
+        args.source.adapterData = {path = path and fs.combine(path)}
+    end
     if args.source.adapterData.path then
         local file, err = fs.open(args.source.adapterData.path, "r")
         if not file then
