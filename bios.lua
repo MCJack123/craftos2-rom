@@ -3,7 +3,7 @@
 -- Ideally we'd use require, but that is part of the shell, and so is not
 -- available to the BIOS or any APIs. All APIs load this using dofile, but that
 -- has not been defined at this point.
-local expect, field
+local expect
 
 do
     local h = fs.open("rom/modules/main/cc/expect.lua", "r")
@@ -11,8 +11,7 @@ do
     h.close()
 
     if not f then error(err) end
-    local res = f()
-    expect, field = res.expect, res.field
+    expect = f()
 end
 
 -- Historically load/loadstring would handle the chunk name as if it has
@@ -691,292 +690,27 @@ function os.reboot()
     end
 end
 
--- Install the lua part of the HTTP api (if enabled)
-if http then
-    local nativeHTTPRequest = http.request
-
-    local methods = {
-        GET = true, POST = true, HEAD = true,
-        OPTIONS = true, PUT = true, DELETE = true,
-        PATCH = true, TRACE = true,
-    }
-
-    local function checkKey(options, key, ty, opt)
-        local value = options[key]
-        local valueTy = type(value)
-
-        if (value ~= nil or not opt) and valueTy ~= ty then
-            error(("bad field '%s' (expected %s, got %s"):format(key, ty, valueTy), 4)
-        end
-    end
-
-    local function checkOptions(options, body)
-        checkKey(options, "url", "string")
-        if body == false then
-          checkKey(options, "body", "nil")
-        else
-          checkKey(options, "body", "string", not body)
-        end
-        checkKey(options, "headers", "table", true)
-        checkKey(options, "method", "string", true)
-        checkKey(options, "redirect", "boolean", true)
-
-        if options.method and not methods[options.method] then
-            error("Unsupported HTTP method", 3)
-        end
-    end
-
-    local function wrapRequest(_url, ...)
-        local ok, err = nativeHTTPRequest(...)
-        if ok then
-            while true do
-                local event, param1, param2, param3 = os.pullEvent()
-                if event == "http_success" and param1 == _url then
-                    return param2
-                elseif event == "http_failure" and param1 == _url then
-                    return nil, param2, param3
-                end
-            end
-        end
-        return nil, err
-    end
-
-    http.get = function(_url, _headers, _binary)
-        if type(_url) == "table" then
-            checkOptions(_url, false)
-            return wrapRequest(_url.url, _url)
-        end
-
-        expect(1, _url, "string")
-        expect(2, _headers, "table", "nil")
-        expect(3, _binary, "boolean", "nil")
-        return wrapRequest(_url, _url, nil, _headers, _binary)
-    end
-
-    http.post = function(_url, _post, _headers, _binary)
-        if type(_url) == "table" then
-            checkOptions(_url, true)
-            return wrapRequest(_url.url, _url)
-        end
-
-        expect(1, _url, "string")
-        expect(2, _post, "string")
-        expect(3, _headers, "table", "nil")
-        expect(4, _binary, "boolean", "nil")
-        return wrapRequest(_url, _url, _post, _headers, _binary)
-    end
-
-    for k in pairs(methods) do if k ~= "GET" and k ~= "POST" then
-        http[k:lower()] = function(_url, _post, _headers, _binary)
-            if type(_url) == "table" then
-                checkOptions(_url, true)
-                return wrapRequest(_url.url, _url)
-            end
-
-            expect(1, _url, "string")
-            expect(2, _post, "string")
-            expect(3, _headers, "table", "nil")
-            expect(4, _binary, "boolean", "nil")
-            return wrapRequest(_url, {url = _url, body = _post, headers = _headers, binary = _binary, method = k})
-        end
-    end end
-
-    http.request = function(_url, _post, _headers, _binary)
-        local url
-        if type(_url) == "table" then
-            checkOptions(_url)
-            url = _url.url
-        else
-            expect(1, _url, "string")
-            expect(2, _post, "string", "nil")
-            expect(3, _headers, "table", "nil")
-            expect(4, _binary, "boolean", "nil")
-            url = _url.url
-        end
-
-        local ok, err = nativeHTTPRequest(_url, _post, _headers, _binary)
-        if not ok then
-            os.queueEvent("http_failure", url, err)
-        end
-        return ok, err
-    end
-
-    if http.addListener then
-        http.listen = function( _port, _callback )
-            expect(1, _port, "number")
-            expect(2, _callback, "function")
-            http.addListener( _port )
-            while true do
-                local ev, p1, p2, p3 = os.pullEvent()
-                if ev == "server_stop" then
-                    http.removeListener( _port )
-                    break
-                elseif ev == "http_request" and p1 == _port then
-                    if _callback( p2, p3 ) then 
-                        http.removeListener( _port )
-                        break 
-                    end
+local bAPIError = false
+local function load_apis(dir)
+    if not fs.isDir(dir) then return end
+    
+    for _, file in ipairs(fs.list(dir)) do
+        if file:sub(1, 1) ~= "." then
+            local path = fs.combine(dir, file)
+            if not fs.isDir(path) then
+                if not os.loadAPI(path) then
+                    bAPIError = true
                 end
             end
         end
     end
-
-    local nativeCheckURL = http.checkURL
-    http.checkURLAsync = nativeCheckURL
-    http.checkURL = function(_url)
-        expect(1, _url, "string")
-        local ok, err = nativeCheckURL(_url)
-        if not ok then return ok, err end
-
-        while true do
-            local _, url, ok, err = os.pullEvent("http_check")
-            if url == _url then return ok, err end
-        end
-    end
-
-    local nativeWebsocket = http.websocket
-    http.websocketAsync = nativeWebsocket
-    http.websocket = function(_url, _headers)
-        expect(1, _url, "string", "number")
-        expect(2, _headers, "table", "nil")
-
-        local ok, err = nativeWebsocket(_url, _headers)
-        if not ok then return ok, err end
-
-        while true do
-            local event, url, param, wsid = os.pullEvent( )
-            if event == "websocket_success" and url == _url then
-                return param, wsid
-            elseif event == "websocket_failure" and url == _url then
-                return false, param
-            end
-        end
-    end
-end
-
--- Install the lua part of the FS api
-local tEmpty = {}
-function fs.complete(sPath, sLocation, bIncludeFiles, bIncludeDirs)
-    expect(1, sPath, "string")
-    expect(2, sLocation, "string")
-    local bIncludeHidden = nil
-    if type(bIncludeFiles) == "table" then
-        bIncludeDirs = field(bIncludeFiles, "include_dirs", "boolean", "nil")
-        bIncludeHidden = field(bIncludeFiles, "include_hidden", "boolean", "nil")
-        bIncludeFiles = field(bIncludeFiles, "include_files", "boolean", "nil")
-    else
-        expect(3, bIncludeFiles, "boolean", "nil")
-        expect(4, bIncludeDirs, "boolean", "nil")
-    end
-
-    bIncludeHidden = bIncludeHidden ~= false
-    bIncludeFiles = bIncludeFiles ~= false
-    bIncludeDirs = bIncludeDirs ~= false
-    local sDir = sLocation
-    local nStart = 1
-    local nSlash = string.find(sPath, "[/\\]", nStart)
-    if nSlash == 1 then
-        sDir = ""
-        nStart = 2
-    end
-    local sName
-    while not sName do
-        local nSlash = string.find(sPath, "[/\\]", nStart)
-        if nSlash then
-            local sPart = string.sub(sPath, nStart, nSlash - 1)
-            sDir = fs.combine(sDir, sPart)
-            nStart = nSlash + 1
-        else
-            sName = string.sub(sPath, nStart)
-        end
-    end
-
-    if fs.isDir(sDir) then
-        local tResults = {}
-        if bIncludeDirs and sPath == "" then
-            table.insert(tResults, ".")
-        end
-        if sDir ~= "" then
-            if sPath == "" then
-                table.insert(tResults, bIncludeDirs and ".." or "../")
-            elseif sPath == "." then
-                table.insert(tResults, bIncludeDirs and "." or "./")
-            end
-        end
-        local tFiles = fs.list(sDir)
-        for n = 1, #tFiles do
-            local sFile = tFiles[n]
-            if #sFile >= #sName and string.sub(sFile, 1, #sName) == sName and (
-                bIncludeHidden or sFile:sub(1, 1) ~= "." or sName:sub(1, 1) == "."
-            ) then
-                local bIsDir = fs.isDir(fs.combine(sDir, sFile))
-                local sResult = string.sub(sFile, #sName + 1)
-                if bIsDir then
-                    table.insert(tResults, sResult .. "/")
-                    if bIncludeDirs and #sResult > 0 then
-                        table.insert(tResults, sResult)
-                    end
-                else
-                    if bIncludeFiles and #sResult > 0 then
-                        table.insert(tResults, sResult)
-                    end
-                end
-            end
-        end
-        return tResults
-    end
-    return tEmpty
-end
-
-function fs.isDriveRoot(sPath)
-    expect(1, sPath, "string")
-    -- Force the root directory to be a mount.
-    return fs.getDir(sPath) == ".." or fs.getDrive(sPath) ~= fs.getDrive(fs.getDir(sPath))
 end
 
 -- Load APIs
-local bAPIError = false
-local tApis = fs.list("rom/apis")
-for _, sFile in ipairs(tApis) do
-    if string.sub(sFile, 1, 1) ~= "." then
-        local sPath = fs.combine("rom/apis", sFile)
-        if not fs.isDir(sPath) then
-            if not os.loadAPI(sPath) then
-                bAPIError = true
-            end
-        end
-    end
-end
-
-if turtle and fs.isDir("rom/apis/turtle") then
-    -- Load turtle APIs
-    local tApis = fs.list("rom/apis/turtle")
-    for _, sFile in ipairs(tApis) do
-        if string.sub(sFile, 1, 1) ~= "." then
-            local sPath = fs.combine("rom/apis/turtle", sFile)
-            if not fs.isDir(sPath) then
-                if not os.loadAPI(sPath) then
-                    bAPIError = true
-                end
-            end
-        end
-    end
-end
-
-if pocket and fs.isDir("rom/apis/pocket") then
-    -- Load pocket APIs
-    local tApis = fs.list("rom/apis/pocket")
-    for _, sFile in ipairs(tApis) do
-        if string.sub(sFile, 1, 1) ~= "." then
-            local sPath = fs.combine("rom/apis/pocket", sFile)
-            if not fs.isDir(sPath) then
-                if not os.loadAPI(sPath) then
-                    bAPIError = true
-                end
-            end
-        end
-    end
-end
+load_apis("rom/apis")
+if http then load_apis("rom/apis/http") end
+if turtle then load_apis("rom/apis/turtle") end
+if pocket then load_apis("rom/apis/pocket") end
 
 if commands and fs.isDir("rom/apis/command") then
     -- Load command APIs
