@@ -11,7 +11,7 @@ do
     h.close()
 
     if not f then error(err) end
-    expect = f()
+    expect = f().expect
 end
 
 -- Historically load/loadstring would handle the chunk name as if it has
@@ -693,7 +693,7 @@ end
 local bAPIError = false
 local function load_apis(dir)
     if not fs.isDir(dir) then return end
-    
+
     for _, file in ipairs(fs.list(dir)) do
         if file:sub(1, 1) ~= "." then
             local path = fs.combine(dir, file)
