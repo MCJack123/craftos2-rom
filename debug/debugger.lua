@@ -40,8 +40,12 @@ while true do
         if action[1] == "step" or action[1] == "s" then debugger.step(action[2] and tonumber(action[2])); loop = false
         elseif action[1] == "finish" or action[1] == "fin" then debugger.stepOut(); loop = false
         elseif action[1] == "continue" or action[1] == "c" then debugger.continue(); loop = false
-        elseif action[1] == "b" or action[1] == "break" then print("Breakpoint " .. debugger.setBreakpoint(string.sub(action[2], 1, string.find(action[2], ":") - 1), tonumber(string.sub(action[2], string.find(action[2], ":") + 1))) .. " set at " .. string.sub(action[2], 1, string.find(action[2], ":") - 1) .. ":" .. string.sub(action[2], string.find(action[2], ":") + 1))
-        elseif action[1] == "breakpoint" and action[2] == "set" then print("Breakpoint " .. debugger.setBreakpoint(string.sub(action[3], 1, string.find(action[3], ":") - 1), tonumber(string.sub(action[3], string.find(action[3], ":") + 1))) .. " set at " .. string.sub(action[3], 1, string.find(action[3], ":") - 1) .. ":" .. string.sub(action[3], string.find(action[3], ":") + 1))
+        elseif action[1] == "b" or action[1] == "break" then
+            if action[2] == nil or not action[2]:match "[^:]+:%d+" then printError("Usage: break <source>:<line>")
+            else print("Breakpoint " .. debugger.setBreakpoint(string.sub(action[2], 1, string.find(action[2], ":") - 1), tonumber(string.sub(action[2], string.find(action[2], ":") + 1))) .. " set at " .. string.sub(action[2], 1, string.find(action[2], ":") - 1) .. ":" .. string.sub(action[2], string.find(action[2], ":") + 1)) end
+        elseif action[1] == "breakpoint" and action[2] == "set" then
+            if action[3] == nil or not action[3]:match "[^:]+:%d+" then printError("Usage: break <source>:<line>")
+            else print("Breakpoint " .. debugger.setBreakpoint(string.sub(action[3], 1, string.find(action[3], ":") - 1), tonumber(string.sub(action[3], string.find(action[3], ":") + 1))) .. " set at " .. string.sub(action[3], 1, string.find(action[3], ":") - 1) .. ":" .. string.sub(action[3], string.find(action[3], ":") + 1)) end
         elseif action[1] == "catch" then
             if action[2] == "catch" or action[2] == "error" or action[2] == "throw" then debugger.catch("error")
             elseif action[2] == "load" then debugger.catch("load")
@@ -59,9 +63,12 @@ while true do
             else debugger.unsetBreakpoint(tonumber(action[2])) end
         elseif action[1] == "edit" and debugger.getInfo().source and fs.exists(string.sub(debugger.getInfo().source, 2)) then shell.run("edit", debugger.getInfo().source)
         elseif action[1] == "advance" then
-            advanceTemp = debugger.setBreakpoint(string.sub(action[2], 1, string.find(action[2], ":") - 1), tonumber(string.sub(action[2], string.find(action[2], ":") + 1)))
-            debugger.continue()
-            loop = false
+            if action[2] == nil or not action[2]:match "[^:]+:%d+" then printError("Usage: advance <source>:<line>")
+            else
+                advanceTemp = debugger.setBreakpoint(string.sub(action[2], 1, string.find(action[2], ":") - 1), tonumber(string.sub(action[2], string.find(action[2], ":") + 1)))
+                debugger.continue()
+                loop = false
+            end
         elseif action[1] == "info" then
             if action[2] == "breakpoints" then
                 local breakpoints = debugger.listBreakpoints()
@@ -88,7 +95,7 @@ while true do
                 local lines = {}
                 for k,v in pairs(debugger.getLocals()) do table.insert(lines, {k, tostring(v)}) end
                 textutils.tabulate(colors.blue, {"Name", "Value"}, colors.white, table.unpack(lines))
-            end
+            else printError("Usage: info <breakpoints|frame|locals>") end
         elseif action[1] == "print" or action[1] == "p" then 
             table.remove(action, 1)
             local s = table.concat(action, " ")
