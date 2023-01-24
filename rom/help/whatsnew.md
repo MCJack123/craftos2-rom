@@ -1,25 +1,30 @@
-New Features in CraftOS-PC v2.7.2:
+New Features in CraftOS-PC v2.7.3:
 
-* Updated CC:T version to 1.101.1
-  * File drag-and-drop now queues a file_transfer event on the computer. The built-in shell or the import program must now be running to upload files.
-  * The peripheral now searches for remote peripherals using any peripheral with the peripheral_hub type, not just wired modems.
-  * Add include_hidden option to fs.complete, which can be used to prevent hidden files showing up in autocomplete results. (IvoLeal72)
-  * Add shell.autocomplete_hidden setting. (IvoLeal72)
-  * Prevent edit's "Run" command scrolling the terminal output on smaller screens.
-  * Mention WAV support in speaker help (MCJack123).
-  * Add http programs to the path, even when http is not enabled.
-  * Fix example in textutils.pagedTabulate docs (IvoLeal72).
-  * Fix help program treating the terminal one line longer than it was.
-* Fixed a syntax error in the CCEmuX plugin's `emu` program (#271)
-* Fixed a bug causing copies out of virtual mounts to fail (#272)
-* Adjusted some behavior of ropes to hopefully make them faster & use less memory
-  * Further fixes are in progress to fully optimize memory usage
-* Fixed issues when reading from a bad file handle
-* Fixed crashing when some filesystem functions fail
-  * This was causing autocompletion on `config` to fail on Windows (#273), as well as crashing when using `fs.getSize` on a folder (#281)
-* Fixed failure to launch on Apple Silicon Macs due to incorrectly named libraries (#287)
-* Fixed missing `chest.getItemLimit` method (#291)
-* Adjusted some logic in WebSocket handles to fix some potential issues
-* Fixed window palettes being broken in graphics mode
+* Updated CC:T version to 1.102.2
+  * Moved Lua portions of `fs` and `http` outside the BIOS
+  * Trim spaces from filesystem paths.
+  * Fix `import.lua` failing to upload a file.
+  * Reduce inconsistency with the table length operator in some cases
+* Linux builds are now officially published as AppImages
+  * These will be provided in conjunction with normal packages for Ubuntu/Arch/Raspbian
+* Replaced rope and substring allocation with clusters
+  * This should hopefully fix performance and memory allocation issues with string concatenation
+* Added function authentication for C functions to mitigate bytecode vulnerabilities
+* Improved performance of binary `file.readAll`
+* `unpack` no longer uses a table's `n` field
+* Fixed error when setting palette colors on windows in 256-color graphics mode
+* Fixed more crashing when filesystem functions fail (#280)
+* Fixed crashes due to stack overflows
+* Fixed WebSocket pings sending a close response
+* Fixed crashes in `websocket.receive()` when receiving a message that's too large (#297)
+* Fixed vague error message responses when an HTTP request fails (#292)
+* Fixed DAP crash from setting a breakpoint in an unknown file
+* Fixed breakpoints activating on the wrong line
+* Fixed first line of a file not being able to trigger a breakpoint
+* Fixed debugger errors when invalid arguments are used on the ccdb command line (#294)
+* Fixed precision issues with `os.epoch("nano")` (#299)
+* Fixed `rawlen` and `__ipairs` being missing from the global table
+* Fixed Windows crash reporter being disabled
+* Fixed some inconsistencies with seeking beyond a file's limits (#310)
 
 Type "help changelog" to see the full version history.
