@@ -13,7 +13,7 @@
   * `_CCPC_finger_touch`, `_CCPC_finger_up`, `_CCPC_finger_drag`
   * All events get finger ID, X, and Y as parameters
   * These events co-exist with single-touch mouse events
-* Mobile platforms now have Page Up/Down keys on the arrow toolbar for quicker navigation
+* iOS now has Page Up/Down keys on the arrow toolbar for quicker navigation
 * Added function authentication for C functions to mitigate bytecode vulnerabilities
 * Improved performance of binary `file.readAll`
 * `unpack` no longer uses a table's `n` field
