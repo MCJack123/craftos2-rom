@@ -59,7 +59,7 @@ keys.cimcumflex = keys.circumflex
 
 function getName( _nKey )
     if type( _nKey ) ~= "number" then
-        error( "bad argument #1 (expected number, got " .. type( _nKey ) .. ")", 2 ) 
+        error( "bad argument #1 (number expected, got " .. type( _nKey ) .. ")", 2 ) 
     end
 	return tKeys[ _nKey ]
 end
