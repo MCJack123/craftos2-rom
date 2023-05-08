@@ -193,7 +193,7 @@ function send(recipient, message, protocol)
     local sent = false
     if recipient == os.getComputerID() then
         -- Loopback to ourselves
-        os.queueEvent("rednet_message", os.getComputerID(), message_wrapper, protocol)
+        os.queueEvent("rednet_message", os.getComputerID(), message, protocol)
         sent = true
     else
         -- Send on all open modems, to the target and to repeaters
@@ -318,7 +318,7 @@ different, or if they only join a given network after "registering" themselves
 before doing so (eg while offline or part of a different network).
 
 @tparam string protocol The protocol this computer provides.
-@tparam string hostname The name this protocol exposes for the given protocol.
+@tparam string hostname The name this computer exposes for the given protocol.
 @throws If trying to register a hostname which is reserved, or currently in use.
 @see rednet.unhost
 @see rednet.lookup

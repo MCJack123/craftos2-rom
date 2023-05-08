@@ -1,15 +1,30 @@
---- The shell API provides access to CraftOS's command line interface.
---
--- It allows you to @{run|start programs}, @{setCompletionFunction|add
--- completion for a program}, and much more.
---
--- @{shell} is not a "true" API. Instead, it is a standard program, which its
--- API into the programs that it launches. This allows for multiple shells to
--- run at the same time, but means that the API is not available in the global
--- environment, and so is unavailable to other @{os.loadAPI|APIs}.
---
--- @module[module] shell
-
+--[[- The shell API provides access to CraftOS's command line interface.
+It allows you to @{run|start programs}, @{setCompletionFunction|add completion
+for a program}, and much more.
+@{shell} is not a "true" API. Instead, it is a standard program, which injects
+its API into the programs that it launches. This allows for multiple shells to
+run at the same time, but means that the API is not available in the global
+environment, and so is unavailable to other @{os.loadAPI|APIs}.
+## Programs and the program path
+When you run a command with the shell, either from the prompt or
+@{shell.run|from Lua code}, the shell API performs several steps to work out
+which program to run:
+ 1. Firstly, the shell attempts to resolve @{shell.aliases|aliases}. This allows
+    us to use multiple names for a single command. For example, the `list`
+    program has two aliases: `ls` and `dir`. When you write `ls /rom`, that's
+    expanded to `list /rom`.
+ 2. Next, the shell attempts to find where the program actually is. For this, it
+    uses the @{shell.path|program path}. This is a colon separated list of
+    directories, each of which is checked to see if it contains the program.
+    `list` or `list.lua` doesn't exist in `.` (the current directory), so she
+    shell now looks in `/rom/programs`, where `list.lua` can be found!
+ 3. Finally, the shell reads the file and checks if the file starts with a
+    `#!`. This is a [hashbang][], which says that this file shouldn't be treated
+    as Lua, but instead passed to _another_ program, the name of which should
+    follow the `#!`.
+[hashbang]: https://en.wikipedia.org/wiki/Shebang_(Unix)
+@module[module] shell
+]]
 local make_package = dofile("rom/modules/main/cc/require.lua").make
 
 local multishell = multishell
@@ -41,6 +56,7 @@ do
     require = env.require
 end
 local expect = require("cc.expect").expect
+local exception = require "cc.internal.exception"
 
 -- Colours
 local promptColour, textColour, bgColour
@@ -52,6 +68,111 @@ else
     promptColour = colours.white
     textColour = colours.white
     bgColour = colours.black
+end
+
+local function tokenise(...)
+    local sLine = table.concat({ ... }, " ")
+    local tWords = {}
+    local bQuoted = false
+    for match in string.gmatch(sLine .. "\"", "(.-)\"") do
+        if bQuoted then
+            table.insert(tWords, match)
+        else
+            for m in string.gmatch(match, "[^ \t]+") do
+                table.insert(tWords, m)
+            end
+        end
+        bQuoted = not bQuoted
+    end
+    return tWords
+end
+
+-- Execute a program using os.run, unless a shebang is present.
+-- In that case, execute the program using the interpreter specified in the hashbang.
+-- This may occur recursively, up to the maximum number of times specified by remainingRecursion
+-- Returns the same type as os.run, which is a boolean indicating whether the program exited successfully.
+local function executeProgram(remainingRecursion, path, args)
+    local file, err = fs.open(path, "r")
+    if not file then
+        printError(err)
+        return false
+    end
+
+    -- First check if the file begins with a #!
+    local contents = file.readLine() or ""
+
+    if contents:sub(1, 2) == "#!" then
+        file.close()
+
+        remainingRecursion = remainingRecursion - 1
+        if remainingRecursion == 0 then
+            printError("Hashbang recursion depth limit reached when loading file: " .. path)
+            return false
+        end
+
+        -- Load the specified hashbang program instead
+        local hashbangArgs = tokenise(contents:sub(3))
+        local originalHashbangPath = table.remove(hashbangArgs, 1)
+        local resolvedHashbangProgram = shell.resolveProgram(originalHashbangPath)
+        if not resolvedHashbangProgram then
+            printError("Hashbang program not found: " .. originalHashbangPath)
+            return false
+        elseif resolvedHashbangProgram == "rom/programs/shell.lua" and #hashbangArgs == 0 then
+            -- If we try to launch the shell then our shebang expands to "shell <program>", which just does a
+            -- shell.run("<program>") again, resulting in an infinite loop. This may still happen (if the user
+            -- has a custom shell), but this reduces the risk.
+            -- It's a little ugly special-casing this, but it's probably worth warning about.
+            printError("Cannot use the shell as a hashbang program")
+            return false
+        end
+
+        -- Add the path and any arguments to the interpreter's arguments
+        table.insert(hashbangArgs, path)
+        for _, v in ipairs(args) do
+            table.insert(hashbangArgs, v)
+        end
+
+        hashbangArgs[0] = originalHashbangPath
+        return executeProgram(remainingRecursion, resolvedHashbangProgram, hashbangArgs)
+    end
+
+    contents = contents .. "\n" .. (file.readAll() or "")
+    file.close()
+
+    local dir = fs.getDir(path)
+    local env = setmetatable(createShellEnv(dir), { __index = _G })
+    env.arg = args
+
+    local func, err = load(contents, "@/" .. fs.combine(path), nil, env)
+    if not func then
+        -- We had a syntax error. Attempt to run it through our own parser if
+        -- the file is "small enough", otherwise report the original error.
+        if #contents < 1024 * 128 then
+            local parser = require "cc.internal.syntax"
+            if parser.parse_program(contents) then printError(err) end
+        else
+            printError(err)
+        end
+
+        return false
+    end
+
+    if settings.get("bios.strict_globals", false) then
+        getmetatable(env).__newindex = function(_, name)
+            error("Attempt to create global " .. tostring(name), 2)
+        end
+    end
+
+    local ok, err, co = exception.try(func, table.unpack(args, 1, args.n))
+
+    if ok then return true end
+
+    if err and err ~= "" then
+        printError(err)
+        exception.report(err, co)
+    end
+
+    return false
 end
 
 --- Run a program with the supplied arguments.
@@ -84,10 +205,7 @@ function shell.execute(command, ...)
             multishell.setTitle(multishell.getCurrent(), sTitle)
         end
 
-        local sDir = fs.getDir(sPath)
-        local env = createShellEnv(sDir)
-        env.arg = { [0] = command, ... }
-        local result = os.run(env, sPath, ...)
+        local result = executeProgram(100, sPath, { [0] = command, ... })
 
         tProgramStack[#tProgramStack] = nil
         if multishell then
@@ -106,23 +224,6 @@ function shell.execute(command, ...)
         printError("No such program")
         return false
     end
-end
-
-local function tokenise(...)
-    local sLine = table.concat({ ... }, " ")
-    local tWords = {}
-    local bQuoted = false
-    for match in string.gmatch(sLine .. "\"", "(.-)\"") do
-        if bQuoted then
-            table.insert(tWords, match)
-        else
-            for m in string.gmatch(match, "[^ \t]+") do
-                table.insert(tWords, m)
-            end
-        end
-        bQuoted = not bQuoted
-    end
-    return tWords
 end
 
 -- Install shell API
@@ -541,8 +642,8 @@ end
 --- Get the current aliases for this shell.
 --
 -- Aliases are used to allow multiple commands to refer to a single program. For
--- instance, the `list` program is aliased `dir` or `ls`. Running `ls`, `dir` or
--- `list` in the shell will all run the `list` program.
+-- instance, the `list` program is aliased to `dir` or `ls`. Running `ls`, `dir`
+-- or `list` in the shell will all run the `list` program.
 --
 -- @treturn { [string] = string } A table, where the keys are the names of
 -- aliases, and the values are the path to the program.
