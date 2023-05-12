@@ -1,37 +1,27 @@
-New Features in CraftOS-PC v2.7.3:
+New Features in CraftOS-PC v2.7.4:
 
-* Updated CC:T version to 1.102.2
-  * Moved Lua portions of `fs` and `http` outside the BIOS
-  * Trim spaces from filesystem paths.
-  * Fix `import.lua` failing to upload a file.
-  * Reduce inconsistency with the table length operator in some cases
-* Linux builds are now officially published as AppImages
-  * These will be provided in conjunction with normal packages for Ubuntu/Arch/Raspbian
-  * Arch users will be able to use `craftos-pc-bin` package to install the AppImage version, avoiding slow local compilation
-* Replaced rope and substring allocation with clusters
-  * This should hopefully fix performance and memory allocation issues with string concatenation
-* Added new multi-touch events on mobile platforms
-  * `_CCPC_finger_touch`, `_CCPC_finger_up`, `_CCPC_finger_drag`
-  * All events get finger ID, X, and Y as parameters
-  * These events co-exist with single-touch mouse events
-* iOS now has Page Up/Down keys on the arrow toolbar for quicker navigation
-* Added function authentication for C functions to mitigate bytecode vulnerabilities
-* Improved performance of binary `file.readAll`
-* `unpack` no longer uses a table's `n` field
-* Fixed error when setting palette colors on windows in 256-color graphics mode
-* Fixed more crashing when filesystem functions fail (#280)
-* Fixed crashes due to stack overflows
-* Fixed WebSocket pings sending a close response (#214)
-* Fixed crashes in `websocket.receive()` when receiving a message that's too large (#297, #214)
-* Fixed vague error message responses when an HTTP request fails (#292)
-* Fixed DAP crash from setting a breakpoint in an unknown file
-* Fixed breakpoints activating on the wrong line
-* Fixed first line of a file not being able to trigger a breakpoint
-* Fixed debugger errors when invalid arguments are used on the ccdb command line (#294)
-* Fixed precision issues with `os.epoch("nano")` (#299)
-* Fixed `rawlen` and `__ipairs` being missing from the global table
-* Fixed Windows crash reporter being disabled
-* Windows builds will no longer attempt to prompt for crash reporting when run in console-based modes
-* Fixed some inconsistencies with seeking beyond a file's limits (#310)
+* **Fixed critical crashing issue on Windows systems relating to ropes**
+* Updated CC:T version to 1.104.0
+  * The shell now supports hashbangs (`#!`) (emmachase).
+  * Error messages in edit are now displayed in red on advanced computers.
+  * Improvements to the display of errors in the shell and REPL.
+  * Fix `rednet` queueing the wrong message when sending a message to the current computer.
+  * Fix the Lua VM crashing when a `__len` metamethod yields.
+  * `table` methods and `ipairs` now use metamethods.
+  * Argument errors now follow the standard "X expected, got Y" format.
+  * Add `coroutine.isyieldable`.
+  * Type errors now use the `__name` metatag.
+  * `xpcall` now accepts arguments after the error function.
+  * `speaker` program now reports an error on common unsupported audio formats.
+  * multishell now hides the implementation details of its terminal redirect from programs.
+  * `settings.load` now ignores malformed values created by editing the .settings file by hand.
+  * Ignore metatables in `textutils.serialize`.
+  * Fix `gps.locate` returning `nan` when receiving a duplicate location (Wojbie).
+* Added plugin support on iOS through in-app purchases
+  * Use the `plugins` program to buy new plugin packs
+  * Only one is available at the moment, featuring `ccemux`, `joystick`, and `sound`
+* Native `load` now uses Lua 5.2 syntax, matching Cobalt's behavior
+* Fixed crashing when calling `monitor.blit` when the cursor is off-screen
+* Fixed compilation error on newer Linux systems
 
 Type "help changelog" to see the full version history.

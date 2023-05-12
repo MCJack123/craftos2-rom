@@ -32,6 +32,10 @@ else
             end
         end
 
+        if mobile and mobile.purchasePlugin then
+            table.insert(tMotd, "Want to add more features to CraftOS-PC? Buy additional plugins using the plugins command.")
+        end
+
         if #tMotd == 0 then
             print("missingno")
         else
