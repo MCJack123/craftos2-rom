@@ -121,6 +121,9 @@ function create(parent, nX, nY, nWidth, nHeight, bStartVisible)
             local c = 2 ^ i
             tPalette[c] = { parent.getPaletteColour(c) }
         end
+        for i = 16, 255 do
+            tPalette[c] = { 0, 0, 0 }
+        end
     end
 
     -- Helper functions
