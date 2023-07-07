@@ -1,3 +1,7 @@
+-- SPDX-FileCopyrightText: 2017 Daniel Ratcliffe
+--
+-- SPDX-License-Identifier: LicenseRef-CCPL
+
 --[[- The Disk API allows you to interact with disk drives.
 
 These functions can operate on locally attached or remote disk drives. To use a

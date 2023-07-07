@@ -1,3 +1,7 @@
+-- SPDX-FileCopyrightText: 2019 JackMacWindows
+--
+-- SPDX-License-Identifier: MIT
+
 if shell.environment == nil then error("Requires the cash shell.") end
 local args = {...}
 

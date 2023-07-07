@@ -1,3 +1,7 @@
+-- SPDX-FileCopyrightText: 2017 Daniel Ratcliffe
+--
+-- SPDX-License-Identifier: LicenseRef-CCPL
+
 --[[- The Rednet API allows computers to communicate between each other by using
 @{modem|modems}. It provides a layer of abstraction on top of the main @{modem}
 peripheral, making it slightly easier to use.

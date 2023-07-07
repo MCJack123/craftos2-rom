@@ -1,3 +1,7 @@
+-- SPDX-FileCopyrightText: 2019 JackMacWindows
+--
+-- SPDX-License-Identifier: MPL-2.0
+
 if debugger.useDAP and debugger.useDAP() then
     shell.run("debug/adapter.lua")
 else

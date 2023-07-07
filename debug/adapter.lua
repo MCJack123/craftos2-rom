@@ -1,3 +1,7 @@
+-- SPDX-FileCopyrightText: 2019 JackMacWindows
+--
+-- SPDX-License-Identifier: MPL-2.0
+
 print("The debug adapter is running. Please do not close this window.")
 term.setCursorBlink(false)
 debugger.continue()

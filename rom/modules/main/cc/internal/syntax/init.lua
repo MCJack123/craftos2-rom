@@ -1,3 +1,7 @@
+-- SPDX-FileCopyrightText: 2023 The CC: Tweaked Developers
+--
+-- SPDX-License-Identifier: MPL-2.0
+
 --[[- The main entrypoint to our Lua parser
 
 :::warning
@@ -17,6 +21,8 @@ local error_printer = require "cc.internal.error_printer"
 local error_sentinel = {}
 
 local function make_context(input)
+    expect(1, input, "string")
+
     local context = {}
 
     local lines = { 1 }
@@ -69,8 +75,9 @@ local function parse(input, start_symbol)
     expect(2, start_symbol, "number")
 
     local context = make_context(input)
-    function context.report(msg)
-        expect(1, msg, "table")
+    function context.report(msg, ...)
+        expect(1, msg, "table", "function")
+        if type(msg) == "function" then msg = msg(...) end
         error_printer(context, msg)
         error(error_sentinel)
     end
@@ -106,8 +113,9 @@ local function parse_repl(input)
     local context = make_context(input)
 
     local last_error = nil
-    function context.report(msg)
-        expect(1, msg, "table")
+    function context.report(msg, ...)
+        expect(1, msg, "table", "function")
+        if type(msg) == "function" then msg = msg(...) end
         last_error = msg
         error(error_sentinel)
     end

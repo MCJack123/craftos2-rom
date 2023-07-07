@@ -1,3 +1,7 @@
+-- SPDX-FileCopyrightText: 2017 Daniel Ratcliffe
+--
+-- SPDX-License-Identifier: LicenseRef-CCPL
+
 --- The vector API provides methods to create and manipulate vectors.
 --
 -- An introduction to vectors can be found on [Wikipedia][wiki].

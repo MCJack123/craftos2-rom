@@ -1,3 +1,7 @@
+-- SPDX-FileCopyrightText: 2017 Daniel Ratcliffe
+--
+-- SPDX-License-Identifier: LicenseRef-CCPL
+
 --- The Terminal API provides functions for writing text to the terminal and
 -- monitors, and drawing ASCII graphics.
 --

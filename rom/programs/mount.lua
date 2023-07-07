@@ -1,3 +1,7 @@
+-- SPDX-FileCopyrightText: 2019 JackMacWindows
+--
+-- SPDX-License-Identifier: MPL-2.0
+
 if mounter == nil then error("Mounting directories is not supported in vanilla mode.") end
 local args = { ... }
 

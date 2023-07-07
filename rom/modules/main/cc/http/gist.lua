@@ -1,3 +1,7 @@
+-- SPDX-FileCopyrightText: 2020 JackMacWindows
+--
+-- SPDX-License-Identifier: MIT
+
 --- gist.lua - Gist client for ComputerCraft
 -- Made by JackMacWindows for CraftOS-PC and CC: Tweaked
 --

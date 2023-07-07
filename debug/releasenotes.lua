@@ -1,3 +1,7 @@
+-- SPDX-FileCopyrightText: 2019 JackMacWindows
+--
+-- SPDX-License-Identifier: MPL-2.0
+
 local handle, err = http.get("https://api.github.com/repos/MCJack123/craftos2/releases/latest")
 if not handle then error(err) end
 local obj = textutils.unserializeJSON(handle.readAll())

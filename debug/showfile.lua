@@ -1,3 +1,7 @@
+-- SPDX-FileCopyrightText: 2019 JackMacWindows
+--
+-- SPDX-License-Identifier: MPL-2.0
+
 multishell.setTitle(multishell.getCurrent(), "Call Stack")
 local s, e = pcall(function()
 local highlightColour, keywordColour, commentColour, textColour, bgColour, stringColour

@@ -1,3 +1,7 @@
+-- SPDX-FileCopyrightText: 2020 The CC: Tweaked Developers
+--
+-- SPDX-License-Identifier: MPL-2.0
+
 if _CCPC_FIRST_RUN then
     print([[Welcome to CraftOS-PC! This is the ComputerCraft shell prompt, where you can run programs.
 * Type "programs" to see the programs you can run.

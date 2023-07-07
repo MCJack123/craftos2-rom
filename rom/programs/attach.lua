@@ -1,3 +1,7 @@
+-- SPDX-FileCopyrightText: 2019 JackMacWindows
+--
+-- SPDX-License-Identifier: MPL-2.0
+
 if periphemu == nil then error("Attaching peripherals is not supported in vanilla mode.") end
 local args = { ... }
 if args[1] == "list" then

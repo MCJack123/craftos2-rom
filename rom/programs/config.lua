@@ -1,3 +1,7 @@
+-- SPDX-FileCopyrightText: 2019 JackMacWindows
+--
+-- SPDX-License-Identifier: MPL-2.0
+
 if config == nil then error("Accessing the configuration is not supported in vanilla mode.") end
 local args = { ... }
 

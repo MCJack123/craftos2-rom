@@ -1,3 +1,7 @@
+-- SPDX-FileCopyrightText: 2017 Daniel Ratcliffe
+--
+-- SPDX-License-Identifier: LicenseRef-CCPL
+
 --[[- Provides a simple implementation of multitasking.
 
 Functions are not actually executed simultaniously, but rather this API will

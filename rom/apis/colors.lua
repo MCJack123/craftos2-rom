@@ -1,3 +1,7 @@
+-- SPDX-FileCopyrightText: 2017 Daniel Ratcliffe
+--
+-- SPDX-License-Identifier: LicenseRef-CCPL
+
 --[[- The Colors API allows you to manipulate sets of colors.
 
 This is useful in conjunction with Bundled Cables from the RedPower mod, RedNet

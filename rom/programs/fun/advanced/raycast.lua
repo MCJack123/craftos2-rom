@@ -1,3 +1,7 @@
+-- SPDX-FileCopyrightText: 2019 JackMacWindows
+--
+-- SPDX-License-Identifier: MPL-2.0
+
 if term.getGraphicsMode == nil then error("This requires CraftOS-PC v1.2 or later.") end
 
 origerror = error

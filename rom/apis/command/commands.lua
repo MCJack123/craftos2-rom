@@ -1,3 +1,7 @@
+-- SPDX-FileCopyrightText: 2017 Daniel Ratcliffe
+--
+-- SPDX-License-Identifier: LicenseRef-CCPL
+
 --- The commands API allows your system to directly execute [Minecraft
 -- commands][mc] and gather data from the results.
 --

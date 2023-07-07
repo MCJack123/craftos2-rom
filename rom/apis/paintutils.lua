@@ -1,3 +1,7 @@
+-- SPDX-FileCopyrightText: 2017 Daniel Ratcliffe
+--
+-- SPDX-License-Identifier: LicenseRef-CCPL
+
 --- An API for advanced systems which can draw pixels and lines, load and draw
 -- image files. You can use the `colors` API for easier color manipulation. In
 -- CraftOS-PC, this API can also be used in graphics mode.

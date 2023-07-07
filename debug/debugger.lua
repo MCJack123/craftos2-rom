@@ -1,3 +1,7 @@
+-- SPDX-FileCopyrightText: 2019 JackMacWindows
+--
+-- SPDX-License-Identifier: MPL-2.0
+
 multishell.setTitle(multishell.getCurrent(), "Debugger")
 local ok, err = pcall(function()
 local pretty = require "cc.pretty"

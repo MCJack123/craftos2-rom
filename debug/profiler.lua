@@ -1,3 +1,7 @@
+-- SPDX-FileCopyrightText: 2019 JackMacWindows
+--
+-- SPDX-License-Identifier: MPL-2.0
+
 multishell.setTitle(multishell.getCurrent(), "Profiler")
 local ok, err = pcall(function()
 local w, h = term.getSize()

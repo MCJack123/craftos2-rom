@@ -1,3 +1,7 @@
+-- SPDX-FileCopyrightText: 2021 The CC: Tweaked Developers
+--
+-- SPDX-License-Identifier: MPL-2.0
+
 --[[-
 Provides utilities for converting between streams of DFPWM audio data and a list of amplitudes.
 

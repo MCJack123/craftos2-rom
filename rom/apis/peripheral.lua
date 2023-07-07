@@ -1,3 +1,7 @@
+-- SPDX-FileCopyrightText: 2017 Daniel Ratcliffe
+--
+-- SPDX-License-Identifier: LicenseRef-CCPL
+
 --[[- Peripherals are blocks (or turtle and pocket computer upgrades) which can
 be controlled by a computer. For instance, the @{speaker} peripheral allows a
 computer to play music and the @{monitor} peripheral allows you to display text

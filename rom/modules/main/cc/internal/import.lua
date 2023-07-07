@@ -1,3 +1,7 @@
+-- SPDX-FileCopyrightText: 2023 The CC: Tweaked Developers
+--
+-- SPDX-License-Identifier: MPL-2.0
+
 -- Internal module for handling file uploads. This has NO stability guarantees,
 -- and so SHOULD NOT be relyed on in user code.
 
