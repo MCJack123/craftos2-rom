@@ -121,9 +121,6 @@ function create(parent, nX, nY, nWidth, nHeight, bStartVisible)
             local c = 2 ^ i
             tPalette[c] = { parent.getPaletteColour(c) }
         end
-        for i = 16, 255 do
-            tPalette[c] = { 0, 0, 0 }
-        end
     end
 
     -- Helper functions
@@ -364,6 +361,7 @@ function create(parent, nX, nY, nWidth, nHeight, bStartVisible)
             if type(g) ~= "number" then expect(3, g, "number") end
             if type(b) ~= "number" then expect(4, b, "number") end
 
+            if not tPalette[colour] then tPalette[colour] = {0, 0, 0} end
             tCol = tPalette[colour]
             tCol[1] = r
             tCol[2] = g
@@ -388,7 +386,7 @@ function create(parent, nX, nY, nWidth, nHeight, bStartVisible)
                 error("Invalid color (got " .. colour .. ")" , 2)
             end
         end
-        local tCol = tPalette[colour]
+        local tCol = tPalette[colour] or {0, 0, 0}
         return tCol[1], tCol[2], tCol[3]
     end
 
