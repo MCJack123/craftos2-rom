@@ -476,7 +476,7 @@ local function serializeJSONImpl(t, tTracking, options)
                     if bNBTStyle then
                         sEntry = tostring(k) .. ":" .. serializeJSONImpl(v, tTracking, options)
                     else
-                        sEntry = serializeJSONString(k) .. ":" .. serializeJSONImpl(v, tTracking, options)
+                        sEntry = serializeJSONString(k, options) .. ":" .. serializeJSONImpl(v, tTracking, options)
                     end
                     if nObjectSize == 0 then
                         sObjectResult = sObjectResult .. sEntry
