@@ -53,6 +53,7 @@ term.redirect = function(target)
         "drawPixels",
         "getPixels",
         "showMouse",
+        "relativeMouse",
         "setFrozen",
         "getFrozen"
     } do
