@@ -871,7 +871,7 @@ function serializeJSON(t, options)
     elseif type(options) == "table" then
         field(options, "nbt_style", "boolean", "nil")
         field(options, "unicode_strings", "boolean", "nil")
-    else error("bad argument #2 (expected boolean or table, got " .. type(options) .. ")") end
+    elseif options ~= nil then error("bad argument #2 (expected boolean or table, got " .. type(options) .. ")") end
 
     local tTracking = {}
     return serializeJSONImpl(t, tTracking, options)
