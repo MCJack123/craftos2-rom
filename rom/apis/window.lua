@@ -260,7 +260,7 @@ function create(parent, nX, nY, nWidth, nHeight, bStartVisible)
         local sEmptyTextColor = tEmptyColorLines[nTextColor]
         local sEmptyBackgroundColor = tEmptyColorLines[nBackgroundColor]
         for y = 1, nHeight do
-            local line = tLines[nCursorY]
+            local line = tLines[y]
             line[1] = sEmptyText
             line[2] = sEmptyTextColor
             line[3] = sEmptyBackgroundColor
