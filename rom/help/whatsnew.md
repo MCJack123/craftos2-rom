@@ -1,27 +1,21 @@
-New Features in CraftOS-PC v2.7.4:
+New Features in CraftOS-PC v2.7.5:
 
-* **Fixed critical crashing issue on Windows systems relating to ropes**
-* Updated CC:T version to 1.104.0
-  * The shell now supports hashbangs (`#!`) (emmachase).
-  * Error messages in edit are now displayed in red on advanced computers.
-  * Improvements to the display of errors in the shell and REPL.
-  * Fix `rednet` queueing the wrong message when sending a message to the current computer.
-  * Fix the Lua VM crashing when a `__len` metamethod yields.
-  * `table` methods and `ipairs` now use metamethods.
-  * Argument errors now follow the standard "X expected, got Y" format.
-  * Add `coroutine.isyieldable`.
-  * Type errors now use the `__name` metatag.
-  * `xpcall` now accepts arguments after the error function.
-  * `speaker` program now reports an error on common unsupported audio formats.
-  * multishell now hides the implementation details of its terminal redirect from programs.
-  * `settings.load` now ignores malformed values created by editing the .settings file by hand.
-  * Ignore metatables in `textutils.serialize`.
-  * Fix `gps.locate` returning `nan` when receiving a duplicate location (Wojbie).
-* Added plugin support on iOS through in-app purchases
-  * Use the `plugins` program to buy new plugin packs
-  * Only one is available at the moment, featuring `ccemux`, `joystick`, and `sound`
-* Native `load` now uses Lua 5.2 syntax, matching Cobalt's behavior
-* Fixed crashing when calling `monitor.blit` when the cursor is off-screen
-* Fixed compilation error on newer Linux systems
+* Updated CC:T version to 1.106.1
+  * Optimise JSON string parsing.
+  * Add `colors.fromBlit` (Erb3).
+  * Add custom timeout support to the HTTP API.
+  * The speaker program now errors when playing HTML files.
+  * `edit` now shows an error message when editing read-only files.
+  * Port `fs.find` to Lua. This also allows using `?` as a wildcard.
+  * Add option to serialize Unicode strings to JSON (MCJack123).
+  * Small optimisations to the `window` API.
+  * Lua REPL no longer accepts `)(` as a valid expression.
+  * Fix several inconsistencies with `require`/`package.path` in the Lua REPL (Wojbie).
+* Added `term.relativeMouse` function, which converts `mouse_move` events into `mouse_move_relative` events with relative velocities
+* Fixed `modem.getNameLocal` not existing
+* Fixed abort timeouts firing after the computer goes into sleep mode
+* Fixed stack corruption when using `string.format("%q")`
+* Fixed a niche case crash when the computer turns off while prompting for abort timeout
+* Fixed SSL errors in AppImage builds
 
 Type "help changelog" to see the full version history.
