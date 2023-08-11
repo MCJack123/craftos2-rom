@@ -18,6 +18,10 @@ do
     expect = f().expect
 end
 
+-- Disable JIT on Apple Silicon.
+-- (This is also in the C++ source, but for some reason it doesn't work.)
+if jit and jit.os == "OSX" and jit.arch == "arm64" then jit.off() end
+
 -- Historically load/loadstring would handle the chunk name as if it has
 -- been prefixed with "=". We emulate that behaviour here.
 local function prefix(chunkname)
