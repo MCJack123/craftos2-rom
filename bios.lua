@@ -104,37 +104,42 @@ if _VERSION == "Lua 5.1" then
     end
 elseif not _CC_DISABLE_LUA51_FEATURES then
     -- Restore old Lua 5.1 functions for compatibility
-    -- setfenv/getfenv replacements from https://leafo.net/guides/setfenv-in-lua52-and-above.html
-    function setfenv(fn, env)
-        if not debug then error("could not set environment", 2) end
-        local i = 1
-        while true do
-            local name = debug.getupvalue(fn, i)
-            if name == "_ENV" then
-                debug.upvaluejoin(fn, i, (function()
-                    return env
-                end), 1)
-                break
-            elseif not name then
-                break
+    if not getfenv or not setfenv then
+        -- setfenv/getfenv replacements from https://leafo.net/guides/setfenv-in-lua52-and-above.html
+        function setfenv(fn, env)
+            if not debug then error("could not set environment", 2) end
+            if type(fn) == "number" then fn = debug.getinfo(fn + 1, "f").func end
+            local i = 1
+            while true do
+                local name = debug.getupvalue(fn, i)
+                if name == "_ENV" then
+                    debug.upvaluejoin(fn, i, (function()
+                        return env
+                    end), 1)
+                    break
+                elseif not name then
+                    break
+                end
+
+                i = i + 1
             end
 
-            i = i + 1
+            return fn
         end
 
-        return fn
-    end
-
-    function getfenv(fn)
-        local i = 1
-        while true do
-            local name, val = debug.getupvalue(fn, i)
-            if name == "_ENV" then
-                return val
-            elseif not name then
-                break
+        function getfenv(fn)
+            if not debug then error("could not set environment", 2) end
+            if type(fn) == "number" then fn = debug.getinfo(fn + 1, "f").func end
+            local i = 1
+            while true do
+                local name, val = debug.getupvalue(fn, i)
+                if name == "_ENV" then
+                    return val
+                elseif not name then
+                    break
+                end
+                i = i + 1
             end
-            i = i + 1
         end
     end
 
