@@ -351,3 +351,7 @@ function websocket(_url, _headers)
         end
     end
 end
+
+addListener = native.addListener
+removeListener = native.removeListener
+websocketServer = native.websocketServer
