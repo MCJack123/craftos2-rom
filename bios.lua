@@ -812,7 +812,7 @@ settings.define("motd.enable", {
     type = "boolean",
 })
 settings.define("motd.path", {
-    default = "/rom/motd.txt:/motd.txt",
+    default = mobile and "/rom/motd.txt:/rom/programs/mobile/motd.txt:/motd.txt" or "/rom/motd.txt:/motd.txt",
     description = [[The path to load random messages from. Should be a colon (":") separated string of file paths.]],
     type = "string",
 })
@@ -841,6 +841,11 @@ settings.define("shell.autocomplete_hidden", {
     default = false,
     description = [[Autocomplete hidden files and folders (those starting with ".").]],
     type = "boolean",
+})
+settings.define("shell.package_path", {
+    default = "?;?.lua;?/init.lua;/rom/modules/main/?;/rom/modules/main/?.lua;/rom/modules/main/?/init.lua",
+    description = [[Controls where program libraries can be stored. Paths are separated by semicolons (";"), and are relative to the original program. The 'require' function will search for a file at each path in order, replacing question marks ("?") with the library name.]],
+    type = "string",
 })
 
 settings.define("shell.report_plugin_errors", {
