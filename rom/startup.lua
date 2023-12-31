@@ -268,6 +268,9 @@ if settings.get("shell.allow_disk_startup") then
         end
     end
 end
+if mobile and _CCPC_FIRST_RUN then
+    tUserStartups = {"/rom/programs/mobile/onboarding.lua"}
+end
 if tUserStartups then
     for _, v in pairs(tUserStartups) do
         shell.run(v)
