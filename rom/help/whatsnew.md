@@ -1,21 +1,37 @@
-New Features in CraftOS-PC v2.7.5:
+New Features in CraftOS-PC v2.8:
 
-* Updated CC:T version to 1.106.1
-  * Optimise JSON string parsing.
-  * Add `colors.fromBlit` (Erb3).
-  * Add custom timeout support to the HTTP API.
-  * The speaker program now errors when playing HTML files.
-  * `edit` now shows an error message when editing read-only files.
-  * Port `fs.find` to Lua. This also allows using `?` as a wildcard.
-  * Add option to serialize Unicode strings to JSON (MCJack123).
-  * Small optimisations to the `window` API.
-  * Lua REPL no longer accepts `)(` as a valid expression.
-  * Fix several inconsistencies with `require`/`package.path` in the Lua REPL (Wojbie).
-* Added `term.relativeMouse` function, which converts `mouse_move` events into `mouse_move_relative` events with relative velocities
-* Fixed `modem.getNameLocal` not existing
-* Fixed abort timeouts firing after the computer goes into sleep mode
-* Fixed stack corruption when using `string.format("%q")`
-* Fixed a niche case crash when the computer turns off while prompting for abort timeout
-* Fixed SSL errors in AppImage builds
+* Update CC:T version to 1.109.2
+  * Update to Lua 5.2
+    * `getfenv`/`setfenv` now only work on Lua functions.
+    * Add support for `goto`.
+    * Remove support for dumping and loading binary chunks.
+      * Only disabled in standards mode
+  * File handles, HTTP requests and websocket messages now use raw bytes rather than converting to UTF-8.
+  * `fs.open` now supports `r+`/`w+` modes.
+  * Add `allow_repetitions` option to `textutils.serialiseJSON`.
+  * `math.random` now uses Lua 5.4's random number generator.
+  * `tostring` now correctly obeys `__name`.
+* Rewrote WebSocket server API (#337)
+  * Use `server = http.websocketServer(port)` to create a server handle
+  * `server.listen()` waits for a new connection, and returns a new WebSocket handle
+    * Handles have an additional `clientID` field for identifying the client connection
+  * `server.close()` closes the server
+  * Events are now under the `websocket_server_` domain
+    * `websocket_server_connect <port> <handle>`: Sent when a client connects to the server
+    * `websocket_server_message <clientID> <message> <binary>`: Sent when a client sends a message
+    * `websocket_server_closed <clientID> [closeCode] [closeMessage]`: Sent when a client disconnects from the server
+* Bumped plugin *major* version to 12
+  * Lua 5.2 breaks old plugins - please reinstall/rebuild any plugins (ccemux is updated)
+* WebSocket close events now send the close code if available
+* Fixed WebSocket ping messages causing the socket to close
+* Fixed many memory corruption issues around ropes
+* Fixed some issues with debug hooks and yielding
+* Fixed crash when erroring from a debug hook (#326)
+* Debuggers now inherit the mount list from the original computer (#327)
+* Fixed memory reporting when using `string.rep` (#328)
+* Fixed `fs.getFreeSpace` not checking parent directories if the path doesn't exist (#330)
+* Fixed crash when using HTTP in the VS Code extension (#332)
+* Fixed repeated `websocket.close` calls causing a crash (#336)
+* Mobile: Added onboarding screen for navigation bar instructions
 
 Type "help changelog" to see the full version history.
