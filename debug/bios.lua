@@ -11,11 +11,27 @@ local expect
 
 do
     local h = fs.open("rom/modules/main/cc/expect.lua", "r")
-    local f, err = (_VERSION == "Lua 5.1" and loadstring or load)(h.readAll(), "@expect.lua")
+    local f, err = (_VERSION == "Lua 5.1" and loadstring or load)(h.readAll(), "@/rom/modules/main/cc/expect.lua")
     h.close()
 
     if not f then error(err) end
     expect = f().expect
+end
+
+-- Disable JIT on Apple Silicon.
+-- (This is also in the C++ source, but for some reason it doesn't work.)
+if jit and jit.os == "OSX" and jit.arch == "arm64" then jit.off() end
+
+-- Historically load/loadstring would handle the chunk name as if it has
+-- been prefixed with "=". We emulate that behaviour here.
+local function prefix(chunkname)
+    if type(chunkname) ~= "string" then return chunkname end
+    local head = chunkname:sub(1, 1)
+    if head == "=" or head == "@" then
+        return chunkname
+    else
+        return "=" .. chunkname
+    end
 end
 
 if _VERSION == "Lua 5.1" then
@@ -24,18 +40,6 @@ if _VERSION == "Lua 5.1" then
     local nativeload = load
     local nativeloadstring = loadstring
     local nativesetfenv = setfenv
-
-    -- Historically load/loadstring would handle the chunk name as if it has
-    -- been prefixed with "=". We emulate that behaviour here.
-    local function prefix(chunkname)
-        if type(chunkname) ~= "string" then return chunkname end
-        local head = chunkname:sub(1, 1)
-        if head == "=" or head == "@" then
-            return chunkname
-        else
-            return "=" .. chunkname
-        end
-    end
 
     function load(x, name, mode, env)
         expect(1, x, "function", "string")
@@ -98,11 +102,76 @@ if _VERSION == "Lua 5.1" then
             blogic_rshift = bit32.rshift,
         }
     end
+elseif not _CC_DISABLE_LUA51_FEATURES then
+    -- Restore old Lua 5.1 functions for compatibility
+    if not getfenv or not setfenv then
+        -- setfenv/getfenv replacements from https://leafo.net/guides/setfenv-in-lua52-and-above.html
+        function setfenv(fn, env)
+            if not debug then error("could not set environment", 2) end
+            if type(fn) == "number" then fn = debug.getinfo(fn + 1, "f").func end
+            local i = 1
+            while true do
+                local name = debug.getupvalue(fn, i)
+                if name == "_ENV" then
+                    debug.upvaluejoin(fn, i, (function()
+                        return env
+                    end), 1)
+                    break
+                elseif not name then
+                    break
+                end
+
+                i = i + 1
+            end
+
+            return fn
+        end
+
+        function getfenv(fn)
+            if not debug then error("could not set environment", 2) end
+            if type(fn) == "number" then fn = debug.getinfo(fn + 1, "f").func end
+            local i = 1
+            while true do
+                local name, val = debug.getupvalue(fn, i)
+                if name == "_ENV" then
+                    return val
+                elseif not name then
+                    break
+                end
+                i = i + 1
+            end
+        end
+    end
+
+    function table.maxn(tab)
+        local num = 0
+        for k in pairs(tab) do
+            if type(k) == "number" and k > num then
+                num = k
+            end
+        end
+        return num
+    end
+
+    math.log10 = function(x) return math.log(x, 10) end
+    loadstring = function(string, chunkname) return load(string, prefix(chunkname)) end
+    unpack = table.unpack
+
+    -- Inject a stub for the old bit library
+    _G.bit = {
+        bnot = bit32.bnot,
+        band = bit32.band,
+        bor = bit32.bor,
+        bxor = bit32.bxor,
+        brshift = bit32.arshift,
+        blshift = bit32.lshift,
+        blogic_rshift = bit32.rshift,
+    }
 end
 
 -- Install lua parts of the os api
 function os.version()
-    return "CraftOS 1.8"
+    return "CraftOS 1.9"
 end
 
 function os.pullEventRaw(sFilter)
@@ -342,8 +411,8 @@ function read(_sReplaceChar, _tHistory, _fnComplete, _sDefault)
             redraw()
 
         elseif sEvent == "key" then
-            if param == keys.enter then
-                -- Enter
+            if param == keys.enter or param == keys.numPadEnter then
+                -- Enter/Numpad Enter
                 if nCompletion then
                     clear()
                     uncomplete()
@@ -504,7 +573,7 @@ function loadfile(filename, mode, env)
     local file = fs.open(filename, "r")
     if not file then return nil, "File not found" end
 
-    local func, err = load(file.readAll(), "@" .. filename, mode, env)
+    local func, err = load(file.readAll(), "@/" .. fs.combine(filename), mode, env)
     file.close()
     return func, err
 end
@@ -620,202 +689,27 @@ function os.reboot()
     end
 end
 
--- Install the lua part of the HTTP api (if enabled)
-if http then
-    local nativeHTTPRequest = http.request
+local bAPIError = false
+local function load_apis(dir)
+    if not fs.isDir(dir) then return end
 
-    local methods = {
-        GET = true, POST = true, HEAD = true,
-        OPTIONS = true, PUT = true, DELETE = true,
-        PATCH = true, TRACE = true,
-    }
-
-    local function checkKey(options, key, ty, opt)
-        local value = options[key]
-        local valueTy = type(value)
-
-        if (value ~= nil or not opt) and valueTy ~= ty then
-            error(("bad field '%s' (expected %s, got %s"):format(key, ty, valueTy), 4)
-        end
-    end
-
-    local function checkOptions(options, body)
-        checkKey(options, "url", "string")
-        if body == false then
-          checkKey(options, "body", "nil")
-        else
-          checkKey(options, "body", "string", not body)
-        end
-        checkKey(options, "headers", "table", true)
-        checkKey(options, "method", "string", true)
-        checkKey(options, "redirect", "boolean", true)
-
-        if options.method and not methods[options.method] then
-            error("Unsupported HTTP method", 3)
-        end
-    end
-
-    local function wrapRequest(_url, ...)
-        local ok, err = nativeHTTPRequest(...)
-        if ok then
-            while true do
-                local event, param1, param2, param3 = os.pullEvent()
-                if event == "http_success" and param1 == _url then
-                    return param2
-                elseif event == "http_failure" and param1 == _url then
-                    return nil, param2, param3
+    for _, file in ipairs(fs.list(dir)) do
+        if file:sub(1, 1) ~= "." then
+            local path = fs.combine(dir, file)
+            if not fs.isDir(path) then
+                if not os.loadAPI(path) then
+                    bAPIError = true
                 end
             end
         end
-        return nil, err
-    end
-
-    http.get = function(_url, _headers, _binary)
-        if type(_url) == "table" then
-            checkOptions(_url, false)
-            return wrapRequest(_url.url, _url)
-        end
-
-        expect(1, _url, "string")
-        expect(2, _headers, "table", "nil")
-        expect(3, _binary, "boolean", "nil")
-        return wrapRequest(_url, _url, nil, _headers, _binary)
-    end
-
-    http.post = function(_url, _post, _headers, _binary)
-        if type(_url) == "table" then
-            checkOptions(_url, true)
-            return wrapRequest(_url.url, _url)
-        end
-
-        expect(1, _url, "string")
-        expect(2, _post, "string")
-        expect(3, _headers, "table", "nil")
-        expect(4, _binary, "boolean", "nil")
-        return wrapRequest(_url, _url, _post, _headers, _binary)
-    end
-
-    http.request = function(_url, _post, _headers, _binary)
-        local url
-        if type(_url) == "table" then
-            checkOptions(_url)
-            url = _url.url
-        else
-            expect(1, _url, "string")
-            expect(2, _post, "string", "nil")
-            expect(3, _headers, "table", "nil")
-            expect(4, _binary, "boolean", "nil")
-            url = _url.url
-        end
-
-        local ok, err = nativeHTTPRequest(_url, _post, _headers, _binary)
-        if not ok then
-            os.queueEvent("http_failure", url, err)
-        end
-        return ok, err
-    end
-
-    local nativeCheckURL = http.checkURL
-    http.checkURLAsync = nativeCheckURL
-    http.checkURL = function(_url)
-        local ok, err = nativeCheckURL(_url)
-        if not ok then return ok, err end
-
-        while true do
-            local _, url, ok, err = os.pullEvent("http_check")
-            if url == _url then return ok, err end
-        end
-    end
-
-    local nativeWebsocket = http.websocket
-    http.websocketAsync = nativeWebsocket
-    http.websocket = function(_url, _headers)
-        expect(1, _url, "string")
-        expect(2, _headers, "table", "nil")
-
-        local ok, err = nativeWebsocket(_url, _headers)
-        if not ok then return ok, err end
-
-        while true do
-            local event, url, param = os.pullEvent( )
-            if event == "websocket_success" and url == _url then
-                return param
-            elseif event == "websocket_failure" and url == _url then
-                return false, param
-            end
-        end
     end
 end
 
--- Install the lua part of the FS api
-local tEmpty = {}
-function fs.complete(sPath, sLocation, bIncludeFiles, bIncludeDirs)
-    expect(1, sPath, "string")
-    expect(2, sLocation, "string")
-    expect(3, bIncludeFiles, "boolean", "nil")
-    expect(4, bIncludeDirs, "boolean", "nil")
-
-    bIncludeFiles = bIncludeFiles ~= false
-    bIncludeDirs = bIncludeDirs ~= false
-    local sDir = sLocation
-    local nStart = 1
-    local nSlash = string.find(sPath, "[/\\]", nStart)
-    if nSlash == 1 then
-        sDir = ""
-        nStart = 2
-    end
-    local sName
-    while not sName do
-        local nSlash = string.find(sPath, "[/\\]", nStart)
-        if nSlash then
-            local sPart = string.sub(sPath, nStart, nSlash - 1)
-            sDir = fs.combine(sDir, sPart)
-            nStart = nSlash + 1
-        else
-            sName = string.sub(sPath, nStart)
-        end
-    end
-
-    if fs.isDir(sDir) then
-        local tResults = {}
-        if bIncludeDirs and sPath == "" then
-            table.insert(tResults, ".")
-        end
-        if sDir ~= "" then
-            if sPath == "" then
-                table.insert(tResults, bIncludeDirs and ".." or "../")
-            elseif sPath == "." then
-                table.insert(tResults, bIncludeDirs and "." or "./")
-            end
-        end
-        local tFiles = fs.list(sDir)
-        for n = 1, #tFiles do
-            local sFile = tFiles[n]
-            if #sFile >= #sName and string.sub(sFile, 1, #sName) == sName then
-                local bIsDir = fs.isDir(fs.combine(sDir, sFile))
-                local sResult = string.sub(sFile, #sName + 1)
-                if bIsDir then
-                    table.insert(tResults, sResult .. "/")
-                    if bIncludeDirs and #sResult > 0 then
-                        table.insert(tResults, sResult)
-                    end
-                else
-                    if bIncludeFiles and #sResult > 0 then
-                        table.insert(tResults, sResult)
-                    end
-                end
-            end
-        end
-        return tResults
-    end
-    return tEmpty
-end
-
-function fs.isDriveRoot(sPath)
-    expect(1, sPath, "string")
-    -- Force the root directory to be a mount.
-    return fs.getDir(sPath) == ".." or fs.getDrive(sPath) ~= fs.getDrive(fs.getDir(sPath))
-end
+-- Load APIs
+load_apis("rom/apis")
+if http then load_apis("rom/apis/http") end
+if turtle then load_apis("rom/apis/turtle") end
+if pocket then load_apis("rom/apis/pocket") end
 
 -- Load debugger API
 if debugger then
@@ -835,17 +729,32 @@ if debugger then
     debugger.waitForBreakAsync = nativeWaitForBreak
 end
 
--- Load APIs
-local bAPIError = false
-local tApis = fs.list("rom/apis")
-for _, sFile in ipairs(tApis) do
-    if string.sub(sFile, 1, 1) ~= "." then
-        local sPath = fs.combine("rom/apis", sFile)
-        if not fs.isDir(sPath) then
-            if not os.loadAPI(sPath) then
-                bAPIError = true
-            end
-        end
+if commands and fs.isDir("rom/apis/command") then
+    -- Load command APIs
+    if os.loadAPI("rom/apis/command/commands.lua") then
+        -- Add a special case-insensitive metatable to the commands api
+        local tCaseInsensitiveMetatable = {
+            __index = function(table, key)
+                local value = rawget(table, key)
+                if value ~= nil then
+                    return value
+                end
+                if type(key) == "string" then
+                    local value = rawget(table, string.lower(key))
+                    if value ~= nil then
+                        return value
+                    end
+                end
+                return nil
+            end,
+        }
+        setmetatable(commands, tCaseInsensitiveMetatable)
+        setmetatable(commands.async, tCaseInsensitiveMetatable)
+
+        -- Add global "exec" function
+        exec = commands.exec
+    else
+        bAPIError = true
     end
 end
 
