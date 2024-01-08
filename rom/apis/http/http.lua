@@ -336,7 +336,7 @@ of the initial websocket connection.
 @changed 1.95.3 Added User-Agent to default headers.
 ]]
 function websocket(_url, _headers)
-    expect(1, _url, "string", "number")
+    expect(1, _url, "string", "table")
     expect(2, _headers, "table", "nil")
 
     local ok, err = nativeWebsocket(_url, _headers)
