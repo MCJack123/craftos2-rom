@@ -1,3 +1,10 @@
+## v2.8.1 - January 21, 2024
+* Updated CC:T version to 1.109.3
+  * Fix trailing-comma on method calls (e.g. `x:f(a, )`) not using our custom error message.
+* Fixed high memory usage caused by ropes & substrings
+* Fixed crash when closing WebSocket server
+* Fixed CCEmuX plugin failing to load
+
 ## v2.8 - January 1, 2024
 * Update CC:T version to 1.109.2
   * Update to Lua 5.2
