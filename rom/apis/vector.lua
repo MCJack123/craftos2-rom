@@ -2,7 +2,9 @@
 --
 -- SPDX-License-Identifier: LicenseRef-CCPL
 
---- The vector API provides methods to create and manipulate vectors.
+--- A basic 3D vector type and some common vector operations. This may be useful
+-- when working with coordinates in Minecraft's world (such as those from the
+-- [`gps`] API).
 --
 -- An introduction to vectors can be found on [Wikipedia][wiki].
 --
@@ -10,6 +12,11 @@
 --
 -- @module vector
 -- @since 1.31
+
+local getmetatable = getmetatable
+local expect = dofile("rom/modules/main/cc/expect.lua").expect
+
+local vmetatable
 
 --- A 3-dimensional vector, with `x`, `y`, and `z` values.
 --
@@ -25,6 +32,9 @@ local vector = {
     -- @usage v1:add(v2)
     -- @usage v1 + v2
     add = function(self, o)
+        if getmetatable(self) ~= vmetatable then expect(1, self, "vector") end
+        if getmetatable(o) ~= vmetatable then expect(2, o, "vector") end
+
         return vector.new(
             self.x + o.x,
             self.y + o.y,
@@ -40,6 +50,9 @@ local vector = {
     -- @usage v1:sub(v2)
     -- @usage v1 - v2
     sub = function(self, o)
+        if getmetatable(self) ~= vmetatable then expect(1, self, "vector") end
+        if getmetatable(o) ~= vmetatable then expect(2, o, "vector") end
+
         return vector.new(
             self.x - o.x,
             self.y - o.y,
@@ -50,30 +63,36 @@ local vector = {
     --- Multiplies a vector by a scalar value.
     --
     -- @tparam Vector self The vector to multiply.
-    -- @tparam number m The scalar value to multiply with.
+    -- @tparam number factor The scalar value to multiply with.
     -- @treturn Vector A vector with value `(x * m, y * m, z * m)`.
-    -- @usage v:mul(3)
-    -- @usage v * 3
-    mul = function(self, m)
+    -- @usage vector.new(1, 2, 3):mul(3)
+    -- @usage vector.new(1, 2, 3) * 3
+    mul = function(self, factor)
+        if getmetatable(self) ~= vmetatable then expect(1, self, "vector") end
+        expect(2, factor, "number")
+
         return vector.new(
-            self.x * m,
-            self.y * m,
-            self.z * m
+            self.x * factor,
+            self.y * factor,
+            self.z * factor
         )
     end,
 
     --- Divides a vector by a scalar value.
     --
     -- @tparam Vector self The vector to divide.
-    -- @tparam number m The scalar value to divide by.
+    -- @tparam number factor The scalar value to divide by.
     -- @treturn Vector A vector with value `(x / m, y / m, z / m)`.
-    -- @usage v:div(3)
-    -- @usage v / 3
-    div = function(self, m)
+    -- @usage vector.new(1, 2, 3):div(3)
+    -- @usage vector.new(1, 2, 3) / 3
+    div = function(self, factor)
+        if getmetatable(self) ~= vmetatable then expect(1, self, "vector") end
+        expect(2, factor, "number")
+
         return vector.new(
-            self.x / m,
-            self.y / m,
-            self.z / m
+            self.x / factor,
+            self.y / factor,
+            self.z / factor
         )
     end,
 
@@ -81,8 +100,9 @@ local vector = {
     --
     -- @tparam Vector self The vector to negate.
     -- @treturn Vector The negated vector.
-    -- @usage -v
+    -- @usage -vector.new(1, 2, 3)
     unm = function(self)
+        if getmetatable(self) ~= vmetatable then expect(1, self, "vector") end
         return vector.new(
             -self.x,
             -self.y,
@@ -97,6 +117,9 @@ local vector = {
     -- @treturn Vector The dot product of `self` and `o`.
     -- @usage v1:dot(v2)
     dot = function(self, o)
+        if getmetatable(self) ~= vmetatable then expect(1, self, "vector") end
+        if getmetatable(o) ~= vmetatable then expect(2, o, "vector") end
+
         return self.x * o.x + self.y * o.y + self.z * o.z
     end,
 
@@ -107,6 +130,9 @@ local vector = {
     -- @treturn Vector The cross product of `self` and `o`.
     -- @usage v1:cross(v2)
     cross = function(self, o)
+        if getmetatable(self) ~= vmetatable then expect(1, self, "vector") end
+        if getmetatable(o) ~= vmetatable then expect(2, o, "vector") end
+
         return vector.new(
             self.y * o.z - self.z * o.y,
             self.z * o.x - self.x * o.z,
@@ -118,6 +144,7 @@ local vector = {
     -- @tparam Vector self This vector.
     -- @treturn number The length of this vector.
     length = function(self)
+        if getmetatable(self) ~= vmetatable then expect(1, self, "vector") end
         return math.sqrt(self.x * self.x + self.y * self.y + self.z * self.z)
     end,
 
@@ -139,6 +166,9 @@ local vector = {
     -- nearest 0.5.
     -- @treturn Vector The rounded vector.
     round = function(self, tolerance)
+        if getmetatable(self) ~= vmetatable then expect(1, self, "vector") end
+        expect(2, tolerance, "number", "nil")
+
         tolerance = tolerance or 1.0
         return vector.new(
             math.floor((self.x + tolerance * 0.5) / tolerance) * tolerance,
@@ -154,6 +184,8 @@ local vector = {
     -- @usage v:tostring()
     -- @usage tostring(v)
     tostring = function(self)
+        if getmetatable(self) ~= vmetatable then expect(1, self, "vector") end
+
         return self.x .. "," .. self.y .. "," .. self.z
     end,
 
@@ -163,11 +195,15 @@ local vector = {
     -- @tparam Vector other The second vector to compare to.
     -- @treturn boolean Whether or not the vectors are equal.
     equals = function(self, other)
+        if getmetatable(self) ~= vmetatable then expect(1, self, "vector") end
+        if getmetatable(other) ~= vmetatable then expect(2, other, "vector") end
+
         return self.x == other.x and self.y == other.y and self.z == other.z
     end,
 }
 
-local vmetatable = {
+vmetatable = {
+    __name = "vector",
     __index = vector,
     __add = vector.add,
     __sub = vector.sub,
@@ -178,7 +214,7 @@ local vmetatable = {
     __eq = vector.equals,
 }
 
---- Construct a new @{Vector} with the given coordinates.
+--- Construct a new [`Vector`] with the given coordinates.
 --
 -- @tparam number x The X coordinate or direction of the vector.
 -- @tparam number y The Y coordinate or direction of the vector.

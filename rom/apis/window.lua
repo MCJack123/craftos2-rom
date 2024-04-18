@@ -57,6 +57,17 @@ local type = type
 local string_rep = string.rep
 local string_sub = string.sub
 
+--- A custom version of [`colors.toBlit`], specialised for the window API.
+local function parse_color(color)
+    if type(color) ~= "number" then
+        -- By tail-calling expect, we ensure expect has the right error level.
+        return expect(1, color, "number")
+    end
+
+    if color < 0 or color > 0xffff then error("Colour out of range", 3) end
+    return 2 ^ math.floor(math.log(color, 2))
+end
+
 --- Returns a terminal object that is a space within the specified parent
 -- terminal object. This can then be used (or even redirected to) in the same
 -- manner as eg a wrapped monitor. Refer to @{term|the term API} for a list of
@@ -325,10 +336,7 @@ function create(parent, nX, nY, nWidth, nHeight, bStartVisible)
     end
 
     local function setTextColor(color)
-        if type(color) ~= "number" then expect(1, color, "number") end
-        if tHex[color] == nil then
-            error("Invalid color (got " .. color .. ")" , 2)
-        end
+        if tHex[color] == nil then color = parse_color(color) end
 
         nTextColor = color
         if bVisible then
@@ -347,9 +355,7 @@ function create(parent, nX, nY, nWidth, nHeight, bStartVisible)
                 error("Invalid color (got " .. colour .. ")" , 2)
             end
         else
-            if tHex[colour] == nil then
-                error("Invalid color (got " .. colour .. ")" , 2)
-            end
+            if tHex[colour] == nil then colour = parse_color(colour) end
         end
 
         local tCol
@@ -382,9 +388,7 @@ function create(parent, nX, nY, nWidth, nHeight, bStartVisible)
                 error("Invalid color (got " .. colour .. ")" , 2)
             end
         else
-            if tHex[colour] == nil then
-                error("Invalid color (got " .. colour .. ")" , 2)
-            end
+            if tHex[colour] == nil then colour = parse_color(colour) end
         end
         local tCol = tPalette[colour] or {0, 0, 0}
         return tCol[1], tCol[2], tCol[3]
@@ -393,10 +397,7 @@ function create(parent, nX, nY, nWidth, nHeight, bStartVisible)
     window.getPaletteColor = window.getPaletteColour
 
     local function setBackgroundColor(color)
-        if type(color) ~= "number" then expect(1, color, "number") end
-        if tHex[color] == nil then
-            error("Invalid color (got " .. color .. ")", 2)
-        end
+        if tHex[color] == nil then color = parse_color(color) end
         nBackgroundColor = color
     end
 
