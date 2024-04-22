@@ -28,5 +28,7 @@ New Features in CraftOS-PC v2.8.2:
 * Fixed issue in inventories when `toSlot` isn't provided
 * Added warning message when the configuration file can't be saved
 * Fixed `speaker_audio_empty` not firing on `speaker.stop`
+* Fixed bounds checking on computer IDs (#350)
+* Fixed issues when providing concatenated strings to some functions
 
 Type "help changelog" to see the full version history.

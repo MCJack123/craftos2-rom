@@ -1,4 +1,4 @@
-## v2.8.2 - April 18, 2024
+## v2.8.2 - April 22, 2024
 * Updated CC:T version to 1.110.2
   * Discard characters being typed into the editor when closing `edit`'s `Run` screen.
   * Improve several Lua parser error messages.
@@ -27,6 +27,8 @@
 * Fixed issue in inventories when `toSlot` isn't provided
 * Added warning message when the configuration file can't be saved
 * Fixed `speaker_audio_empty` not firing on `speaker.stop`
+* Fixed bounds checking on computer IDs (#350)
+* Fixed issues when providing concatenated strings to some functions
 
 ## v2.8.1 - January 21, 2024
 * Updated CC:T version to 1.109.3
