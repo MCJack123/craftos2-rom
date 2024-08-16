@@ -118,8 +118,8 @@ end
 --- Expect a number to be within a specific range.
 --
 -- @tparam number num The value to check.
--- @tparam number min The minimum value, if nil then `-math.huge` is used.
--- @tparam number max The maximum value, if nil then `math.huge` is used.
+-- @tparam number[opt=-math.huge] min The minimum value.
+-- @tparam number[opt=math.huge] max The maximum value.
 -- @return The given `value`.
 -- @throws If the value is outside of the allowed range.
 -- @since 1.96.0

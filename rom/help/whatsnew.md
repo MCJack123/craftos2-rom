@@ -1,34 +1,19 @@
-New Features in CraftOS-PC v2.8.2:
+New Features in CraftOS-PC v2.8.3:
 
-* Updated CC:T version to 1.110.2
-  * Discard characters being typed into the editor when closing `edit`'s `Run` screen.
-  * Improve several Lua parser error messages.
-  * `colour.toBlit` correctly errors on out-of-bounds values.
-  * Round non-standard colours in `window`, like `term.native()` does.
-  * Fix `speaker` program not resolving files relative to the current directory.
-  * Add `speaker sound` command (fatboychummy).
-  * Improve error when calling `speaker play` with no path (fatboychummy).
-  * Prevent playing music discs with `speaker.playSound`.
-  * Various documentation fixes (cyberbit).
-* Fix compilation on Linux with MUSL libc (Ocawesome101, #341)
-* Fixed Homebrew Cask release action
-* Added log message for queue overflows
-* Fixed some argument parsing issues in `http.request`
-* Fixed some issues with timers
-* Fix string comparison errors (migeyel, MCJack123/craftos2-lua#6)
-* Fixed an inconsistency with Cobalt with `table.remove`
-* lua_Unsigned uses 64-bit ints again, fixing many bugs (MCJack123/craftos2-lua#7)
-* Fixed crash when trying to halt computer
-* Fixed race condition in debug adapter
-* Fixed some missing `os.date` specifiers on Windows
-* Fix for "Port already in use" error when trying to reopen WebSocket server on the same port. (simadude, #343)
-* Fixed seeking not working on HTTP handles in standards mode only
-* Chest Inventory peripheral list returns entries for empty slots (NuclearMonk, #340)
-* Fixed drives not emitting `disk` events
-* Fixed issue in inventories when `toSlot` isn't provided
-* Added warning message when the configuration file can't be saved
-* Fixed `speaker_audio_empty` not firing on `speaker.stop`
-* Fixed bounds checking on computer IDs (#350)
-* Fixed issues when providing concatenated strings to some functions
+* Updated CC:T version to 1.112.0
+  * Add `r+`/`w+` support to the `io` library.
+  * Report a custom error when using `!` instead of `not`.
+  * Add `cc.strings.split` function.
+  * Add missing bounds check to `cc.strings.wrap` (Lupus950).
+* Security: Fixed a vulnerability allowing filesystem sandbox escape (GHSA-hr3w-wc83-6923)
+* Security: Fixed potential data leakage by enhancing type checks (CVE-2024-39840)
+* Fixed error when `[[` appears in a `[[` long string
+* Fixed `setfenv` not returning the function passed to it
+* Fixed regression causing debugger to not set hook on all coroutines in stack
+* Fixed exception in `fs.list` when non-ASCII names are present
+* Added status parameter to HTTP server `res.setStatusCode`
+* Fixed HTTP server request handles converting line endings
+* `file.readAll` now correctly returns `nil` on a second call
+* Fixed an exception when sending an empty WebSocket message (#365)
 
 Type "help changelog" to see the full version history.
