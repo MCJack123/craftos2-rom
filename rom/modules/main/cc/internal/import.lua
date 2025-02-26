@@ -8,12 +8,23 @@
 local completion = require "cc.completion"
 
 return function(files)
+    local closed = {}
+    local function closeAll()
+        for _, file in pairs(files) do
+            if not closed[file] then
+                closed[file] = true
+                file.close()
+            end
+        end
+    end
+    
     local overwrite = {}
     for _, file in pairs(files) do
         local filename = file.getName()
         local path = shell.resolve(filename)
         if fs.exists(path) then
             if fs.isDir(path) then
+                closeAll()
                 return nil, filename .. " is already a directory."
             end
 
@@ -31,12 +42,13 @@ return function(files)
             local input = read(nil, nil, function(t)
                 return completion.choice(t, { "yes", "no" })
             end)
-            if not input then return end
+            if not input then closeAll() return end
 
             input = input:lower()
             if input == "" or input == "yes" or input == "y" then
                 break
             elseif input == "no" or input == "n" then
+                closeAll()
                 return
             end
         end
@@ -48,7 +60,7 @@ return function(files)
 
         local path = shell.resolve(filename)
         local handle, err = fs.open(path, "wb")
-        if not handle then return nil, err end
+        if not handle then closeAll() return nil, err end
 
         -- Write the file without loading it all into memory. This uses the same buffer size
         -- as BinaryReadHandle. It would be really nice to have a way to do this without
@@ -63,11 +75,14 @@ return function(files)
 
                 -- Probably an out-of-space issue, just bail.
                 if err:sub(1, 7) == "pcall: " then err = err:sub(8) end
+                closeAll()
                 return nil, "Failed to write file (" .. err .. "). File may be corrupted"
             end
         end
 
         handle.close()
+        file.close()
+        closed[file] = true
     end
 
     return true
