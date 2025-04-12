@@ -120,6 +120,7 @@ function create(parent, nX, nY, nWidth, nHeight, bStartVisible)
     local nBackgroundColor = colors.black
     local tLines = {}
     local tPalette = {}
+    local nGraphicsMode = parent.getGraphicsMode and parent.getGraphicsMode()
     do
         local sEmptyText = sEmptySpaceLine
         local sEmptyTextColor = tEmptyColorLines[nTextColor]
@@ -128,9 +129,13 @@ function create(parent, nX, nY, nWidth, nHeight, bStartVisible)
             tLines[y] = { sEmptyText, sEmptyTextColor, sEmptyBackgroundColor }
         end
 
-        for i = 0, 15 do
-            local c = 2 ^ i
-            tPalette[c] = { parent.getPaletteColour(c) }
+        if nGraphicsMode == 2 then
+            for c = 0, 255 do tPalette[c] = { parent.getPaletteColour(c) }
+        else
+            for i = 0, 15 do
+                local c = 2 ^ i
+                tPalette[c] = { parent.getPaletteColour(c) }
+            end
         end
     end
 
@@ -164,7 +169,14 @@ function create(parent, nX, nY, nWidth, nHeight, bStartVisible)
         end
     end
 
+    local function updateGraphicsMode()
+      if parent.getGraphicsMode and parent.getGraphicsMode() ~= nGraphicsMode then
+          parent.setGraphicsMode(nGraphicsMode)
+      end
+    end
+
     local function updatePalette()
+        updateGraphicsMode()
         for k, v in pairs(tPalette) do
             parent.setPaletteColour(k, v[1], v[2], v[3])
         end
@@ -350,7 +362,7 @@ function create(parent, nX, nY, nWidth, nHeight, bStartVisible)
     function window.setPaletteColour(colour, r, g, b)
         if type(colour) ~= "number" then expect(1, colour, "number") end
 
-        if parent.getGraphicsMode and parent.getGraphicsMode() == 2 then
+        if nGraphicsMode == 2 then
             if colour < 0 or colour > 255 then
                 error("Invalid color (got " .. colour .. ")" , 2)
             end
@@ -375,6 +387,7 @@ function create(parent, nX, nY, nWidth, nHeight, bStartVisible)
         end
 
         if bVisible then
+            updateGraphicsMode()
             return parent.setPaletteColour(colour, tCol[1], tCol[2], tCol[3])
         end
     end
@@ -383,7 +396,7 @@ function create(parent, nX, nY, nWidth, nHeight, bStartVisible)
 
     function window.getPaletteColour(colour)
         if type(colour) ~= "number" then expect(1, colour, "number") end
-        if parent.getGraphicsMode and parent.getGraphicsMode() == 2 then
+        if nGraphicsMode == 2 then
             if colour < 0 or colour > 255 then
                 error("Invalid color (got " .. colour .. ")" , 2)
             end
@@ -591,6 +604,7 @@ function create(parent, nX, nY, nWidth, nHeight, bStartVisible)
         function window.setGraphicsMode(mode)
             local oldMode = parent.getGraphicsMode()
             parent.setGraphicsMode(mode)
+            nGraphicsMode = mode
             if oldMode ~= 2 and mode == 2 then
                 local newPalette = {}
                 for i = 0, 15 do newPalette[i] = tPalette[2^i] end
