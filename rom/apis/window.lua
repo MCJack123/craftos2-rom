@@ -130,7 +130,7 @@ function create(parent, nX, nY, nWidth, nHeight, bStartVisible)
         end
 
         if nGraphicsMode == 2 then
-            for c = 0, 255 do tPalette[c] = { parent.getPaletteColour(c) }
+            for c = 0, 255 do tPalette[c] = { parent.getPaletteColour(c) } end
         else
             for i = 0, 15 do
                 local c = 2 ^ i
