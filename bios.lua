@@ -842,11 +842,13 @@ settings.define("shell.autocomplete_hidden", {
     description = [[Autocomplete hidden files and folders (those starting with ".").]],
     type = "boolean",
 })
-settings.define("shell.package_path", {
-    default = "?;?.lua;?/init.lua;/rom/modules/main/?;/rom/modules/main/?.lua;/rom/modules/main/?/init.lua",
-    description = [[Controls where program libraries can be stored. Paths are separated by semicolons (";"), and are relative to the original program. The 'require' function will search for a file at each path in order, replacing question marks ("?") with the library name.]],
-    type = "string",
-})
+if periphemu then
+    settings.define("shell.package_path", {
+        default = "?;?.lua;?/init.lua;/rom/modules/main/?;/rom/modules/main/?.lua;/rom/modules/main/?/init.lua",
+        description = [[Controls where program libraries can be stored. Paths are separated by semicolons (";"), and are relative to the original program. The 'require' function will search for a file at each path in order, replacing question marks ("?") with the library name.]],
+        type = "string",
+    })
+end
 
 settings.define("shell.report_plugin_errors", {
     default = true,
