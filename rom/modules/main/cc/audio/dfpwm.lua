@@ -6,14 +6,13 @@
 Provides utilities for converting between streams of DFPWM audio data and a list of amplitudes.
 
 DFPWM (Dynamic Filter Pulse Width Modulation) is an audio codec designed by GreaseMonkey. It's a relatively compact
-format compared to raw PCM data, only using 1 bit per sample, but is simple enough to simple enough to encode and decode
-in real time.
+format compared to raw PCM data, only using 1 bit per sample, but is simple enough to encode and decode in real time.
 
 Typically DFPWM audio is read from @{fs.BinaryReadHandle|the filesystem} or a @{http.Response|a web request} as a
 string, and converted a format suitable for @{speaker.playAudio}.
 
 ## Encoding and decoding files
-This modules exposes two key functions, @{make_decoder} and @{make_encoder}, which construct a new decoder or encoder.
+This module exposes two key functions, [`make_decoder`] and [`make_encoder`], which construct a new decoder or encoder.
 The returned encoder/decoder is itself a function, which converts between the two kinds of data.
 
 These encoders and decoders have lots of hidden state, so you should be careful to use the same encoder or decoder for
@@ -21,9 +20,9 @@ a specific audio stream. Typically you will want to create a decoder for each st
 for each one you write.
 
 ## Converting audio to DFPWM
-DFPWM is not a popular file format and so standard audio processing tools will not have an option to export to it.
+DFPWM is not a popular file format and so standard audio processing tools may not have an option to export to it.
 Instead, you can convert audio files online using [music.madefor.cc] or with the [LionRay Wav Converter][LionRay] Java
-application.
+application or [FFmpeg] 5.1 or later.
 
 [music.madefor.cc]: https://music.madefor.cc/ "DFPWM audio converter for Computronics and CC: Tweaked"
 [LionRay]: https://github.com/gamax92/LionRay/ "LionRay Wav Converter "
@@ -212,7 +211,7 @@ end
 
 --[[- A convenience function for encoding a complete file of audio at once.
 
-This should only be used for complete pieces of audio. If you are writing writing multiple chunks to the same place,
+This should only be used for complete pieces of audio. If you are writing multiple chunks to the same place,
 you should use an encoder returned by @{make_encoder} instead.
 
 @tparam { number... } input The table of amplitude data.

@@ -196,6 +196,8 @@ function locate(_nTimeout, _bDebug)
         modem.close(CHANNEL_GPS)
     end
 
+    os.cancelTimer(timeout)
+
     -- Return the response
     if pos1 and pos2 then
         if _bDebug then

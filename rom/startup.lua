@@ -223,7 +223,7 @@ end
 
 -- Show MOTD
 if settings.get("motd.enable") then
-    shell.run("motd")
+    shell.run("/rom/programs/motd")
 end
 
 -- Run startup passed with --script if available

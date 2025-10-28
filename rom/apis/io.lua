@@ -147,7 +147,7 @@ handleMetatable = {
 
                     if format == "l" then
                         if handle.readLine then res = handle.readLine() end
-                    elseif format == "L" and handle.readLine then
+                    elseif format == "L" then
                         if handle.readLine then res = handle.readLine(true) end
                     elseif format == "a" then
                         if handle.readAll then res = handle.readAll() or "" end
