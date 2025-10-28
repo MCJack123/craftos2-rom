@@ -32,7 +32,7 @@ jobs:
       run: node packStandaloneROM.js
       
     - name: Upload artifact
-      uses: actions/upload-artifact@v1.0.0
+      uses: actions/upload-artifact@v4
       with:
         name: fs_standalone
         path: fs_standalone.cpp
