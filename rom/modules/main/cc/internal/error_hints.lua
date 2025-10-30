@@ -140,7 +140,7 @@ end
 @return An optional message to append to the error.
 ]]
 local function get_tip(err, thread, frame_offset)
-    local nil_op = err:match("attempt to (%l+) .* %(a nil value%)$")
+    local nil_op = err:match("^attempt to (%l+) .* %(a nil value%)")
     if not nil_op then return end
 
     local has_error_info, error_info = pcall(require, "cc.internal.error_info")
