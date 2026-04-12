@@ -10,6 +10,7 @@ local function printUsage()
     print(programName)
     print(programName .. " screen")
     print(programName .. " palette")
+    print(programName .. " graphics")
     print(programName .. " all")
 end
 
